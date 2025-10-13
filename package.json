@@ -1,0 +1,24 @@
+{
+  "name": "asksync",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run --filter \"./apps/*\" build",
+    "dev": "pnpm run --filter \"./apps/*\" dev",
+    "lint": "pnpm run --recursive lint",
+    "lint:fix": "pnpm run --recursive lint:fix",
+    "type-check": "pnpm run --recursive type-check",
+    "clean": "pnpm run --recursive clean",
+    "clean-clerk": "pnpm run --filter \"@asksync/scripts\" clean-clerk",
+    "clean-clerk:dry": "DRY_RUN=true pnpm run clean-clerk"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "eslint-plugin-prettier": "^5.5.4",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@10.16.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.15.0"
+  }
+}

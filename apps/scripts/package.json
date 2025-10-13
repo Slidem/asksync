@@ -1,0 +1,17 @@
+{
+  "name": "@asksync/scripts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "clean-clerk": "tsx cleanClerk.ts"
+  },
+  "dependencies": {
+    "@clerk/backend": "^1.15.8",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

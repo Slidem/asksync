@@ -1,0 +1,26 @@
+{
+  "name": "@asksync/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "predev": "convex dev --until-success",
+    "build": "convex deploy --dry-run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf _generated dist"
+  },
+  "dependencies": {
+    "@asksync/shared": "workspace:*",
+    "convex": "^1.27.0"
+  },
+  "devDependencies": {
+    "@asksync/eslint-config": "workspace:*",
+    "@asksync/typescript-config": "workspace:*",
+    "@types/node": "^24.3.3",
+    "eslint": "^9.0.0",
+    "typescript": "^5.9.2"
+  }
+}

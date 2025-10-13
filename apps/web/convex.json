@@ -1,0 +1,4 @@
+{
+  "functions": "../backend/convex/",
+  "generateCommonJSApi": false
+}
