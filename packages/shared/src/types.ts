@@ -78,6 +78,8 @@ export interface Question {
   answeredAt?: number;
   unreadBy: string[];
   threadId: string;
+  messageCount: number;
+  hasUnread: boolean;
 }
 
 export interface Thread {

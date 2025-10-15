@@ -14,7 +14,6 @@ import {
   RecurringChoiceType,
   RecurringEventConfirmDialog,
 } from "@/schedule/components/RecurringEventConfirmDialog";
-import { Tag, Timeblock } from "@asksync/shared";
 import {
   addDays,
   endOfMonth,
@@ -29,7 +28,7 @@ import {
   getBaseEventId,
   isRecurringInstance,
 } from "@/schedule/utils";
-import { docToTag, docToTimeblock, toTimeblockId } from "@/lib/convexTypes";
+import { docToTimeblock, toTimeblockId } from "@/lib/convexTypes";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
@@ -37,8 +36,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarEvent } from "@/schedule/types";
 import { EventCalendar } from "@/schedule/components/EventCalendar";
+import { Timeblock } from "@asksync/shared";
 import { api } from "@convex/api";
 import { toast } from "sonner";
+import { useTags } from "@/tags/hooks/queries";
 
 export default function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -61,10 +62,8 @@ export default function SchedulePage() {
   const rawTimeblocks =
     useQuery(api.timeblocks.listTimeblocksByUser, { includeAll: false }) || [];
 
-  const rawTags = useQuery(api.tags.queries.listTagsByOrg) || [];
-
+  const { tags } = useTags({});
   const timeblocks: Timeblock[] = rawTimeblocks.map(docToTimeblock);
-  const availableTags: Tag[] = rawTags.map(docToTag);
 
   // Calculate view date range for recurring event expansion
   const viewDateRange = useMemo(() => {
@@ -408,7 +407,7 @@ export default function SchedulePage() {
           onEventAdd={handleEventAdd}
           onEventUpdate={handleEventUpdate}
           onEventDelete={handleEventDelete}
-          availableTags={availableTags}
+          availableTags={tags}
           onDateChange={handleDateChange}
           onViewChange={handleViewChange}
           className="h-full"

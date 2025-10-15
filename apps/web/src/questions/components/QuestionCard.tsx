@@ -103,7 +103,7 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
             {/* Participants avatars */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {displayParticipants.map((participant) => (
-                <MemberAvatar key={participant} id={participant} />
+                <MemberAvatar key={participant.id} id={participant.id} />
               ))}
               {hasMoreParticipants && (
                 <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
@@ -123,7 +123,7 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
               <div className="flex flex-wrap gap-2">
                 {question.tags.map((tag) => (
                   <Badge
-                    key={tag._id}
+                    key={tag.id}
                     variant="outline"
                     style={{
                       borderColor: tag.color,

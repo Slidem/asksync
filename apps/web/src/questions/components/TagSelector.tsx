@@ -2,15 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import Link from "next/link";
-
-interface Tag {
-  _id: string;
-  name: string;
-  color: string;
-  description?: string;
-  answerMode: "on-demand" | "scheduled";
-  responseTimeMinutes?: number;
-}
+import { Tag } from "@asksync/shared";
 
 interface TagSelectorProps {
   tags: Tag[];
@@ -43,13 +35,13 @@ export function TagSelector({
       <div className="grid gap-3">
         {tags.map((tag) => (
           <div
-            key={tag._id}
+            key={tag.id}
             className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-            onClick={() => onTagToggle(tag._id)}
+            onClick={() => onTagToggle(tag.id)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onTagToggle(tag._id);
+                onTagToggle(tag.id);
               }
             }}
             tabIndex={0}
@@ -57,14 +49,12 @@ export function TagSelector({
           >
             <div
               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                selectedTagIds.includes(tag._id)
+                selectedTagIds.includes(tag.id)
                   ? "bg-primary border-primary text-primary-foreground"
                   : "border-input"
               }`}
             >
-              {selectedTagIds.includes(tag._id) && (
-                <Check className="h-3 w-3" />
-              )}
+              {selectedTagIds.includes(tag.id) && <Check className="h-3 w-3" />}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">

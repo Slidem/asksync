@@ -1,13 +1,18 @@
 {
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "always"
   },
+  "eslint.useFlatConfig": true,
   "eslint.workingDirectories": [
-    "./apps/web",
-    "./apps/backend",
-    "./packages/shared"
+    {
+      "pattern": "./apps/*",
+      "changeProcessCWD": true
+    },
+    {
+      "pattern": "./packages/*",
+      "changeProcessCWD": true
+    }
   ],
   "eslint.validate": [
     "javascript",
@@ -16,20 +21,16 @@
     "typescriptreact"
   ],
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "typescript.suggest.autoImports": true,

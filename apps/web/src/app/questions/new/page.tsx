@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
 import { useOrganization, useUser } from "@clerk/nextjs";
 
 import { ArrowLeft } from "lucide-react";
@@ -11,7 +10,9 @@ import Link from "next/link";
 import { QuestionForm } from "@/questions/components/QuestionForm";
 import { api } from "@convex/api";
 import { toast } from "sonner";
+import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
+import { useTags } from "@/tags/hooks/queries";
 
 export default function NewQuestionPage() {
   const router = useRouter();
@@ -31,13 +32,8 @@ export default function NewQuestionPage() {
   });
 
   // Get available tags
-  const tags = useQuery(api.tags.queries.listTagsByOrg);
+  const { tags } = useTags({});
   const createQuestion = useMutation(api.questions.createQuestion);
-
-  const availableTags = useMemo(
-    () => tags?.filter((tag) => tag.isPublic || true) || [],
-    [tags],
-  );
 
   // Get organization members from Clerk - memoized to prevent infinite re-renders
   const availableUsers = useMemo(
@@ -107,9 +103,7 @@ export default function NewQuestionPage() {
   const expectedAnswerTime = useMemo(() => {
     if (formData.tagIds.length === 0 || !tags) return null;
 
-    const selectedTags = tags.filter((tag) =>
-      formData.tagIds.includes(tag._id),
-    );
+    const selectedTags = tags.filter((tag) => formData.tagIds.includes(tag.id));
     let shortestTime = Infinity;
 
     for (const tag of selectedTags) {
@@ -153,7 +147,7 @@ export default function NewQuestionPage() {
         <QuestionForm
           formData={formData}
           onFormDataChange={setFormData}
-          availableTags={availableTags}
+          availableTags={tags}
           availableUsers={availableUsers}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}

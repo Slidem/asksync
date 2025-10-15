@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CreateQuestionForm } from "@asksync/shared";
+import { CreateQuestionForm, Tag } from "@asksync/shared";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,15 +14,6 @@ import { TagSelector } from "./TagSelector";
 import { Textarea } from "@/components/ui/textarea";
 import { UserSelector } from "./UserSelector";
 import { useCallback } from "react";
-
-interface Tag {
-  _id: string;
-  name: string;
-  color: string;
-  description?: string;
-  answerMode: "on-demand" | "scheduled";
-  responseTimeMinutes?: number;
-}
 
 interface User {
   id: string;
@@ -54,31 +45,37 @@ export function QuestionForm({
   expectedAnswerTime,
   currentUserId,
 }: QuestionFormProps) {
-  const handleTagToggle = useCallback((tagId: string) => {
-    onFormDataChange((prevData) => ({
-      ...prevData,
-      tagIds: prevData.tagIds.includes(tagId)
-        ? prevData.tagIds.filter((id) => id !== tagId)
-        : [...prevData.tagIds, tagId],
-    }));
-  }, [onFormDataChange]);
+  const handleTagToggle = useCallback(
+    (tagId: string) => {
+      onFormDataChange((prevData) => ({
+        ...prevData,
+        tagIds: prevData.tagIds.includes(tagId)
+          ? prevData.tagIds.filter((id) => id !== tagId)
+          : [...prevData.tagIds, tagId],
+      }));
+    },
+    [onFormDataChange],
+  );
 
-  const handleUserToggle = useCallback((userId: string) => {
-    onFormDataChange((prevData) => ({
-      ...prevData,
-      assigneeIds: prevData.assigneeIds.includes(userId)
-        ? prevData.assigneeIds.filter((id) => id !== userId)
-        : [...prevData.assigneeIds, userId],
-    }));
-  }, [onFormDataChange]);
+  const handleUserToggle = useCallback(
+    (userId: string) => {
+      onFormDataChange((prevData) => ({
+        ...prevData,
+        assigneeIds: prevData.assigneeIds.includes(userId)
+          ? prevData.assigneeIds.filter((id) => id !== userId)
+          : [...prevData.assigneeIds, userId],
+      }));
+    },
+    [onFormDataChange],
+  );
 
   // Auto-assign current user if no assignees selected
   const effectiveAssigneeIds =
     formData.assigneeIds.length > 0
       ? formData.assigneeIds
       : currentUserId
-      ? [currentUserId]
-      : [];
+        ? [currentUserId]
+        : [];
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -111,13 +108,15 @@ export function QuestionForm({
               placeholder="Provide more details about your question..."
               value={formData.content}
               onChange={(e) =>
-                onFormDataChange((prev) => ({ ...prev, content: e.target.value }))
+                onFormDataChange((prev) => ({
+                  ...prev,
+                  content: e.target.value,
+                }))
               }
               rows={4}
               className="text-base"
             />
           </div>
-
         </CardContent>
       </Card>
 

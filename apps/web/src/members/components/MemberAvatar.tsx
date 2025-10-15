@@ -8,7 +8,7 @@ interface Props {
   id: string;
 }
 
-export const MemberAvatar = ({ id }: Props) => {
+export const MemberAvatar: React.FC<Props> = ({ id }) => {
   const { memberships } = useOrganization({
     memberships: {
       infinite: true,

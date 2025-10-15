@@ -25,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { convertConvexQuestions, docToTag } from "@/lib/convexTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,8 +32,10 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { QuestionCard } from "@/questions/components/QuestionCard";
 import { api } from "@convex/api";
+import { convertConvexQuestions } from "@/lib/convexTypes";
 import { useQuery } from "convex/react";
 import { useState } from "react";
+import { useTags } from "@/tags/hooks/queries";
 
 type TabType = "created" | "assigned" | "participating";
 
@@ -47,7 +48,6 @@ export default function QuestionsPage() {
     tagIds: [],
   });
 
-  const rawTags = useQuery(api.tags.queries.listTagsByOrg);
   const rawQuestions = useQuery(api.questions.listQuestionsByUser, {
     filter: activeTab,
     search: filters.search || undefined,
@@ -56,7 +56,7 @@ export default function QuestionsPage() {
     sortBy: filters.sortBy,
   });
 
-  const tags = rawTags?.map(docToTag);
+  const { tags } = useTags({});
   const questions = convertConvexQuestions(rawQuestions || []);
 
   const isLoading = questions === undefined;
@@ -101,27 +101,27 @@ export default function QuestionsPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="assigned" className="relative">
               Assigned to me
-              {getTabCount("assigned") && (
+              {getTabCount("assigned") ? (
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {getTabCount("assigned")}
                 </Badge>
-              )}
+              ) : null}
             </TabsTrigger>
             <TabsTrigger value="created" className="relative">
               Asked by me
-              {getTabCount("created") && (
+              {getTabCount("created") ? (
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {getTabCount("created")}
                 </Badge>
-              )}
+              ) : null}
             </TabsTrigger>
             <TabsTrigger value="participating" className="relative">
               Participating in
-              {getTabCount("participating") && (
+              {getTabCount("participating") ? (
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {getTabCount("participating")}
                 </Badge>
-              )}
+              ) : null}
             </TabsTrigger>
           </TabsList>
 
