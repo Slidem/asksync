@@ -5,6 +5,7 @@
 import { cn } from "@/lib/utils";
 import { useCalendarDnd } from "@/schedule/components/CalendarDndContext";
 import { useDroppable } from "@dnd-kit/core";
+import React, { useCallback } from "react";
 
 interface DroppableCellProps {
   id: string;
@@ -13,6 +14,8 @@ interface DroppableCellProps {
   children?: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  onMouseDown?: (e: React.MouseEvent, startTime: Date) => void;
+  dayColumnIndex?: number; // For week view to know which column
 }
 
 export function DroppableCell({
@@ -22,6 +25,8 @@ export function DroppableCell({
   children,
   className,
   onClick,
+  onMouseDown,
+  dayColumnIndex,
 }: DroppableCellProps) {
   const { activeEvent } = useCalendarDnd();
 
@@ -41,16 +46,43 @@ export function DroppableCell({
           .padStart(2, "0")}`
       : null;
 
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (onMouseDown && time !== undefined) {
+        // Calculate the start time based on the cell's date and time
+        const startTime = new Date(date);
+        const hours = Math.floor(time);
+        const minutes = Math.round((time - hours) * 60);
+        startTime.setHours(hours, minutes, 0, 0);
+
+        onMouseDown(e, startTime);
+      }
+    },
+    [date, time, onMouseDown],
+  );
+
+  const handleClick = useCallback(() => {
+    // Only trigger onClick if we're not in the middle of creating an event
+    // This will be handled by the parent component
+    if (onClick) {
+      onClick();
+    }
+  }, [onClick]);
+
   return (
     <div
       ref={setNodeRef}
-      onClick={onClick}
+      onClick={handleClick}
+      onMouseDown={handleMouseDown}
       className={cn(
         "data-dragging:bg-accent flex h-full flex-col overflow-hidden px-0.5 py-1 sm:px-1",
+        "transition-colors",
+        onMouseDown && "cursor-crosshair hover:bg-muted/50",
         className,
       )}
       title={formattedTime ? `${formattedTime}` : undefined}
       data-dragging={isOver && activeEvent ? true : undefined}
+      data-column-index={dayColumnIndex}
     >
       {children}
     </div>

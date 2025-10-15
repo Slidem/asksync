@@ -168,8 +168,8 @@ export function EventCalendar({
     setIsEventDialogOpen(true);
   };
 
-  const handleEventCreate = (startTime: Date) => {
-    // Snap to 15-minute intervals
+  const handleEventCreate = (startTime: Date, endTime?: Date) => {
+    // Snap start time to 15-minute intervals if not already snapped
     const minutes = startTime.getMinutes();
     const remainder = minutes % 15;
     if (remainder !== 0) {
@@ -184,11 +184,14 @@ export function EventCalendar({
       startTime.setMilliseconds(0);
     }
 
+    // Use provided end time or default to 1 hour
+    const eventEnd = endTime || addHoursToDate(startTime, 1);
+
     const newEvent: CalendarEvent = {
       id: "",
       title: "",
       start: startTime,
-      end: addHoursToDate(startTime, 1),
+      end: eventEnd,
       allDay: false,
     };
     setSelectedEvent(newEvent);

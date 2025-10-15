@@ -1,7 +1,7 @@
 "use client";
 
 import { EndHour, StartHour, WeekCellsHeight } from "@/schedule/constants";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   addHours,
   areIntervalsOverlapping,
@@ -13,11 +13,16 @@ import {
   isSameDay,
   startOfDay,
 } from "date-fns";
+import {
+  isDragThresholdExceeded,
+  useTemporaryEventStore,
+} from "@/schedule/stores/temporaryEventStore";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
 import { DroppableCell } from "@/schedule/components/DroppableCell";
 import { EventItem } from "@/schedule/components/EventItem";
+import { GhostEvent } from "@/schedule/components/GhostEvent";
 import { cn } from "@/lib/utils";
 import { isMultiDayEvent } from "@/schedule/utils";
 import { useCurrentTimeIndicator } from "@/schedule/hooks/currentTimeIndicator";
@@ -26,7 +31,7 @@ interface DayViewProps {
   currentDate: Date;
   events: CalendarEvent[];
   onEventSelect: (event: CalendarEvent) => void;
-  onEventCreate: (startTime: Date) => void;
+  onEventCreate: (startTime: Date, endTime?: Date) => void;
 }
 
 interface PositionedEvent {
@@ -179,6 +184,141 @@ export function DayView({
     onEventSelect(event);
   };
 
+  // Ghost event state and handlers
+  const {
+    ghostEvent,
+    isCreating,
+    isDragging,
+    dragStartPosition,
+    startCreating,
+    updateCreating,
+    finishCreating,
+    cancelCreating,
+  } = useTemporaryEventStore();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+
+  // Handle mouse down on a cell
+  const handleCellMouseDown = useCallback(
+    (e: React.MouseEvent, startTime: Date) => {
+      if (e.button !== 0) return; // Only handle left click
+
+      const position = { x: e.clientX, y: e.clientY };
+      startCreating(startTime, position);
+      isDraggingRef.current = false;
+
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [startCreating],
+  );
+
+  // Handle global mouse move
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isCreating || !dragStartPosition || !containerRef.current) return;
+
+      const currentPos = { x: e.clientX, y: e.clientY };
+
+      // Check if we've exceeded the drag threshold
+      if (!isDraggingRef.current) {
+        if (isDragThresholdExceeded(dragStartPosition, currentPos)) {
+          isDraggingRef.current = true;
+        } else {
+          return; // Haven't started dragging yet
+        }
+      }
+
+      // Calculate the time based on mouse position
+      const rect = containerRef.current.getBoundingClientRect();
+      const relativeY = e.clientY - rect.top;
+
+      // Calculate which hour we're hovering over
+      const hoursFraction = (relativeY / rect.height) * (EndHour - StartHour);
+      const timeHours = StartHour + hoursFraction;
+
+      if (ghostEvent) {
+        const endTime = new Date(ghostEvent.startTime);
+        endTime.setHours(Math.floor(timeHours));
+        endTime.setMinutes((timeHours % 1) * 60);
+
+        updateCreating(endTime, true);
+      }
+    },
+    [isCreating, dragStartPosition, ghostEvent, updateCreating],
+  );
+
+  // Handle global mouse up
+  const handleMouseUp = useCallback(() => {
+    if (!isCreating) return;
+
+    const event = finishCreating();
+
+    if (event && !isDraggingRef.current) {
+      // If we didn't drag, create a 1-hour event (default behavior)
+      onEventCreate(event.startTime);
+    } else if (event && isDraggingRef.current) {
+      // If we dragged, create event with the dragged duration
+      onEventCreate(event.startTime, event.endTime);
+    }
+
+    isDraggingRef.current = false;
+  }, [isCreating, finishCreating, onEventCreate]);
+
+  // Handle escape key
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isCreating) {
+        cancelCreating();
+        isDraggingRef.current = false;
+      }
+    },
+    [isCreating, cancelCreating],
+  );
+
+  // Set up global event listeners when creating
+  useEffect(() => {
+    if (isCreating) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [isCreating, handleMouseMove, handleMouseUp, handleKeyDown]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (isCreating) {
+        cancelCreating();
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Calculate ghost event position if it exists
+  const ghostEventPosition = useMemo(() => {
+    if (!ghostEvent) return null;
+
+    const startHour =
+      ghostEvent.startTime.getHours() + ghostEvent.startTime.getMinutes() / 60;
+    const endHour =
+      ghostEvent.endTime.getHours() + ghostEvent.endTime.getMinutes() / 60;
+
+    const top = (startHour - StartHour) * WeekCellsHeight;
+    const height = (endHour - startHour) * WeekCellsHeight;
+
+    return {
+      top,
+      height,
+    };
+  }, [ghostEvent]);
+
   const showAllDaySection = allDayEvents.length > 0;
   const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
     currentDate,
@@ -186,7 +326,7 @@ export function DayView({
   );
 
   return (
-    <div data-slot="day-view" className="contents">
+    <div ref={containerRef} data-slot="day-view" className="contents">
       {showAllDaySection && (
         <div className="border-border/70 bg-muted/50 border-t">
           <div className="grid grid-cols-[3rem_1fr] sm:grid-cols-[4rem_1fr]">
@@ -263,6 +403,26 @@ export function DayView({
             </div>
           ))}
 
+          {/* Ghost event */}
+          {ghostEventPosition && (
+            <div
+              className="pointer-events-none absolute z-30 px-0.5"
+              style={{
+                top: `${ghostEventPosition.top}px`,
+                height: `${ghostEventPosition.height}px`,
+                left: 0,
+                right: 0,
+              }}
+            >
+              <GhostEvent
+                startTime={ghostEvent!.startTime}
+                endTime={ghostEvent!.endTime}
+                view="day"
+                isDragging={isDragging}
+              />
+            </div>
+          )}
+
           {/* Current time indicator */}
           {currentTimeVisible && (
             <div
@@ -303,12 +463,17 @@ export function DayView({
                         quarter === 3 &&
                           "top-[calc(var(--week-cells-height)/4*3)]",
                       )}
-                      onClick={() => {
-                        const startTime = new Date(currentDate);
-                        startTime.setHours(hourValue);
-                        startTime.setMinutes(quarter * 15);
-                        onEventCreate(startTime);
-                      }}
+                      onMouseDown={handleCellMouseDown}
+                      onClick={
+                        !isCreating
+                          ? () => {
+                              const startTime = new Date(currentDate);
+                              startTime.setHours(hourValue);
+                              startTime.setMinutes(quarter * 15);
+                              onEventCreate(startTime);
+                            }
+                          : undefined
+                      }
                     />
                   );
                 })}

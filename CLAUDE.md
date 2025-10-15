@@ -203,7 +203,6 @@ Per-user, per-organization configuration:
 ### Component Architecture
 
 - **Keep components small** and focused on single responsibility
-- **Container/Presentation pattern**: Separate logic from UI
 - **Custom hooks** for reusable logic
 - **SOLID principles** throughout
 
@@ -487,10 +486,12 @@ pnpm lint:fix
 
 ### Recurring Event Exception Patterns
 
+e
+
 - **Exception storage**: Array of UTC midnight timestamps on timeblock document
 - **Exception filtering**: Client-side filtering during event expansion
 - **Standalone creation**: Non-recurring events for single instance modifications
-- **Clean separation**: Exceptions and standalone events maintain data integrity
+- **Clean separation**: Exceptions and standalone evnts maintain data integrity
 
 ### Integration Patterns
 

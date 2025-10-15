@@ -36,7 +36,7 @@ interface MonthViewProps {
   currentDate: Date;
   events: CalendarEvent[];
   onEventSelect: (event: CalendarEvent) => void;
-  onEventCreate: (startTime: Date) => void;
+  onEventCreate: (startTime: Date, endTime?: Date) => void;
 }
 
 export function MonthView({
