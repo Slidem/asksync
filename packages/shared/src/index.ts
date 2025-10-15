@@ -9,4 +9,7 @@ export const defaultConfig: SharedConfig = {
 };
 
 // Export all types
+export * from "./tags/sorting";
+export * from "./tags/filtering";
+export * from "./common/sorting";
 export * from "./types";

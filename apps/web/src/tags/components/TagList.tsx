@@ -1,6 +1,7 @@
 "use client";
 
 import { Filter, Search } from "lucide-react";
+import { SearchTagCategory, SortBy, SortOrder } from "@asksync/shared";
 import {
   Select,
   SelectContent,
@@ -13,69 +14,26 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { NewTagButton } from "@/tags/components/cards/NewTagButton";
 import { NewTagCard } from "@/tags/components/cards/NewTagCard";
-import { Tag } from "@asksync/shared";
 import { TagCard } from "./cards/TagCard";
 import { useState } from "react";
+import { useTags } from "@/tags/hooks/queries";
+import { useUser } from "@clerk/nextjs";
 
-interface TagListProps {
-  tags: Tag[];
-  currentUserId?: string;
-}
-
-type FilterMode = "all" | "my-tags" | "public";
-
-type SortMode = "name" | "created" | "updated";
-
-export function TagList({ tags, currentUserId }: TagListProps) {
+export function TagList() {
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterMode, setFilterMode] = useState<FilterMode>("all");
-  const [sortMode, setSortMode] = useState<SortMode>("name");
+  const [filterCategory, setFilterCategory] = useState<SearchTagCategory>(
+    SearchTagCategory.ALL,
+  );
+  const [sortBy, setSortBy] = useState<SortBy>(SortBy.NAME);
 
-  // Filter tags based on search term and filter mode
-  const filteredTags = tags.filter((tag) => {
-    // Search filter
-    const matchesSearch =
-      searchTerm === "" ||
-      tag.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tag.description &&
-        tag.description.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    if (!matchesSearch) return false;
-
-    // Mode filter
-    switch (filterMode) {
-      case "my-tags":
-        return tag.createdBy === currentUserId;
-      case "public":
-        return tag.isPublic;
-      default:
-        return true;
-    }
+  const { tags, totalPublicTags, totalUserTags, totalVisibleTags } = useTags({
+    filter: { category: filterCategory, searchTerm },
+    sorting: {
+      sortBy,
+      sortOrder: sortBy === SortBy.NAME ? SortOrder.ASC : SortOrder.DESC,
+    },
   });
-
-  // Sort tags
-  const sortedTags = [...filteredTags].sort((a, b) => {
-    switch (sortMode) {
-      case "created":
-        return b.createdAt - a.createdAt;
-      case "updated":
-        return b.updatedAt - a.updatedAt;
-      case "name":
-      default:
-        return a.name.localeCompare(b.name);
-    }
-  });
-
-  const getFilterCount = (mode: FilterMode) => {
-    switch (mode) {
-      case "my-tags":
-        return tags.filter((tag) => tag.createdBy === currentUserId).length;
-      case "public":
-        return tags.filter((tag) => tag.isPublic).length;
-      default:
-        return tags.length;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -106,45 +64,42 @@ export function TagList({ tags, currentUserId }: TagListProps) {
         <div className="flex items-center gap-2">
           {/* Filter Mode */}
           <Select
-            value={filterMode}
-            onValueChange={(value: FilterMode) => setFilterMode(value)}
+            value={filterCategory}
+            onValueChange={(value: SearchTagCategory) =>
+              setFilterCategory(value)
+            }
           >
             <SelectTrigger className="w-[140px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">
-                All Tags ({getFilterCount("all")})
+              <SelectItem value="all">All Tags ({totalVisibleTags})</SelectItem>
+              <SelectItem value="personal">
+                My Tags ({totalUserTags})
               </SelectItem>
-              <SelectItem value="my-tags">
-                My Tags ({getFilterCount("my-tags")})
-              </SelectItem>
-              <SelectItem value="public">
-                Public ({getFilterCount("public")})
-              </SelectItem>
+              <SelectItem value="public">Public ({totalPublicTags})</SelectItem>
             </SelectContent>
           </Select>
 
           {/* Sort Mode */}
           <Select
-            value={sortMode}
-            onValueChange={(value: SortMode) => setSortMode(value)}
+            value={sortBy}
+            onValueChange={(value: SortBy) => setSortBy(value)}
           >
             <SelectTrigger className="w-[120px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="created">Created</SelectItem>
-              <SelectItem value="updated">Updated</SelectItem>
+              <SelectItem value="createdAt">Created</SelectItem>
+              <SelectItem value="updatedAt">Updated</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Active Filters */}
-      {(searchTerm || filterMode !== "all") && (
+      {(searchTerm || filterCategory !== SearchTagCategory.ALL) && (
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           {searchTerm && (
@@ -158,12 +113,12 @@ export function TagList({ tags, currentUserId }: TagListProps) {
               </button>
             </Badge>
           )}
-          {filterMode !== "all" && (
+          {filterCategory !== SearchTagCategory.ALL && (
             <Badge variant="secondary" className="gap-1">
-              {filterMode === "my-tags" && "My Tags"}
-              {filterMode === "public" && "Public"}
+              {filterCategory === SearchTagCategory.PERSONAL && "My Tags"}
+              {filterCategory === SearchTagCategory.PUBLIC && "Public"}
               <button
-                onClick={() => setFilterMode("all")}
+                onClick={() => setFilterCategory(SearchTagCategory.ALL)}
                 className="ml-1 hover:text-foreground"
               >
                 ×
@@ -173,32 +128,27 @@ export function TagList({ tags, currentUserId }: TagListProps) {
         </div>
       )}
 
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {sortedTags.length} of {tags.length} tags
-      </div>
-
-      {/* Tag List */}
       <div className="space-y-4">
-        {sortedTags.map((tag) => (
+        {tags.map((tag) => (
           <TagCard
             key={tag.id}
             tag={tag}
-            isOwner={tag.createdBy === currentUserId}
+            isOwner={tag.createdBy === user?.id}
           />
         ))}
         <NewTagCard />
       </div>
 
-      {sortedTags.length === 0 && (searchTerm || filterMode !== "all") && (
-        <div className="text-center py-12">
-          <div className="space-y-3">
-            <div className="text-muted-foreground">
-              No tags match your current filters
+      {tags.length === 0 &&
+        (searchTerm || filterCategory !== SearchTagCategory.ALL) && (
+          <div className="text-center py-12">
+            <div className="space-y-3">
+              <div className="text-muted-foreground">
+                No tags match your current filters
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }
