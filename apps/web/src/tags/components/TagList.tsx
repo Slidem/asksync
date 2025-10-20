@@ -1,7 +1,7 @@
 "use client";
 
 import { Filter, Search } from "lucide-react";
-import { SearchTagCategory, SortBy, SortOrder } from "@asksync/shared";
+import { SearchTagCategory, SortOrder, TagSortBy } from "@asksync/shared";
 import {
   Select,
   SelectContent,
@@ -25,13 +25,13 @@ export function TagList() {
   const [filterCategory, setFilterCategory] = useState<SearchTagCategory>(
     SearchTagCategory.ALL,
   );
-  const [sortBy, setSortBy] = useState<SortBy>(SortBy.NAME);
+  const [sortBy, setSortBy] = useState<TagSortBy>(TagSortBy.NAME);
 
   const { tags, totalPublicTags, totalUserTags, totalVisibleTags } = useTags({
     filter: { category: filterCategory, searchTerm },
     sorting: {
       sortBy,
-      sortOrder: sortBy === SortBy.NAME ? SortOrder.ASC : SortOrder.DESC,
+      sortOrder: sortBy === TagSortBy.NAME ? SortOrder.ASC : SortOrder.DESC,
     },
   });
 
@@ -85,7 +85,7 @@ export function TagList() {
           {/* Sort Mode */}
           <Select
             value={sortBy}
-            onValueChange={(value: SortBy) => setSortBy(value)}
+            onValueChange={(value: TagSortBy) => setSortBy(value)}
           >
             <SelectTrigger className="w-[120px]">
               <SelectValue />

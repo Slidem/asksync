@@ -20,6 +20,10 @@ import {
   startOfDay,
   startOfWeek,
 } from "date-fns";
+import {
+  isDragThresholdExceeded,
+  useTemporaryEventStore,
+} from "@/schedule/stores/temporaryEventStore";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
@@ -29,10 +33,6 @@ import { GhostEvent } from "@/schedule/components/GhostEvent";
 import { cn } from "@/lib/utils";
 import { isMultiDayEvent } from "@/schedule/utils";
 import { useCurrentTimeIndicator } from "@/schedule/hooks/currentTimeIndicator";
-import {
-  isDragThresholdExceeded,
-  useTemporaryEventStore,
-} from "@/schedule/stores/temporaryEventStore";
 
 interface WeekViewProps {
   currentDate: Date;

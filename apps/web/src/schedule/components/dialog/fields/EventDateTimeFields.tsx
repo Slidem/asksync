@@ -70,7 +70,6 @@ export const EventDateTimeFields = React.memo(() => {
         )}
       </div>
 
-      {/* End Date/Time Row */}
       <div className="flex gap-4">
         <DatePickerField
           id="end-date"

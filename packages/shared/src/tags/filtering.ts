@@ -4,7 +4,7 @@ export enum SearchTagCategory {
   PUBLIC = "public",
 }
 
-export interface Filters {
+export interface TagFilters {
   searchTerm?: string;
   category?: SearchTagCategory;
 }

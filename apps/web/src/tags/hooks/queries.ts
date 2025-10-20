@@ -1,4 +1,4 @@
-import { SearchTagCategory, SortBy, SortOrder } from "@asksync/shared";
+import { SearchTagCategory, SortOrder, TagSortBy } from "@asksync/shared";
 
 import { api } from "@convex/api";
 import { docToTag } from "@/lib/convexTypes";
@@ -9,7 +9,7 @@ const DEFAULT_FILTER = {
 };
 
 const DEFAULT_SORTING = {
-  sortBy: SortBy.NAME,
+  sortBy: TagSortBy.NAME,
   sortOrder: SortOrder.ASC,
 };
 
@@ -19,7 +19,7 @@ interface UseTagsOptions {
     category?: SearchTagCategory;
   };
   sorting?: {
-    sortBy: SortBy;
+    sortBy: TagSortBy;
     sortOrder: SortOrder;
   };
 }
