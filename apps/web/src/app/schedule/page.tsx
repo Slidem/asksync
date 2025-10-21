@@ -60,7 +60,7 @@ export default function SchedulePage() {
   });
 
   const rawTimeblocks =
-    useQuery(api.timeblocks.listTimeblocksByUser, { includeAll: false }) || [];
+    useQuery(api.timeblocks.queries.listTimeblocks, {}) || [];
 
   const { tags } = useTags({});
   const timeblocks: Timeblock[] = rawTimeblocks.map(docToTimeblock);
@@ -127,11 +127,20 @@ export default function SchedulePage() {
   }, [timeblocks, viewDateRange.start, viewDateRange.end]);
 
   // Mutations
-  const createTimeblockMutation = useMutation(api.timeblocks.createTimeblock);
-  const updateTimeblockMutation = useMutation(api.timeblocks.updateTimeblock);
-  const deleteTimeblockMutation = useMutation(api.timeblocks.deleteTimeblock);
+  const createTimeblockMutation = useMutation(
+    api.timeblocks.mutations.createTimeblock,
+  );
+
+  const updateTimeblockMutation = useMutation(
+    api.timeblocks.mutations.updateTimeblock,
+  );
+
+  const deleteTimeblockMutation = useMutation(
+    api.timeblocks.mutations.deleteTimeblock,
+  );
+
   const addExceptionMutation = useMutation(
-    api.timeblocks.addTimeblockException,
+    api.timeblocks.mutations.addTimeblockException,
   );
 
   // Helper function to get UTC midnight timestamp for a date
