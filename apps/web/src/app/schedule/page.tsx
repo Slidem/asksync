@@ -10,17 +10,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  RecurringActionType,
   RecurringChoiceType,
   RecurringEventConfirmDialog,
 } from "@/schedule/components/RecurringEventConfirmDialog";
-import {
-  addDays,
-  endOfMonth,
-  endOfWeek,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns";
 import {
   calendarEventToCreateTimeblock,
   calendarEventToUpdateTimeblock,
@@ -29,7 +21,7 @@ import {
   isRecurringInstance,
 } from "@/schedule/utils";
 import { docToTimeblock, toTimeblockId } from "@/lib/convexTypes";
-import { useMemo, useState } from "react";
+import { eventActions, useCalendarStore } from "@/schedule/stores";
 import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
@@ -39,92 +31,22 @@ import { EventCalendar } from "@/schedule/components/EventCalendar";
 import { Timeblock } from "@asksync/shared";
 import { api } from "@convex/api";
 import { toast } from "sonner";
+import { useMemo } from "react";
 import { useTags } from "@/tags/hooks/queries";
 
 export default function SchedulePage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentView, setCurrentView] = useState<
-    "month" | "week" | "day" | "agenda"
-  >("week");
-
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    event: CalendarEvent | null;
-    actionType: RecurringActionType;
-    pendingAction: (() => Promise<void>) | null;
-  }>({
-    isOpen: false,
-    event: null,
-    actionType: "update",
-    pendingAction: null,
-  });
-
   const rawTimeblocks =
     useQuery(api.timeblocks.queries.listTimeblocks, {}) || [];
 
   const { tags } = useTags({});
   const timeblocks: Timeblock[] = rawTimeblocks.map(docToTimeblock);
-
-  // Calculate view date range for recurring event expansion
-  const viewDateRange = useMemo(() => {
-    switch (currentView) {
-      case "month": {
-        const monthStart = startOfMonth(currentDate);
-        const monthEnd = endOfMonth(currentDate);
-        return {
-          start: startOfWeek(monthStart, { weekStartsOn: 0 }),
-          end: endOfWeek(monthEnd, { weekStartsOn: 0 }),
-        };
-      }
-      case "week": {
-        return {
-          start: startOfWeek(currentDate, { weekStartsOn: 0 }),
-          end: endOfWeek(currentDate, { weekStartsOn: 0 }),
-        };
-      }
-      case "day": {
-        return {
-          start: new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            currentDate.getDate(),
-          ),
-          end: new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            currentDate.getDate(),
-            23,
-            59,
-            59,
-          ),
-        };
-      }
-      case "agenda": {
-        return {
-          start: new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            currentDate.getDate(),
-          ),
-          end: addDays(currentDate, 14),
-        };
-      }
-      default:
-        return {
-          start: currentDate,
-          end: currentDate,
-        };
-    }
-  }, [currentDate, currentView]);
+  const getDateRange = useCalendarStore((state) => state.getDateRange);
 
   // Expand recurring events for the current view range
   const events: CalendarEvent[] = useMemo(() => {
-    return expandRecurringEvents(
-      timeblocks,
-      viewDateRange.start,
-      viewDateRange.end,
-    );
-  }, [timeblocks, viewDateRange.start, viewDateRange.end]);
+    const range = getDateRange();
+    return expandRecurringEvents(timeblocks, range.start, range.end);
+  }, [timeblocks, getDateRange]);
 
   // Mutations
   const createTimeblockMutation = useMutation(
@@ -163,7 +85,6 @@ export default function SchedulePage() {
   };
 
   const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
-    console.log("Handling update for", updatedEvent);
     try {
       // Only update if this is an existing timeblock with a valid ID
       if (!updatedEvent.id || updatedEvent.id === "") {
@@ -171,19 +92,10 @@ export default function SchedulePage() {
         return handleEventAdd(updatedEvent);
       }
 
-      // Check if this is a recurring event instance
-      if (isRecurringInstance(updatedEvent.id)) {
-        // Show confirmation dialog for recurring events
-        setConfirmDialog({
-          isOpen: true,
-          event: updatedEvent,
-          actionType: "update",
-          pendingAction: () => performEventUpdate(updatedEvent),
-        });
-      } else {
-        // Regular single event update
-        await performEventUpdate(updatedEvent);
-      }
+      // Use eventActions - it handles recurring check automatically
+      await eventActions.update(updatedEvent, {}, async (choice) => {
+        await performEventUpdate(updatedEvent, choice);
+      });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to update timeblock",
@@ -248,23 +160,14 @@ export default function SchedulePage() {
 
   const handleEventDelete = async (eventId: string) => {
     try {
-      // Check if this is a recurring event instance
-      if (isRecurringInstance(eventId)) {
-        // Find the event for the confirmation dialog
-        const event = events.find((e) => e.id === eventId);
-        if (event) {
-          // Show confirmation dialog for recurring events
-          setConfirmDialog({
-            isOpen: true,
-            event,
-            actionType: "delete",
-            pendingAction: () => performEventDelete(eventId),
-          });
-        }
-      } else {
-        // Regular single event deletion
-        await performEventDelete(eventId);
-      }
+      // Find the event
+      const event = events.find((e) => e.id === eventId);
+      if (!event) return;
+
+      // Use eventActions - it handles recurring check automatically
+      await eventActions.delete(event, async (choice) => {
+        await performEventDelete(eventId, choice);
+      });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to delete timeblock",
@@ -309,15 +212,6 @@ export default function SchedulePage() {
       await deleteTimeblockMutation({ id: toTimeblockId(eventId) });
       toast.success("Timeblock deleted successfully");
     }
-  };
-
-  // Handle calendar navigation changes
-  const handleDateChange = (newDate: Date) => {
-    setCurrentDate(newDate);
-  };
-
-  const handleViewChange = (newView: "month" | "week" | "day" | "agenda") => {
-    setCurrentView(newView);
   };
 
   return (
@@ -401,8 +295,6 @@ export default function SchedulePage() {
           onEventUpdate={handleEventUpdate}
           onEventDelete={handleEventDelete}
           availableTags={tags}
-          onDateChange={handleDateChange}
-          onViewChange={handleViewChange}
           className="h-full"
         />
       </div>

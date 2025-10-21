@@ -1,9 +1,10 @@
-import { CalendarEvent } from "@/schedule/types";
 import {
   RecurringActionType,
   RecurringChoiceType,
   useRecurringDialogStore,
 } from "../recurringDialogStore";
+
+import { CalendarEvent } from "@/schedule/types";
 
 /**
  * Recurring event dialog actions
