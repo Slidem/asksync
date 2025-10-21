@@ -1,25 +1,26 @@
 "use client";
 
-import { EventGap, EventHeight, WeekCellsHeight } from "@/schedule/constants";
 import { CalendarEvent, CalendarView } from "@/schedule/types";
-import { format } from "date-fns";
+import { EventGap, EventHeight, WeekCellsHeight } from "@/schedule/constants";
 import {
   useCalendarNavigation,
   useCalendarView,
   useEventDialog,
 } from "@/schedule/stores";
-import { useState } from "react";
 
 import { AgendaView } from "@/schedule/components/AgendaView";
 import { CalendarDndProvider } from "@/schedule/components/CalendarDndContext";
 import { CalendarHeader } from "@/schedule/components/calendar";
-import { DayView } from "@/schedule/components/DayView";
+import { DayView } from "@/schedule/components/day";
 import { EventDialog } from "@/schedule/components/EventDialog";
-import { MonthView } from "@/schedule/components/MonthView";
+import { MonthView } from "@/schedule/components/month";
 import { Tag } from "@asksync/shared";
-import { WeekView } from "@/schedule/components/WeekView";
+import { WeekView } from "@/schedule/components/week";
 import { addHoursToDate } from "@/schedule/utils";
+import { format } from "date-fns";
+import { snapToQuarterHourMutate } from "@/schedule/utils/timeCalculations";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export interface EventCalendarProps {
   events?: CalendarEvent[];
@@ -60,22 +61,7 @@ export function EventCalendar({
   };
 
   const handleEventCreate = (startTime: Date, endTime?: Date) => {
-    // Snap start time to 15-minute intervals if not already snapped
-    const minutes = startTime.getMinutes();
-    const remainder = minutes % 15;
-    if (remainder !== 0) {
-      if (remainder < 7.5) {
-        // Round down to nearest 15 min
-        startTime.setMinutes(minutes - remainder);
-      } else {
-        // Round up to nearest 15 min
-        startTime.setMinutes(minutes + (15 - remainder));
-      }
-      startTime.setSeconds(0);
-      startTime.setMilliseconds(0);
-    }
-
-    // Use provided end time or default to 1 hour
+    snapToQuarterHourMutate(startTime);
     const eventEnd = endTime || addHoursToDate(startTime, 1);
 
     const newEvent: CalendarEvent = {
