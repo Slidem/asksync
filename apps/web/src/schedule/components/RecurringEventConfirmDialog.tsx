@@ -10,41 +10,27 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
-import { CalendarEvent } from "@/schedule/types";
-import React from "react";
 import { format } from "date-fns";
+import { useRecurringDialog } from "@/schedule/stores";
 
-export type RecurringActionType = "update" | "delete";
-export type RecurringChoiceType = "this" | "all";
+// Re-export types for backward compatibility
+export type {
+  RecurringActionType,
+  RecurringChoiceType,
+} from "@/schedule/stores";
 
-interface RecurringEventConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (choice: RecurringChoiceType) => void;
-  event: CalendarEvent | null;
-  actionType: RecurringActionType;
-}
+export function RecurringEventConfirmDialog() {
+  const { isOpen, event, actionType, confirmChoice, closeDialog } =
+    useRecurringDialog();
 
-export function RecurringEventConfirmDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  event,
-  actionType,
-}: RecurringEventConfirmDialogProps) {
   if (!event) return null;
 
   const eventDate = format(event.start, "MMMM d, yyyy");
   const eventTime = format(event.start, "h:mm a");
   const actionText = actionType === "update" ? "edit" : "delete";
 
-  const handleChoice = (choice: RecurringChoiceType) => {
-    onConfirm(choice);
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={closeDialog}>
       <DialogContent className="max-w-[95vw] sm:max-w-[380px] mx-4">
         <DialogHeader>
           <DialogTitle className="text-base">
@@ -62,7 +48,7 @@ export function RecurringEventConfirmDialog({
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-2.5 text-left"
-            onClick={() => handleChoice("this")}
+            onClick={() => confirmChoice("this")}
           >
             <div className="flex flex-col items-start min-w-0">
               <span className="font-medium text-sm">This event only</span>
@@ -75,7 +61,7 @@ export function RecurringEventConfirmDialog({
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-2.5 text-left"
-            onClick={() => handleChoice("all")}
+            onClick={() => confirmChoice("all")}
           >
             <div className="flex flex-col items-start min-w-0">
               <span className="font-medium text-sm">
@@ -89,7 +75,7 @@ export function RecurringEventConfirmDialog({
         </div>
 
         <DialogFooter className="pt-2">
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={closeDialog}>
             Cancel
           </Button>
         </DialogFooter>

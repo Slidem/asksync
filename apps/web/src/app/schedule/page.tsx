@@ -163,6 +163,7 @@ export default function SchedulePage() {
   };
 
   const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
+    console.log("Handling update for", updatedEvent);
     try {
       // Only update if this is an existing timeblock with a valid ID
       if (!updatedEvent.id || updatedEvent.id === "") {
@@ -234,6 +235,7 @@ export default function SchedulePage() {
         }
       }
     } else {
+      console.log("Performing regular update for", updatedEvent.id);
       // Regular single event update
       const updateData = calendarEventToUpdateTimeblock(updatedEvent);
       await updateTimeblockMutation({
@@ -316,24 +318,6 @@ export default function SchedulePage() {
 
   const handleViewChange = (newView: "month" | "week" | "day" | "agenda") => {
     setCurrentView(newView);
-  };
-
-  // Handle recurring event confirmation dialog
-  const handleConfirmDialogChoice = async (choice: RecurringChoiceType) => {
-    if (confirmDialog.event && confirmDialog.actionType === "update") {
-      await performEventUpdate(confirmDialog.event, choice);
-    } else if (confirmDialog.event && confirmDialog.actionType === "delete") {
-      await performEventDelete(confirmDialog.event.id, choice);
-    }
-  };
-
-  const handleConfirmDialogClose = () => {
-    setConfirmDialog({
-      isOpen: false,
-      event: null,
-      actionType: "update",
-      pendingAction: null,
-    });
   };
 
   return (
@@ -423,13 +407,7 @@ export default function SchedulePage() {
         />
       </div>
 
-      <RecurringEventConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        onClose={handleConfirmDialogClose}
-        onConfirm={handleConfirmDialogChoice}
-        event={confirmDialog.event}
-        actionType={confirmDialog.actionType}
-      />
+      <RecurringEventConfirmDialog />
     </div>
   );
 }

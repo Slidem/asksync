@@ -20,17 +20,12 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { addDays, endOfWeek, format, isSameMonth, startOfWeek } from "date-fns";
 import {
-  addDays,
-  addMonths,
-  addWeeks,
-  endOfWeek,
-  format,
-  isSameMonth,
-  startOfWeek,
-  subMonths,
-  subWeeks,
-} from "date-fns";
+  useCalendarNavigation,
+  useCalendarView,
+  useEventDialog,
+} from "@/schedule/stores";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AgendaView } from "@/schedule/components/AgendaView";
@@ -69,61 +64,43 @@ export function EventCalendar({
   onDateChange,
   onViewChange,
 }: EventCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>(initialView);
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  // Use store hooks instead of local state
+  const { currentDate, goToToday, goToPrevious, goToNext } =
+    useCalendarNavigation();
+  const { view, setView } = useCalendarView();
+  const {
+    isOpen: isEventDialogOpen,
+    open: openEventDialog,
+    close: closeEventDialog,
+  } = useEventDialog();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
 
-  const handlePrevious = () => {
-    let newDate: Date;
-    if (view === "month") {
-      newDate = subMonths(currentDate, 1);
-    } else if (view === "week") {
-      newDate = subWeeks(currentDate, 1);
-    } else if (view === "day") {
-      newDate = addDays(currentDate, -1);
-    } else if (view === "agenda") {
-      // For agenda view, go back 30 days (a full month)
-      newDate = addDays(currentDate, -AgendaDaysToShow);
-    } else {
-      newDate = currentDate;
-    }
-    setCurrentDate(newDate);
-    onDateChange?.(newDate);
-  };
+  const currentView = view || initialView;
 
-  const handleNext = () => {
-    let newDate: Date;
-    if (view === "month") {
-      newDate = addMonths(currentDate, 1);
-    } else if (view === "week") {
-      newDate = addWeeks(currentDate, 1);
-    } else if (view === "day") {
-      newDate = addDays(currentDate, 1);
-    } else if (view === "agenda") {
-      // For agenda view, go forward 30 days (a full month)
-      newDate = addDays(currentDate, AgendaDaysToShow);
-    } else {
-      newDate = currentDate;
-    }
-    setCurrentDate(newDate);
-    onDateChange?.(newDate);
-  };
+  // Handle navigation with callbacks
+  const handlePrevious = useCallback(() => {
+    goToPrevious();
+    onDateChange?.(currentDate);
+  }, [goToPrevious, currentDate, onDateChange]);
 
-  const handleToday = () => {
-    const newDate = new Date();
-    setCurrentDate(newDate);
-    onDateChange?.(newDate);
-  };
+  const handleNext = useCallback(() => {
+    goToNext();
+    onDateChange?.(currentDate);
+  }, [goToNext, currentDate, onDateChange]);
+
+  const handleToday = useCallback(() => {
+    goToToday();
+    onDateChange?.(currentDate);
+  }, [goToToday, currentDate, onDateChange]);
 
   const handleViewChange = useCallback(
     (newView: CalendarView) => {
       setView(newView);
       onViewChange?.(newView);
     },
-    [onViewChange],
+    [setView, onViewChange],
   );
 
   // Add keyboard shortcuts for view switching
@@ -165,7 +142,7 @@ export function EventCalendar({
 
   const handleEventSelect = (event: CalendarEvent) => {
     setSelectedEvent(event);
-    setIsEventDialogOpen(true);
+    openEventDialog(event.id);
   };
 
   const handleEventCreate = (startTime: Date, endTime?: Date) => {
@@ -195,7 +172,7 @@ export function EventCalendar({
       allDay: false,
     };
     setSelectedEvent(newEvent);
-    setIsEventDialogOpen(true);
+    openEventDialog();
   };
 
   const handleEventSave = (event: CalendarEvent) => {
@@ -217,14 +194,14 @@ export function EventCalendar({
         position: "bottom-left",
       });
     }
-    setIsEventDialogOpen(false);
+    closeEventDialog();
     setSelectedEvent(null);
   };
 
   const handleEventDelete = (eventId: string) => {
     const deletedEvent = events.find((e) => e.id === eventId);
     onEventDelete?.(eventId);
-    setIsEventDialogOpen(false);
+    closeEventDialog();
     setSelectedEvent(null);
 
     // Show toast notification when an event is deleted
@@ -247,9 +224,9 @@ export function EventCalendar({
   };
 
   const viewTitle = useMemo(() => {
-    if (view === "month") {
+    if (currentView === "month") {
       return format(currentDate, "MMMM yyyy");
-    } else if (view === "week") {
+    } else if (currentView === "week") {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 });
       const end = endOfWeek(currentDate, { weekStartsOn: 0 });
       if (isSameMonth(start, end)) {
@@ -257,7 +234,7 @@ export function EventCalendar({
       } else {
         return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
       }
-    } else if (view === "day") {
+    } else if (currentView === "day") {
       return (
         <>
           <span className="min-[480px]:hidden" aria-hidden="true">
@@ -271,7 +248,7 @@ export function EventCalendar({
           </span>
         </>
       );
-    } else if (view === "agenda") {
+    } else if (currentView === "agenda") {
       // Show the month range for agenda view
       const start = currentDate;
       const end = addDays(currentDate, AgendaDaysToShow - 1);
@@ -284,7 +261,7 @@ export function EventCalendar({
     } else {
       return format(currentDate, "MMMM yyyy");
     }
-  }, [currentDate, view]);
+  }, [currentDate, currentView]);
 
   return (
     <div
@@ -345,10 +322,11 @@ export function EventCalendar({
                 <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
                   <span>
                     <span className="min-[480px]:hidden" aria-hidden="true">
-                      {view.charAt(0).toUpperCase()}
+                      {currentView.charAt(0).toUpperCase()}
                     </span>
                     <span className="max-[479px]:sr-only">
-                      {view.charAt(0).toUpperCase() + view.slice(1)}
+                      {currentView.charAt(0).toUpperCase() +
+                        currentView.slice(1)}
                     </span>
                   </span>
                   <ChevronDownIcon
@@ -378,7 +356,7 @@ export function EventCalendar({
               size="sm"
               onClick={() => {
                 setSelectedEvent(null); // Ensure we're creating a new event
-                setIsEventDialogOpen(true);
+                openEventDialog();
               }}
             >
               <PlusIcon
@@ -392,7 +370,7 @@ export function EventCalendar({
         </div>
 
         <div className="flex flex-1 flex-col">
-          {view === "month" && (
+          {currentView === "month" && (
             <MonthView
               currentDate={currentDate}
               events={events}
@@ -400,7 +378,7 @@ export function EventCalendar({
               onEventCreate={handleEventCreate}
             />
           )}
-          {view === "week" && (
+          {currentView === "week" && (
             <WeekView
               currentDate={currentDate}
               events={events}
@@ -408,7 +386,7 @@ export function EventCalendar({
               onEventCreate={handleEventCreate}
             />
           )}
-          {view === "day" && (
+          {currentView === "day" && (
             <DayView
               currentDate={currentDate}
               events={events}
@@ -416,7 +394,7 @@ export function EventCalendar({
               onEventCreate={handleEventCreate}
             />
           )}
-          {view === "agenda" && (
+          {currentView === "agenda" && (
             <AgendaView
               currentDate={currentDate}
               events={events}
@@ -429,7 +407,7 @@ export function EventCalendar({
           event={selectedEvent}
           isOpen={isEventDialogOpen}
           onClose={() => {
-            setIsEventDialogOpen(false);
+            closeEventDialog();
             setSelectedEvent(null);
           }}
           onSave={handleEventSave}
