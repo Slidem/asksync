@@ -1,5 +1,7 @@
 "use client";
 
+import {} from "@/schedule/components/EventCalendar";
+
 import { useRef, useState } from "react";
 
 import { CSS } from "@dnd-kit/utilities";

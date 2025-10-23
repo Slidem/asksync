@@ -3,11 +3,18 @@
 import { useMemo } from "react";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { differenceInMinutes, isPast } from "date-fns";
+import { differenceInMinutes, format, getMinutes, isPast } from "date-fns";
 import { type CalendarEvent } from "@/schedule/types";
 import { cn } from "@/lib/utils";
 import { getBorderRadiusClasses, getEventColorClasses } from "@/schedule/utils";
-import { formatTimeWithOptionalMinutes } from "@/schedule/utils/timeCalculations";
+
+// Using date-fns format with custom formatting:
+// 'h' - hours (1-12)
+// 'a' - am/pm
+// ':mm' - minutes with leading zero (only if the token 'mm' is present)
+const formatTimeWithOptionalMinutes = (date: Date) => {
+  return format(date, getMinutes(date) === 0 ? "ha" : "h:mma").toLowerCase();
+};
 
 interface EventWrapperProps {
   event: CalendarEvent;
