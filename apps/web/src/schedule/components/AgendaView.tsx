@@ -2,34 +2,33 @@
 
 import { addDays, format, isToday } from "date-fns";
 
-import { AgendaDaysToShow } from "@/schedule/constants";
+import { AGENDA_DAYS_TO_SHOW } from "@/schedule/constants";
 import { CalendarEvent } from "@/schedule/types";
 import { EventItem } from "@/schedule/components/EventItem";
 import { RiCalendarEventLine } from "@remixicon/react";
 import { getAgendaEventsForDay } from "@/schedule/utils";
+import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsService";
 import { useMemo } from "react";
+import { useSelectEventInDialog } from "@/schedule/dialogs/eventDialog/eventDialogService";
 
-interface AgendaViewProps {
-  currentDate: Date;
-  events: CalendarEvent[];
-  onEventSelect: (event: CalendarEvent) => void;
-}
+export function AgendaView() {
+  const openSelectEventInDialog = useSelectEventInDialog();
 
-export function AgendaView({
-  currentDate,
-  events,
-  onEventSelect,
-}: AgendaViewProps) {
+  const currentDate = useCalendarViewStore((state) => state.currentDate);
+
+  const events = useEventsForCurrentScheduleView();
+
   // Show events for the next days based on constant
   const days = useMemo(() => {
-    return Array.from({ length: AgendaDaysToShow }, (_, i) =>
+    return Array.from({ length: AGENDA_DAYS_TO_SHOW }, (_, i) =>
       addDays(new Date(currentDate), i),
     );
   }, [currentDate]);
 
   const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation();
-    onEventSelect(event);
+    openSelectEventInDialog(event);
   };
 
   // Check if there are any days with events

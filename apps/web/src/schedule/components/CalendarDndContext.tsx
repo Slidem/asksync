@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { EventItem } from "@/schedule/components/EventItem";
+import { useUpdateEventDates } from "@/schedule/hooks/mutations";
+import { CalendarEvent } from "@/schedule/types";
 import {
   DndContext,
   DragOverlay,
@@ -22,8 +17,14 @@ import {
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { addMinutes, differenceInMinutes } from "date-fns";
-import { CalendarEvent } from "@/schedule/types";
-import { EventItem } from "@/schedule/components/EventItem";
+import {
+  createContext,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 // Define the context type
 type CalendarDndContextType = {
@@ -62,13 +63,10 @@ export const useCalendarDnd = () => useContext(CalendarDndContext);
 // Props for the provider
 interface CalendarDndProviderProps {
   children: ReactNode;
-  onEventUpdate: (event: CalendarEvent) => void;
 }
 
-export function CalendarDndProvider({
-  children,
-  onEventUpdate,
-}: CalendarDndProviderProps) {
+export function CalendarDndProvider({ children }: CalendarDndProviderProps) {
+  const updateEventDates = useUpdateEventDates();
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [activeView, setActiveView] = useState<"month" | "week" | "day" | null>(
@@ -301,11 +299,10 @@ export function CalendarDndProvider({
         originalStart.getMinutes() !== newStart.getMinutes();
 
       if (hasStartTimeChanged) {
-        // Update the event only if the time has changed
-        onEventUpdate({
-          ...calendarEvent,
-          start: newStart,
-          end: newEnd,
+        updateEventDates({
+          event: calendarEvent,
+          startTime: newStart,
+          endTime: newEnd,
         });
       }
     } catch (error) {

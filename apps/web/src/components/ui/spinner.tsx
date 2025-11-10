@@ -9,17 +9,17 @@ interface SpinnerProps {
 const SpinnerCircle = ({ className, size = "md" }: SpinnerProps) => {
   const sizeClasses = {
     sm: "w-4 h-4 border-2",
-    md: "w-7 h-7 border-[3px]", 
-    lg: "w-10 h-10 border-4"
+    md: "w-7 h-7 border-[3px]",
+    lg: "w-10 h-10 border-4",
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "border-transparent border-t-primary border-r-primary rounded-full animate-spin",
         sizeClasses[size],
-        className
-      )} 
+        className,
+      )}
     />
   );
 };

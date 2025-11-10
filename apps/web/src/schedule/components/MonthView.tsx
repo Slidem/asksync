@@ -1,12 +1,16 @@
 "use client";
 
-import { DefaultStartHour, EventGap, EventHeight } from "@/schedule/constants";
+import {
+  DEFAULT_START_HOUR,
+  EVENT_GAP_PX,
+  EVENT_HEIGHT_PX,
+} from "@/schedule/constants";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   addDays,
   eachDayOfInterval,
@@ -25,26 +29,28 @@ import {
   getSpanningEventsForDay,
   sortEvents,
 } from "@/schedule/utils";
+import {
+  useOpenCreateEventDialog,
+  useSelectEventInDialog,
+} from "@/schedule/dialogs/eventDialog/eventDialogService";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
 import { DroppableCell } from "@/schedule/components/DroppableCell";
 import { EventItem } from "@/schedule/components/EventItem";
+import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useEventVisibility } from "@/schedule/hooks/eventVisibility";
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsService";
 
-interface MonthViewProps {
-  currentDate: Date;
-  events: CalendarEvent[];
-  onEventSelect: (event: CalendarEvent) => void;
-  onEventCreate: (startTime: Date, endTime?: Date) => void;
-}
+export function MonthView() {
+  const openSelectEventInDialog = useSelectEventInDialog();
 
-export function MonthView({
-  currentDate,
-  events,
-  onEventSelect,
-  onEventCreate,
-}: MonthViewProps) {
+  const openCreateEventDialog = useOpenCreateEventDialog();
+
+  const currentDate = useCalendarViewStore((state) => state.currentDate);
+
+  const events = useEventsForCurrentScheduleView();
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
@@ -75,15 +81,49 @@ export function MonthView({
     return result;
   }, [days]);
 
-  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEventSelect(event);
-  };
+  // Pre-calculate events for all days to avoid recalculation in render
+  const dayEventsMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        dayEvents: CalendarEvent[];
+        spanningEvents: CalendarEvent[];
+        allEvents: CalendarEvent[];
+        allDayEvents: CalendarEvent[];
+      }
+    >();
+
+    days.forEach((day) => {
+      const dayKey = day.toISOString();
+      const dayEvents = getEventsForDay(events, day);
+      const spanningEvents = getSpanningEventsForDay(events, day);
+      const allDayEvents = [...spanningEvents, ...dayEvents];
+      const allEvents = getAllEventsForDay(events, day);
+
+      map.set(dayKey, {
+        dayEvents: sortEvents(dayEvents),
+        spanningEvents: sortEvents(spanningEvents),
+        allEvents: sortEvents(allEvents),
+        allDayEvents: sortEvents(allDayEvents),
+      });
+    });
+
+    return map;
+  }, [days, events]);
+
+  const handleEventClick = useCallback(
+    (event: CalendarEvent, e: React.MouseEvent) => {
+      e.stopPropagation();
+      openSelectEventInDialog(event);
+    },
+    [openSelectEventInDialog],
+  );
 
   const [isMounted, setIsMounted] = useState(false);
+
   const { contentRef, getVisibleEventCount } = useEventVisibility({
-    eventHeight: EventHeight,
-    eventGap: EventGap,
+    eventHeight: EVENT_HEIGHT_PX,
+    eventGap: EVENT_GAP_PX,
   });
 
   useEffect(() => {
@@ -111,12 +151,13 @@ export function MonthView({
             {week.map((day, dayIndex) => {
               if (!day) return null; // Skip if day is undefined
 
-              const dayEvents = getEventsForDay(events, day);
-              const spanningEvents = getSpanningEventsForDay(events, day);
+              const dayKey = day.toISOString();
+              const eventData = dayEventsMap.get(dayKey);
+              if (!eventData) return null; // Should not happen, but safety check
+
+              const { allDayEvents, allEvents } = eventData;
               const isCurrentMonth = isSameMonth(day, currentDate);
-              const cellId = `month-cell-${day.toISOString()}`;
-              const allDayEvents = [...spanningEvents, ...dayEvents];
-              const allEvents = getAllEventsForDay(events, day);
+              const cellId = `month-cell-${dayKey}`;
 
               const isReferenceCell = weekIndex === 0 && dayIndex === 0;
               const visibleCount = isMounted
@@ -140,9 +181,9 @@ export function MonthView({
                     id={cellId}
                     date={day}
                     onClick={() => {
-                      const startTime = new Date(day);
-                      startTime.setHours(DefaultStartHour, 0, 0);
-                      onEventCreate(startTime);
+                      const start = new Date(day);
+                      start.setHours(DEFAULT_START_HOUR, 0, 0);
+                      openCreateEventDialog({ start });
                     }}
                   >
                     <div className="group-data-today:bg-primary group-data-today:text-primary-foreground mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm">
@@ -152,7 +193,7 @@ export function MonthView({
                       ref={isReferenceCell ? contentRef : null}
                       className="min-h-[calc((var(--event-height)+var(--event-gap))*2)] sm:min-h-[calc((var(--event-height)+var(--event-gap))*3)] lg:min-h-[calc((var(--event-height)+var(--event-gap))*4)]"
                     >
-                      {sortEvents(allDayEvents).map((event, index) => {
+                      {allDayEvents.map((event, index) => {
                         const eventStart = new Date(event.start);
                         const eventEnd = new Date(event.end);
                         const isFirstDay = isSameDay(day, eventStart);
@@ -230,7 +271,7 @@ export function MonthView({
                             className="max-w-52 p-3"
                             style={
                               {
-                                "--event-height": `${EventHeight}px`,
+                                "--event-height": `${EVENT_HEIGHT_PX}px`,
                               } as React.CSSProperties
                             }
                           >
@@ -239,7 +280,7 @@ export function MonthView({
                                 {format(day, "EEE d")}
                               </div>
                               <div className="space-y-1">
-                                {sortEvents(allEvents).map((event) => {
+                                {allEvents.map((event) => {
                                   const eventStart = new Date(event.start);
                                   const eventEnd = new Date(event.end);
                                   const isFirstDay = isSameDay(day, eventStart);

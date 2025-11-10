@@ -94,7 +94,7 @@ Calendar events that define availability for answering questions:
 **Properties**:
 
 - **Basic**: id, title, description
-- **Timing**: startTime, endTime, timezone, isRecurring, recurrenceRule
+- **Timing**: startTime, endTime, timezone, recurrenceRule
 - **Association**: tagIds[], userId, orgId
 - **Integration**: source ("asksync" | "google" | "outlook"), externalId
 - **Appearance**: color (custom color override)

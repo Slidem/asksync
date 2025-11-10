@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const EventExternalInfo = React.memo(() => {
   const { isExternalEvent, source } = useEventDialogStore(
     useShallow((state) => ({
       isExternalEvent: state.isExternalEvent,
-      source: state.source,
+      source: state.eventMetadata.source,
     })),
   );
 

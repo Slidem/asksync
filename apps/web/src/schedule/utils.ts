@@ -1,7 +1,7 @@
-import type { CalendarEvent, EventColor } from "@/schedule/types";
+import type { CalendarEvent, EventColor, TimeOption } from "@/schedule/types";
+import { END_HOUR, START_HOUR } from "@/schedule/constants";
 import { RecurrenceRule, Timeblock } from "@asksync/shared";
-
-import { isSameDay } from "date-fns";
+import { format, isSameDay } from "date-fns";
 
 /**
  * Get CSS classes for event colors
@@ -168,6 +168,7 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
     id: timeblock.id,
     title: timeblock.title,
     description: timeblock.description,
+    location: timeblock.location,
     start: new Date(timeblock.startTime),
     end: new Date(timeblock.endTime),
     allDay: false, // Timeblocks are typically specific time ranges
@@ -175,9 +176,7 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
       (timeblock.color as EventColor) ||
       TIME_BLOCK_COLOR_MAP[timeblock.source] ||
       TIME_BLOCK_COLOR_MAP.default,
-    location: undefined, // Could be added later if needed
     tagIds: timeblock.tagIds,
-    isRecurring: timeblock.isRecurring,
     recurrenceRule: timeblock.recurrenceRule,
     source: timeblock.source,
     externalId: timeblock.externalId,
@@ -197,7 +196,6 @@ export function calendarEventToCreateTimeblock(event: CalendarEvent) {
     endTime: event.end.getTime(),
     timezone:
       event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-    isRecurring: event.isRecurring || false,
     recurrenceRule: event.recurrenceRule,
     tagIds: event.tagIds || [],
     color: event.color, // Include the selected color
@@ -208,12 +206,12 @@ export function calendarEventToCreateTimeblock(event: CalendarEvent) {
 export function calendarEventToUpdateTimeblock(event: CalendarEvent) {
   const updateData: Partial<{
     title: string;
-    description?: string;
+    description: string;
+    location: string;
     startTime: number;
     endTime: number;
     timezone: string;
-    isRecurring: boolean;
-    recurrenceRule?: RecurrenceRule;
+    recurrenceRule?: RecurrenceRule | null;
     tagIds: string[];
     source: string;
     externalId?: string;
@@ -229,31 +227,16 @@ export function calendarEventToUpdateTimeblock(event: CalendarEvent) {
   // For AskSync events, update all fields
   updateData.title = event.title;
   updateData.description = event.description;
+  updateData.location = event.location;
   updateData.startTime = event.start.getTime();
   updateData.endTime = event.end.getTime();
   updateData.timezone =
     event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-  updateData.isRecurring = event.isRecurring || false;
   updateData.recurrenceRule = event.recurrenceRule;
   updateData.tagIds = event.tagIds || [];
   updateData.color = event.color; // Include the selected color
 
   return updateData;
-}
-
-export function isRecurringInstance(eventId: string): boolean {
-  return eventId.includes("-");
-}
-
-export function getBaseEventId(eventId: string): string {
-  return eventId.split("-")[0];
-}
-
-// Helper function to get UTC midnight timestamp for a date
-function getUTCMidnight(date: Date): number {
-  const utcDate = new Date(date);
-  utcDate.setUTCHours(0, 0, 0, 0);
-  return utcDate.getTime();
 }
 
 // Helper function to create a recurring instance
@@ -282,7 +265,7 @@ function createRecurringInstance(
 
   return {
     ...baseEvent,
-    id: `${timeblockId}-${instanceDate.getTime()}`,
+    id: timeblockId,
     start: instanceStart,
     end: new Date(instanceStart.getTime() + duration),
   };
@@ -294,7 +277,7 @@ export function generateRecurringInstances(
   startDate: Date,
   endDate: Date,
 ): CalendarEvent[] {
-  if (!timeblock.isRecurring || !timeblock.recurrenceRule) {
+  if (!timeblock.recurrenceRule) {
     return [timeblockToCalendarEvent(timeblock)];
   }
 
@@ -411,3 +394,29 @@ export function expandRecurringEvents(
 
   return allEvents;
 }
+const generateTimeOptions = (): TimeOption[] => {
+  const options: TimeOption[] = [];
+  for (let hour = START_HOUR; hour <= END_HOUR; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const formattedHour = hour.toString().padStart(2, "0");
+      const formattedMinute = minute.toString().padStart(2, "0");
+      const value = `${formattedHour}:${formattedMinute}`;
+      // Use a fixed date to avoid unnecessary date object creations
+      const date = new Date(2000, 0, 1, hour, minute);
+      const label = format(date, "h:mm a");
+      options.push({ value, label });
+    }
+  }
+  return options;
+};
+/**
+ * Pre-generated time options for calendar events.
+ */
+
+export const calendarTimeOptions: TimeOption[] = generateTimeOptions();
+
+export const getUTCMidnight = (date: Date): number => {
+  const utcDate = new Date(date);
+  utcDate.setUTCHours(0, 0, 0, 0);
+  return utcDate.getTime();
+};

@@ -18,9 +18,15 @@ export default function KnowledgeBasePage() {
               Learn the basics of using the platform.
             </p>
             <div className="space-y-2">
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Quick Start Guide</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Setup Instructions</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• First Steps</div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Quick Start Guide
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Setup Instructions
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • First Steps
+              </div>
             </div>
           </div>
           <div className="p-6 border rounded-lg">
@@ -29,9 +35,15 @@ export default function KnowledgeBasePage() {
               Technical documentation for developers.
             </p>
             <div className="space-y-2">
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• REST API</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Authentication</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Examples</div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • REST API
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Authentication
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Examples
+              </div>
             </div>
           </div>
           <div className="p-6 border rounded-lg">
@@ -40,9 +52,15 @@ export default function KnowledgeBasePage() {
               Frequently asked questions and answers.
             </p>
             <div className="space-y-2">
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Common Issues</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Troubleshooting</div>
-              <div className="text-sm text-blue-600 hover:underline cursor-pointer">• Contact Support</div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Common Issues
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Troubleshooting
+              </div>
+              <div className="text-sm text-blue-600 hover:underline cursor-pointer">
+                • Contact Support
+              </div>
             </div>
           </div>
         </div>

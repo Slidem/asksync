@@ -3,31 +3,32 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
-export const EventLocationField = React.memo(() => {
-  const { location, setLocation, canOnlyEditTags } = useEventDialogStore(
+export const EventTitleField = React.memo(() => {
+  const { title, canOnlyEditTags } = useEventDialogStore(
     useShallow((state) => ({
-      location: state.location,
-      setLocation: state.setLocation,
+      title: state.formFields.title,
       canOnlyEditTags: state.canOnlyEditTags,
     })),
   );
 
+  const updateFields = useEventDialogStore((state) => state.setFormFields);
+
   const handleChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocation(e.target.value);
+      updateFields({ title: e.target.value });
     },
-    [setLocation],
+    [updateFields],
   );
 
   return (
     <div className="*:not-first:mt-1.5">
-      <Label htmlFor="location">Location</Label>
+      <Label htmlFor="title">Title</Label>
       <Input
-        id="location"
-        value={location}
+        id="title"
+        value={title}
         onChange={handleChange}
         disabled={canOnlyEditTags}
       />
@@ -35,4 +36,4 @@ export const EventLocationField = React.memo(() => {
   );
 });
 
-EventLocationField.displayName = "EventLocationField";
+EventTitleField.displayName = "EventTitleField";

@@ -40,11 +40,11 @@ export interface Timeblock {
   id: string;
   title: string;
   description?: string;
+  location?: string;
   startTime: number;
   endTime: number;
-  timezone: string; // IANA timezone
-  isRecurring: boolean;
-  recurrenceRule?: RecurrenceRule;
+  timezone: string;
+  recurrenceRule?: RecurrenceRule | null;
   tagIds: string[];
   userId: string;
   orgId: string;

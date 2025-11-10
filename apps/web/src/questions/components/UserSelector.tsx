@@ -45,9 +45,8 @@ export function UserSelector({
   );
 
   // Show first 5 users when search is empty, otherwise show all filtered results
-  const displayUsers = searchQuery.trim() === ""
-    ? unselectedUsers.slice(0, 5)
-    : unselectedUsers;
+  const displayUsers =
+    searchQuery.trim() === "" ? unselectedUsers.slice(0, 5) : unselectedUsers;
 
   const canAddMore = !maxSelections || selectedUserIds.length < maxSelections;
 
@@ -140,7 +139,8 @@ export function UserSelector({
                   ))}
                   {searchQuery.trim() === "" && unselectedUsers.length > 5 && (
                     <div className="p-2 text-center text-xs text-muted-foreground border-t">
-                      Showing 5 of {unselectedUsers.length} members. Search to see more.
+                      Showing 5 of {unselectedUsers.length} members. Search to
+                      see more.
                     </div>
                   )}
                 </div>
@@ -148,8 +148,7 @@ export function UserSelector({
                 <div className="p-4 text-center text-sm text-muted-foreground">
                   {searchQuery.trim()
                     ? `No users found matching "${searchQuery}"`
-                    : "No team members available to assign"
-                  }
+                    : "No team members available to assign"}
                 </div>
               )}
             </div>

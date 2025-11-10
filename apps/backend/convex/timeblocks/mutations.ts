@@ -17,12 +17,13 @@ export const createTimeblock = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
+    location: v.optional(v.string()),
     startTime: v.number(),
     endTime: v.number(),
     timezone: v.string(),
-    isRecurring: v.boolean(),
     recurrenceRule: v.optional(
       v.union(
+        v.null(),
         v.literal("FREQ=DAILY"),
         v.literal("FREQ=WEEKLY"),
         v.literal("FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"),
@@ -42,10 +43,10 @@ export const createTimeblock = mutation({
       userId,
       title: args.title,
       description: args.description,
+      location: args.location,
       startTime: args.startTime,
       endTime: args.endTime,
       timezone: args.timezone,
-      isRecurring: args.isRecurring,
       recurrenceRule: args.recurrenceRule,
       tagIds: args.tagIds,
       color: args.color,
@@ -63,12 +64,13 @@ export const updateTimeblock = mutation({
     id: v.id("timeblocks"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
+    location: v.optional(v.string()),
     startTime: v.optional(v.number()),
     endTime: v.optional(v.number()),
     timezone: v.optional(v.string()),
-    isRecurring: v.optional(v.boolean()),
     recurrenceRule: v.optional(
       v.union(
+        v.null(),
         v.literal("FREQ=DAILY"),
         v.literal("FREQ=WEEKLY"),
         v.literal("FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"),
@@ -100,10 +102,10 @@ export const updateTimeblock = mutation({
 
     addOptionalValue(updateData, "title", args.title);
     addOptionalValue(updateData, "description", args.description);
+    addOptionalValue(updateData, "location", args.location);
     addOptionalValue(updateData, "startTime", args.startTime);
     addOptionalValue(updateData, "endTime", args.endTime);
     addOptionalValue(updateData, "timezone", args.timezone);
-    addOptionalValue(updateData, "isRecurring", args.isRecurring);
     addOptionalValue(updateData, "recurrenceRule", args.recurrenceRule);
     addOptionalValue(updateData, "tagIds", args.tagIds);
     addOptionalValue(updateData, "color", args.color);

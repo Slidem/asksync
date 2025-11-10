@@ -1,6 +1,11 @@
-import { RecurrenceRule } from "@asksync/shared";
+import { CalendarSource, RecurrenceRule } from "@asksync/shared";
 
-export type CalendarView = "month" | "week" | "day" | "agenda";
+export enum CalendarView {
+  DAY = "day",
+  WEEK = "week",
+  MONTH = "month",
+  AGENDA = "agenda",
+}
 
 export interface CalendarEvent {
   id: string;
@@ -12,9 +17,8 @@ export interface CalendarEvent {
   color?: EventColor;
   location?: string;
   tagIds?: string[];
-  isRecurring?: boolean;
-  recurrenceRule?: RecurrenceRule;
-  source?: "asksync" | "google" | "outlook";
+  recurrenceRule?: RecurrenceRule | null;
+  source?: CalendarSource;
   externalId?: string;
   timezone?: string;
   canEdit?: boolean;
@@ -29,3 +33,7 @@ export type EventColor =
   | "rose"
   | "emerald"
   | "orange";
+export interface TimeOption {
+  value: string;
+  label: string;
+}

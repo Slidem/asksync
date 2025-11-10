@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { EventColor } from "@/schedule/types";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 const colorOptions: Array<{
@@ -53,19 +53,20 @@ const colorOptions: Array<{
 ];
 
 export const EventColorPicker = React.memo(() => {
-  const { color, setColor, canOnlyEditTags } = useEventDialogStore(
+  const { color, canOnlyEditTags } = useEventDialogStore(
     useShallow((state) => ({
-      color: state.color,
-      setColor: state.setColor,
+      color: state.formFields.color,
       canOnlyEditTags: state.canOnlyEditTags,
     })),
   );
 
+  const updateFields = useEventDialogStore((state) => state.setFormFields);
+
   const handleColorChange = React.useCallback(
     (value: EventColor) => {
-      setColor(value);
+      updateFields({ color: value });
     },
-    [setColor],
+    [updateFields],
   );
 
   return (

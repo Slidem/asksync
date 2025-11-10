@@ -1,4 +1,6 @@
+/* eslint-disable import/order */
 import { defineSchema, defineTable } from "convex/server";
+
 import { v } from "convex/values";
 
 export default defineSchema({
@@ -21,12 +23,13 @@ export default defineSchema({
   timeblocks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
+    location: v.optional(v.string()),
     startTime: v.number(),
     endTime: v.number(),
-    timezone: v.string(), // IANA timezone
-    isRecurring: v.boolean(),
+    timezone: v.string(),
     recurrenceRule: v.optional(
       v.union(
+        v.null(),
         v.literal("FREQ=DAILY"),
         v.literal("FREQ=WEEKLY"),
         v.literal("FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"),

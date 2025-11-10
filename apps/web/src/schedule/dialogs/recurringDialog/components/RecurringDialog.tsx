@@ -8,43 +8,74 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  useDeleteRecurringEvent,
+  useUpdateRecurringEvent,
+} from "@/schedule/dialogs/recurringDialog/recurringDialogService";
 
 import { Button } from "@/components/ui/button";
-import { CalendarEvent } from "@/schedule/types";
-import React from "react";
 import { format } from "date-fns";
+import { useCallback } from "react";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
+import { useRecurringDialogStore } from "@/schedule/dialogs/recurringDialog/recurringDialogStore";
+import { useShallow } from "zustand/react/shallow";
 
-export type RecurringActionType = "update" | "delete";
-export type RecurringChoiceType = "this" | "all";
+export const RecurringDialog = () => {
+  const {
+    isOpen,
+    event,
+    actionType,
+    closeRecurrenceDialog: close,
+  } = useRecurringDialogStore(
+    useShallow((state) => ({
+      isOpen: state.isOpen,
+      event: state.event,
+      actionType: state.actionType,
+      closeRecurrenceDialog: state.close,
+    })),
+  );
+  const closeEventDialog = useEventDialogStore((state) => state.close);
 
-interface RecurringEventConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (choice: RecurringChoiceType) => void;
-  event: CalendarEvent | null;
-  actionType: RecurringActionType;
-}
+  const updateRecurringEvent = useUpdateRecurringEvent();
+  const deleteRecurringEvent = useDeleteRecurringEvent();
 
-export function RecurringEventConfirmDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  event,
-  actionType,
-}: RecurringEventConfirmDialogProps) {
-  if (!event) return null;
+  const handleConfirm = useCallback(
+    (scope: "this" | "all") => {
+      if (actionType === "update") {
+        updateRecurringEvent(scope);
+      } else if (actionType === "delete") {
+        deleteRecurringEvent(scope);
+      }
+      close();
+      closeEventDialog();
+    },
+    [
+      actionType,
+      close,
+      closeEventDialog,
+      updateRecurringEvent,
+      deleteRecurringEvent,
+    ],
+  );
+
+  const handleConfirmThis = useCallback(async () => {
+    handleConfirm("this");
+  }, [handleConfirm]);
+
+  const handleConfirmAll = useCallback(async () => {
+    handleConfirm("all");
+  }, [handleConfirm]);
+
+  if (!event || !actionType) {
+    return null;
+  }
 
   const eventDate = format(event.start, "MMMM d, yyyy");
   const eventTime = format(event.start, "h:mm a");
   const actionText = actionType === "update" ? "edit" : "delete";
 
-  const handleChoice = (choice: RecurringChoiceType) => {
-    onConfirm(choice);
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={close}>
       <DialogContent className="max-w-[95vw] sm:max-w-[380px] mx-4">
         <DialogHeader>
           <DialogTitle className="text-base">
@@ -62,7 +93,7 @@ export function RecurringEventConfirmDialog({
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-2.5 text-left"
-            onClick={() => handleChoice("this")}
+            onClick={handleConfirmThis}
           >
             <div className="flex flex-col items-start min-w-0">
               <span className="font-medium text-sm">This event only</span>
@@ -75,7 +106,7 @@ export function RecurringEventConfirmDialog({
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-2.5 text-left"
-            onClick={() => handleChoice("all")}
+            onClick={handleConfirmAll}
           >
             <div className="flex flex-col items-start min-w-0">
               <span className="font-medium text-sm">
@@ -89,11 +120,11 @@ export function RecurringEventConfirmDialog({
         </div>
 
         <DialogFooter className="pt-2">
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={close}>
             Cancel
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

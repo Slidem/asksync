@@ -55,7 +55,7 @@ export function convertConvexQuestions(
 
 export function convertConvexQuestion(
   doc: FunctionReturnType<typeof api.questions.getQuestionById>,
-): Question {
+): Omit<Question, "messageCount" | "hasUnread"> {
   const { _id, _creationTime, tags, ...rest } = doc;
 
   const convertedTags: Tag[] = tags

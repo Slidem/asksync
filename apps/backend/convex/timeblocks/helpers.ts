@@ -19,8 +19,8 @@ export function validateTimeRange(startTime: number, endTime: number) {
 
 export function validateRecurringTimeblock(
   timeblock: Doc<"timeblocks">,
-): asserts timeblock is Doc<"timeblocks"> & { isRecurring: true } {
-  if (!timeblock.isRecurring) {
+): asserts timeblock is Doc<"timeblocks"> & { recurrenceRule: string } {
+  if (!timeblock.recurrenceRule) {
     throw new Error("Operation only valid for recurring timeblocks");
   }
 }

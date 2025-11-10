@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -10,45 +11,48 @@ import {
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import React from "react";
 import { RecurrenceRule } from "@asksync/shared";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const EventRecurrenceFields = React.memo(() => {
-  const {
-    isRecurring,
-    recurrenceRule,
-    isExternalEvent,
-    canOnlyEditTags,
-    setIsRecurring,
-    setRecurrenceRule,
-  } = useEventDialogStore(
-    useShallow((state) => ({
-      isRecurring: state.isRecurring,
-      recurrenceRule: state.recurrenceRule,
-      isExternalEvent: state.isExternalEvent,
-      canOnlyEditTags: state.canOnlyEditTags,
-      setIsRecurring: state.setIsRecurring,
-      setRecurrenceRule: state.setRecurrenceRule,
-    })),
-  );
+  const { recurrenceRule, isExternalEvent, canOnlyEditTags } =
+    useEventDialogStore(
+      useShallow((state) => ({
+        recurrenceRule: state.formFields.recurrenceRule,
+        isExternalEvent: state.isExternalEvent,
+        canOnlyEditTags: state.canOnlyEditTags,
+      })),
+    );
+
+  const updateFields = useEventDialogStore((state) => state.setFormFields);
+
+  const [isRecurring, setIsRecurring] = React.useState(!!recurrenceRule);
+
+  useEffect(() => {
+    return () => {
+      setIsRecurring(false);
+    };
+  }, [setIsRecurring]);
 
   const handleRecurringChange = React.useCallback(
     (checked: boolean | "indeterminate") => {
-      setIsRecurring(checked === true);
+      const isRecurring = checked === true;
+      setIsRecurring(isRecurring);
+      updateFields({
+        recurrenceRule: isRecurring ? RecurrenceRule.WEEKLY : null,
+      });
     },
-    [setIsRecurring],
+    [updateFields],
   );
 
   const handleRecurrenceRuleChange = React.useCallback(
     (value: RecurrenceRule) => {
-      setRecurrenceRule(value);
+      updateFields({ recurrenceRule: value });
     },
-    [setRecurrenceRule],
+    [updateFields],
   );
 
-  // Only show recurrence for AskSync events
   if (isExternalEvent) {
     return null;
   }
@@ -58,7 +62,7 @@ export const EventRecurrenceFields = React.memo(() => {
       <div className="flex items-center gap-2">
         <Checkbox
           id="recurring"
-          checked={isRecurring}
+          checked={isRecurring || !!recurrenceRule}
           onCheckedChange={handleRecurringChange}
           disabled={canOnlyEditTags}
         />
@@ -67,7 +71,7 @@ export const EventRecurrenceFields = React.memo(() => {
 
       {isRecurring && (
         <Select
-          value={recurrenceRule}
+          value={recurrenceRule || RecurrenceRule.WEEKLY}
           onValueChange={handleRecurrenceRuleChange}
         >
           <SelectTrigger className="w-full">

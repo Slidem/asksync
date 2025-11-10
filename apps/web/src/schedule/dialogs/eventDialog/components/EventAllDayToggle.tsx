@@ -1,25 +1,27 @@
 "use client";
 
+import React, { useCallback } from "react";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import React from "react";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const EventAllDayToggle = React.memo(() => {
-  const { allDay, setAllDay, canOnlyEditTags } = useEventDialogStore(
+  const { allDay, canOnlyEditTags } = useEventDialogStore(
     useShallow((state) => ({
-      allDay: state.allDay,
-      setAllDay: state.setAllDay,
+      allDay: state.formFields.allDay,
       canOnlyEditTags: state.canOnlyEditTags,
     })),
   );
 
-  const handleChange = React.useCallback(
+  const updateFields = useEventDialogStore((state) => state.setFormFields);
+
+  const handleChange = useCallback(
     (checked: boolean | "indeterminate") => {
-      setAllDay(checked === true);
+      updateFields({ allDay: checked === true });
     },
-    [setAllDay],
+    [updateFields],
   );
 
   return (

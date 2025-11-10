@@ -10,7 +10,7 @@ import {
 
 import { Label } from "@/components/ui/label";
 import React from "react";
-import type { TimeOption } from "@/schedule/stores/eventDialogStore";
+import { calendarTimeOptions } from "@/schedule/utils";
 import { cn } from "@/lib/utils";
 
 interface TimeSelectFieldProps {
@@ -18,21 +18,12 @@ interface TimeSelectFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  timeOptions: TimeOption[];
   disabled?: boolean;
   className?: string;
 }
 
 export const TimeSelectField = React.memo<TimeSelectFieldProps>(
-  ({
-    id,
-    label,
-    value,
-    onChange,
-    timeOptions,
-    disabled = false,
-    className,
-  }) => {
+  ({ id, label, value, onChange, disabled = false, className }) => {
     return (
       <div className={cn("min-w-28 *:not-first:mt-1.5", className)}>
         <Label htmlFor={id}>{label}</Label>
@@ -41,7 +32,7 @@ export const TimeSelectField = React.memo<TimeSelectFieldProps>(
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
-            {timeOptions.map((option) => (
+            {calendarTimeOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>

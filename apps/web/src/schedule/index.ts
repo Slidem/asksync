@@ -5,7 +5,7 @@ export { AgendaView } from "./components/AgendaView";
 export { DayView } from "./components/DayView";
 export { DraggableEvent } from "./components/DraggableEvent";
 export { DroppableCell } from "./components/DroppableCell";
-export { EventDialog } from "./components/EventDialog";
+export { EventDialog } from "./dialogs/eventDialog/components/EventDialog";
 export { EventItem } from "./components/EventItem";
 export { EventsPopup } from "./components/EventsPopup";
 export { EventCalendar } from "./components/EventCalendar";

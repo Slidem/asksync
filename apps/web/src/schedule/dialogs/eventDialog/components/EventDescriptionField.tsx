@@ -3,23 +3,24 @@
 import { Label } from "@/components/ui/label";
 import React from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const EventDescriptionField = React.memo(() => {
-  const { description, setDescription, canOnlyEditTags } = useEventDialogStore(
+  const { description, canOnlyEditTags } = useEventDialogStore(
     useShallow((state) => ({
-      description: state.description,
-      setDescription: state.setDescription,
+      description: state.formFields.description,
       canOnlyEditTags: state.canOnlyEditTags,
     })),
   );
 
+  const updateFields = useEventDialogStore((state) => state.setFormFields);
+
   const handleChange = React.useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setDescription(e.target.value);
+      updateFields({ description: e.target.value });
     },
-    [setDescription],
+    [updateFields],
   );
 
   return (

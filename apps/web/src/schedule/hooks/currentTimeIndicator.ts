@@ -1,6 +1,6 @@
 "use client";
 
-import { EndHour, StartHour } from "@/schedule/constants";
+import { END_HOUR, START_HOUR } from "@/schedule/constants";
 import { endOfWeek, isSameDay, isWithinInterval, startOfWeek } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -16,9 +16,9 @@ export function useCurrentTimeIndicator(
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-      const totalMinutes = (hours - StartHour) * 60 + minutes;
+      const totalMinutes = (hours - START_HOUR) * 60 + minutes;
       const dayStartMinutes = 0; // 12am
-      const dayEndMinutes = (EndHour - StartHour) * 60; // 12am next day
+      const dayEndMinutes = (END_HOUR - START_HOUR) * 60; // 12am next day
 
       // Calculate position as percentage of day
       const position =

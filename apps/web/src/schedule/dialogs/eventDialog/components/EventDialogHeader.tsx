@@ -7,10 +7,10 @@ import {
 } from "@/components/ui/dialog";
 
 import React from "react";
-import { useEventDialogStore } from "@/schedule/stores/eventDialogStore";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 
 export const EventDialogHeader = React.memo(() => {
-  const eventId = useEventDialogStore((state) => state.eventId);
+  const eventId = useEventDialogStore((state) => state.eventMetadata.eventId);
 
   return (
     <DialogHeader>

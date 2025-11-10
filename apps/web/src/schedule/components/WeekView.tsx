@@ -2,7 +2,11 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 "use client";
 
-import { EndHour, StartHour, WeekCellsHeight } from "@/schedule/constants";
+import {
+  END_HOUR,
+  START_HOUR,
+  WEEK_CELLS_HEIGHT_PX,
+} from "@/schedule/constants";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   addHours,
@@ -24,6 +28,10 @@ import {
   isDragThresholdExceeded,
   useTemporaryEventStore,
 } from "@/schedule/stores/temporaryEventStore";
+import {
+  useOpenCreateEventDialog,
+  useSelectEventInDialog,
+} from "@/schedule/dialogs/eventDialog/eventDialogService";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
@@ -32,14 +40,9 @@ import { EventItem } from "@/schedule/components/EventItem";
 import { GhostEvent } from "@/schedule/components/GhostEvent";
 import { cn } from "@/lib/utils";
 import { isMultiDayEvent } from "@/schedule/utils";
+import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useCurrentTimeIndicator } from "@/schedule/hooks/currentTimeIndicator";
-
-interface WeekViewProps {
-  currentDate: Date;
-  events: CalendarEvent[];
-  onEventSelect: (event: CalendarEvent) => void;
-  onEventCreate: (startTime: Date, endTime?: Date) => void;
-}
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsService";
 
 interface PositionedEvent {
   event: CalendarEvent;
@@ -50,12 +53,15 @@ interface PositionedEvent {
   zIndex: number;
 }
 
-export function WeekView({
-  currentDate,
-  events,
-  onEventSelect,
-  onEventCreate,
-}: WeekViewProps) {
+export function WeekView() {
+  const openSelectEventInDialog = useSelectEventInDialog();
+
+  const openCreateEventDialog = useOpenCreateEventDialog();
+
+  const currentDate = useCalendarViewStore((state) => state.currentDate);
+
+  const events = useEventsForCurrentScheduleView();
+
   const days = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
@@ -70,8 +76,8 @@ export function WeekView({
   const hours = useMemo(() => {
     const dayStart = startOfDay(currentDate);
     return eachHourOfInterval({
-      start: addHours(dayStart, StartHour),
-      end: addHours(dayStart, EndHour - 1),
+      start: addHours(dayStart, START_HOUR),
+      end: addHours(dayStart, END_HOUR - 1),
     });
   }, [currentDate]);
 
@@ -155,8 +161,8 @@ export function WeekView({
         const endHour = getHours(adjustedEnd) + getMinutes(adjustedEnd) / 60;
 
         // Adjust the top calculation to account for the new start time
-        const top = (startHour - StartHour) * WeekCellsHeight;
-        const height = (endHour - startHour) * WeekCellsHeight;
+        const top = (startHour - START_HOUR) * WEEK_CELLS_HEIGHT_PX;
+        const height = (endHour - startHour) * WEEK_CELLS_HEIGHT_PX;
 
         // Find a column for this event
         let columnIndex = 0;
@@ -212,7 +218,7 @@ export function WeekView({
 
   const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation();
-    onEventSelect(event);
+    openSelectEventInDialog(event);
   };
 
   // Ghost event state and handlers
@@ -266,8 +272,8 @@ export function WeekView({
       const relativeY = e.clientY - rect.top;
 
       // Calculate which hour we're hovering over
-      const hoursFraction = (relativeY / rect.height) * (EndHour - StartHour);
-      const timeHours = StartHour + hoursFraction;
+      const hoursFraction = (relativeY / rect.height) * (END_HOUR - START_HOUR);
+      const timeHours = START_HOUR + hoursFraction;
 
       // Get the day column if in week view
       if (ghostEvent) {
@@ -289,14 +295,14 @@ export function WeekView({
 
     if (event && !isDraggingRef.current) {
       // If we didn't drag, create a 1-hour event (default behavior)
-      onEventCreate(event.startTime);
+      openCreateEventDialog({ start: event.startTime });
     } else if (event && isDraggingRef.current) {
       // If we dragged, create event with the dragged duration
-      onEventCreate(event.startTime, event.endTime);
+      openCreateEventDialog({ start: event.startTime, end: event.endTime });
     }
 
     isDraggingRef.current = false;
-  }, [isCreating, finishCreating, onEventCreate]);
+  }, [isCreating, finishCreating, openCreateEventDialog]);
 
   // Handle escape key
   const handleKeyDown = useCallback(
@@ -343,8 +349,8 @@ export function WeekView({
     const endHour =
       ghostEvent.endTime.getHours() + ghostEvent.endTime.getMinutes() / 60;
 
-    const top = (startHour - StartHour) * WeekCellsHeight;
-    const height = (endHour - startHour) * WeekCellsHeight;
+    const top = (startHour - START_HOUR) * WEEK_CELLS_HEIGHT_PX;
+    const height = (endHour - startHour) * WEEK_CELLS_HEIGHT_PX;
 
     return {
       top,
@@ -561,10 +567,10 @@ export function WeekView({
                         onClick={
                           !isCreating
                             ? () => {
-                                const startTime = new Date(day);
-                                startTime.setHours(hourValue);
-                                startTime.setMinutes(quarter * 15);
-                                onEventCreate(startTime);
+                                const start = new Date(day);
+                                start.setHours(hourValue);
+                                start.setMinutes(quarter * 15);
+                                openCreateEventDialog({ start });
                               }
                             : undefined
                         }
