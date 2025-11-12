@@ -170,39 +170,69 @@ Per-user, per-organization configuration:
 
 ## Coding Standards
 
-### File Naming & Organization
+### Backend Organization (Convex)
+
+- **Feature-based structure**: Each feature has its own folder with queries, mutations, and helpers
+- **File separation**: Separate files for `queries.ts`, `mutations.ts`, `permissions.ts`, and `helpers.ts`
+- **Common types**: Shared types in `common/types.ts`
+- **Example structure**:
+  ```
+  convex/
+  ├── tags/
+  │   ├── queries.ts      # Read operations
+  │   └── mutations.ts    # Write operations
+  ├── timeblocks/
+  │   ├── queries.ts
+  │   ├── mutations.ts
+  │   ├── permissions.ts  # Access control logic
+  │   └── helpers.ts      # Utility functions
+  └── common/
+      └── types.ts        # Shared type definitions
+  ```
+
+### Frontend Organization
 
 - **Feature-based architecture**: Organize by domain/feature, not by file type
-- **Cross-cutting concerns**: Only shared utilities go directly under `src/` (components, hooks, lib, etc.)
 - **Component files**: Always start with capital letter (e.g., `UserProfile.tsx`, `OrganizationRouter.tsx`)
 - **Non-component files**: Use camelCase (e.g., `apiHelpers.ts`, `userUtils.ts`)
 - **One component per file**: Match component name to file name exactly
 - **Feature structure**:
   ```
   src/
-  ├── auth/
+  ├── schedule/              # Feature folder
+  │   ├── components/        # Feature-specific components
+  │   ├── dialogs/          # Complex dialogs grouped together
+  │   ├── hooks/            # Feature-specific hooks
+  │   ├── stores/           # Zustand stores for complex state
+  │   ├── types.ts          # Feature types
+  │   ├── utils.ts          # Feature utilities
+  │   ├── constants.ts      # Feature constants
+  │   └── index.ts          # Public API exports
+  ├── tags/
   │   ├── components/
-  │   │   ├── AuthenticatedWrapper.tsx
-  │   │   └── UnauthenticatedWrapper.tsx
   │   └── hooks/
-  ├── organizations/
-  │   ├── components/
-  │   │   └── OrganizationRouter.tsx
-  │   └── hooks/
-  ├── components/     # Cross-cutting UI components
-  │   ├── sidebar/    # Sidebar navigation components
-  │   ├── breadcrumbs/ # Breadcrumb navigation
-  │   └── ui/         # shadcn/ui components
-  ├── hooks/         # Cross-cutting hooks
-  ├── lib/           # Cross-cutting utilities
-  └── contexts/      # Cross-cutting contexts
+  ├── components/           # Cross-cutting UI components
+  │   ├── sidebar/          # Sidebar navigation
+  │   ├── breadcrumbs/      # Breadcrumb navigation
+  │   └── ui/               # shadcn/ui components
+  └── hooks/                # Cross-cutting hooks
   ```
+
+### State Management
+
+- **Zustand for complex state**: Use stores when state is needed across multiple components
+- **Store organization**: Keep stores in `feature/stores/` folder
+- **Store naming**: Use descriptive names like `calendarViewStore.ts`, `temporaryEventStore.ts`
+- **Simple state**: Use React state for component-local state
+- **Server state**: Rely on Convex for real-time data synchronization
 
 ### Component Architecture
 
-- **Keep components small** and focused on single responsibility
-- **Custom hooks** for reusable logic
-- **SOLID principles** throughout
+- **Keep components small**: Focus on single responsibility
+- **Extract reusable hooks**: Create custom hooks for complex logic
+- **Group related dialogs**: Place complex dialogs in `dialogs/` subfolder
+- **Public API**: Export through feature's `index.ts` for clean imports
+- **SOLID principles**: Apply throughout the codebase
 
 ### Architectural Principles
 
@@ -211,6 +241,7 @@ Per-user, per-organization configuration:
 - **Co-location**: Keep related files close together within feature folders
 - **Cross-cutting concerns**: Only truly shared code goes in root-level folders
 - **Explicit dependencies**: Import paths should clearly show relationships
+- **Barrel exports**: Use index.ts files to define public APIs for features
 
 ### React Best Practices
 
