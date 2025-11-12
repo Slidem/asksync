@@ -28,9 +28,9 @@ export default function SchedulePage() {
           </p>
         </div>
         <EventCalendar />
+        <EventDialog />
+        <RecurringDialog />
       </div>
-      <EventDialog />
-      <RecurringDialog />
     </>
   );
 }

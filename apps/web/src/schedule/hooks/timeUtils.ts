@@ -1,8 +1,28 @@
-"use client";
-
 import { END_HOUR, START_HOUR } from "@/schedule/constants";
-import { endOfWeek, isSameDay, isWithinInterval, startOfWeek } from "date-fns";
-import { useEffect, useState } from "react";
+import {
+  addHours,
+  eachHourOfInterval,
+  endOfWeek,
+  isSameDay,
+  isWithinInterval,
+  startOfDay,
+  startOfWeek,
+} from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+
+/**
+ * Custom hook to generate hour intervals for calendar grid
+ * Returns an array of Date objects representing each hour in the grid
+ */
+export function useHourGrid(date: Date): Date[] {
+  return useMemo(() => {
+    const dayStart = startOfDay(date);
+    return eachHourOfInterval({
+      start: addHours(dayStart, START_HOUR),
+      end: addHours(dayStart, END_HOUR - 1),
+    });
+  }, [date]);
+}
 
 export function useCurrentTimeIndicator(
   currentDate: Date,

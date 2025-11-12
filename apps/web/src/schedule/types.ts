@@ -37,3 +37,19 @@ export interface TimeOption {
   value: string;
   label: string;
 }
+
+export interface PositionedEvent {
+  event: CalendarEvent;
+  top: number;
+  height: number;
+  left: number;
+  width: number;
+  zIndex: number;
+}
+export interface GhostEventPosition {
+  top: number;
+  height: number;
+  left?: number | string;
+  right?: number | string;
+  width?: string;
+}

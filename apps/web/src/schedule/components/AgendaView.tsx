@@ -3,12 +3,12 @@
 import { addDays, format, isToday } from "date-fns";
 
 import { AGENDA_DAYS_TO_SHOW } from "@/schedule/constants";
-import { CalendarEvent } from "@/schedule/types";
 import { EventItem } from "@/schedule/components/EventItem";
 import { RiCalendarEventLine } from "@remixicon/react";
-import { getAgendaEventsForDay } from "@/schedule/utils";
+import { createEventClickHandler } from "../utils";
+import { getEventsForDay } from "@/schedule/utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
-import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsService";
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
 import { useMemo } from "react";
 import { useSelectEventInDialog } from "@/schedule/dialogs/eventDialog/eventDialogService";
 
@@ -19,22 +19,16 @@ export function AgendaView() {
 
   const events = useEventsForCurrentScheduleView();
 
-  // Show events for the next days based on constant
   const days = useMemo(() => {
     return Array.from({ length: AGENDA_DAYS_TO_SHOW }, (_, i) =>
       addDays(new Date(currentDate), i),
     );
   }, [currentDate]);
 
-  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
-    e.stopPropagation();
-    openSelectEventInDialog(event);
-  };
+  const handleEventClick = createEventClickHandler(openSelectEventInDialog);
 
   // Check if there are any days with events
-  const hasEvents = days.some(
-    (day) => getAgendaEventsForDay(events, day).length > 0,
-  );
+  const hasEvents = days.some((day) => getEventsForDay(events, day).length > 0);
 
   return (
     <div className="border-border/70 border-t px-4">
@@ -51,7 +45,7 @@ export function AgendaView() {
         </div>
       ) : (
         days.map((day) => {
-          const dayEvents = getAgendaEventsForDay(events, day);
+          const dayEvents = getEventsForDay(events, day);
 
           if (dayEvents.length === 0) return null;
 

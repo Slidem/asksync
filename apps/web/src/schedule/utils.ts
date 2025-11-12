@@ -62,11 +62,18 @@ export function getEventsForDay(
   day: Date,
 ): CalendarEvent[] {
   return events
-    .filter((event) => {
-      const eventStart = new Date(event.start);
-      return isSameDay(day, eventStart);
-    })
+    .filter((event) => isEventSameDay(event, day))
     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+}
+
+export function isEventSameDay(event: CalendarEvent, day: Date): boolean {
+  const eventStart = new Date(event.start);
+  const eventEnd = new Date(event.end);
+  return (
+    isSameDay(day, eventStart) ||
+    isSameDay(day, eventEnd) ||
+    (eventStart < day && eventEnd > day)
+  );
 }
 
 /**
@@ -121,26 +128,6 @@ export function getAllEventsForDay(
       (day > eventStart && day < eventEnd)
     );
   });
-}
-
-/**
- * Get all events for a day (for agenda view)
- */
-export function getAgendaEventsForDay(
-  events: CalendarEvent[],
-  day: Date,
-): CalendarEvent[] {
-  return events
-    .filter((event) => {
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      return (
-        isSameDay(day, eventStart) ||
-        isSameDay(day, eventEnd) ||
-        (day > eventStart && day < eventEnd)
-      );
-    })
-    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 }
 
 /**
@@ -394,6 +381,7 @@ export function expandRecurringEvents(
 
   return allEvents;
 }
+
 const generateTimeOptions = (): TimeOption[] => {
   const options: TimeOption[] = [];
   for (let hour = START_HOUR; hour <= END_HOUR; hour++) {
@@ -419,4 +407,16 @@ export const getUTCMidnight = (date: Date): number => {
   const utcDate = new Date(date);
   utcDate.setUTCHours(0, 0, 0, 0);
   return utcDate.getTime();
-};
+}; /**
+ * Common event handler for clicking on calendar events
+ * Stops propagation and opens the event dialog
+ */
+
+export function createEventClickHandler(
+  openSelectEventInDialog: (event: CalendarEvent) => void,
+) {
+  return (event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation();
+    openSelectEventInDialog(event);
+  };
+}

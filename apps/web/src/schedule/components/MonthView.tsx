@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   addDays,
   eachDayOfInterval,
@@ -38,9 +38,10 @@ import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
 import { DroppableCell } from "@/schedule/components/DroppableCell";
 import { EventItem } from "@/schedule/components/EventItem";
+import { createEventClickHandler } from "../utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useEventVisibility } from "@/schedule/hooks/eventVisibility";
-import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsService";
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
 
 export function MonthView() {
   const openSelectEventInDialog = useSelectEventInDialog();
@@ -111,13 +112,7 @@ export function MonthView() {
     return map;
   }, [days, events]);
 
-  const handleEventClick = useCallback(
-    (event: CalendarEvent, e: React.MouseEvent) => {
-      e.stopPropagation();
-      openSelectEventInDialog(event);
-    },
-    [openSelectEventInDialog],
-  );
+  const handleEventClick = createEventClickHandler(openSelectEventInDialog);
 
   const [isMounted, setIsMounted] = useState(false);
 

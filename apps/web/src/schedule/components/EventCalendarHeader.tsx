@@ -164,97 +164,99 @@ export const EventCalendarHeader = () => {
   }, [currentDate, view]);
 
   return (
-    <div className={"flex items-center justify-between p-2 sm:p-4 h-full"}>
-      <div className="flex items-center gap-1 sm:gap-4">
-        <Button
-          variant="outline"
-          className="max-[479px]:aspect-square max-[479px]:p-0!"
-          onClick={handleToday}
-        >
-          <RiCalendarCheckLine
-            className="min-[480px]:hidden"
-            size={16}
-            aria-hidden="true"
-          />
-          <span className="max-[479px]:sr-only">Today</span>
-        </Button>
-        <div className="flex items-center sm:gap-2">
+    <>
+      <div className={"flex items-center justify-between p-2 sm:p-4 h-full"}>
+        <div className="flex items-center gap-1 sm:gap-4">
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={handlePrevious}
-            aria-label="Previous"
+            variant="outline"
+            className="max-[479px]:aspect-square max-[479px]:p-0!"
+            onClick={handleToday}
           >
-            <ChevronLeftIcon size={16} aria-hidden="true" />
+            <RiCalendarCheckLine
+              className="min-[480px]:hidden"
+              size={16}
+              aria-hidden="true"
+            />
+            <span className="max-[479px]:sr-only">Today</span>
           </Button>
+          <div className="flex items-center sm:gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrevious}
+              aria-label="Previous"
+            >
+              <ChevronLeftIcon size={16} aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleNext}
+              aria-label="Next"
+            >
+              <ChevronRightIcon size={16} aria-hidden="true" />
+            </Button>
+          </div>
+          <h2 className="text-sm font-semibold sm:text-lg md:text-xl">
+            {viewTitle}
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
+                <span>
+                  <span className="min-[480px]:hidden" aria-hidden="true">
+                    {view.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="max-[479px]:sr-only">
+                    {view.charAt(0).toUpperCase() + view.slice(1)}
+                  </span>
+                </span>
+                <ChevronDownIcon
+                  className="-me-1 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-32">
+              <DropdownMenuItem
+                onClick={() => handleViewChange(CalendarView.MONTH)}
+              >
+                Month <DropdownMenuShortcut>M</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleViewChange(CalendarView.WEEK)}
+              >
+                Week <DropdownMenuShortcut>W</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleViewChange(CalendarView.DAY)}
+              >
+                Day <DropdownMenuShortcut>D</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleViewChange(CalendarView.AGENDA)}
+              >
+                Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleNext}
-            aria-label="Next"
+            className="max-[479px]:aspect-square max-[479px]:p-0!"
+            size="sm"
+            onClick={openCreateEventDialogAtNow}
           >
-            <ChevronRightIcon size={16} aria-hidden="true" />
+            <PlusIcon
+              className="opacity-60 sm:-ms-1"
+              size={16}
+              aria-hidden="true"
+            />
+            <span className="max-sm:sr-only">New event</span>
           </Button>
         </div>
-        <h2 className="text-sm font-semibold sm:text-lg md:text-xl">
-          {viewTitle}
-        </h2>
       </div>
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
-              <span>
-                <span className="min-[480px]:hidden" aria-hidden="true">
-                  {view.charAt(0).toUpperCase()}
-                </span>
-                <span className="max-[479px]:sr-only">
-                  {view.charAt(0).toUpperCase() + view.slice(1)}
-                </span>
-              </span>
-              <ChevronDownIcon
-                className="-me-1 opacity-60"
-                size={16}
-                aria-hidden="true"
-              />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-32">
-            <DropdownMenuItem
-              onClick={() => handleViewChange(CalendarView.MONTH)}
-            >
-              Month <DropdownMenuShortcut>M</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleViewChange(CalendarView.WEEK)}
-            >
-              Week <DropdownMenuShortcut>W</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleViewChange(CalendarView.DAY)}
-            >
-              Day <DropdownMenuShortcut>D</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleViewChange(CalendarView.AGENDA)}
-            >
-              Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          className="max-[479px]:aspect-square max-[479px]:p-0!"
-          size="sm"
-          onClick={openCreateEventDialogAtNow}
-        >
-          <PlusIcon
-            className="opacity-60 sm:-ms-1"
-            size={16}
-            aria-hidden="true"
-          />
-          <span className="max-sm:sr-only">New event</span>
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };

@@ -21,7 +21,7 @@ export * from "./constants";
 export * from "./utils";
 
 // Hook exports
-export * from "./hooks/currentTimeIndicator";
+export * from "./hooks/timeUtils";
 export * from "./hooks/eventVisibility";
 
 // Type exports
