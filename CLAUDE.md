@@ -4,8 +4,6 @@
 
 AskSync is an asynchronous Q&A and notification management platform that helps users control when and how they engage with questions and notifications. Built as a fullstack monorepo with Next.js (SSG), Convex backend, and shared packages using pnpm workspaces.
 
-**🎉 Current Status**: Tag Management system fully implemented and operational. Timeblock Management with advanced recurring event exception handling completed (Phase 2). Ready for Question System (Phase 3).
-
 ### Platform Concept
 
 AskSync enables "asynchronous" asking and answering of questions, allowing users to:
@@ -221,38 +219,6 @@ Per-user, per-organization configuration:
 - **Prefer derived state** and proper state management
 - **Use custom hooks** for complex logic extraction
 
-### Code Organization
-
-```typescript
-// ✅ Good - Custom hook for reusable logic
-function useCounter(initialValue: number) {
-  const [count, setCount] = useState(initialValue);
-  const increment = useCallback(() => setCount((c) => c + 1), []);
-  return { count, increment };
-}
-
-// ✅ Good - Container component
-function CounterContainer() {
-  const { count, increment } = useCounter(0);
-  return <CounterPresentation count={count} onIncrement={increment} />;
-}
-
-// ✅ Good - Presentation component
-interface CounterPresentationProps {
-  count: number;
-  onIncrement: () => void;
-}
-
-function CounterPresentation({ count, onIncrement }: CounterPresentationProps) {
-  return (
-    <div>
-      <span>{count}</span>
-      <button onClick={onIncrement}>+</button>
-    </div>
-  );
-}
-```
-
 ### shadcn/ui Components
 
 - **Always use shadcn/ui** components when building UI elements
@@ -274,52 +240,12 @@ function CounterPresentation({ count, onIncrement }: CounterPresentationProps) {
 - `UnauthenticatedWrapper`: Handles unauthenticated state and redirects
 - Both use `startsWith` to handle trailing slashes in routes
 
-### Sidebar & Navigation
-
-- **Application Branding**: AskSync logo with Zap icon and "control your attention" tagline
-- **Organization Switcher**: Clerk component integrated in sidebar header
-- **Responsive Menu Items**: Larger sizing on desktop (`md:h-10`, `md:text-base`) with proper icon scaling
-- **Active State Management**: Dynamic active state detection using `usePathname()`
-- **Breadcrumbs**: Context-aware navigation breadcrumbs with route icons
-- **User Profile Footer**: Displays user avatar, full name, and email address
-- **Route Matching**: Handles trailing slashes for consistent navigation
-
 ### ESLint Configuration
 
 - **ESLint 9 flat config** format
 - **Import rules**: Enforce absolute imports over relative
 - **Prettier integration**: Resolves conflicts between ESLint and Prettier
 - **TypeScript support**: Full type checking and rules
-
-## Build Commands
-
-```bash
-# Development
-pnpm dev
-
-# Build (includes lint and type checking)
-pnpm build
-
-# Lint all packages
-pnpm lint
-
-# Lint with auto-fix
-pnpm lint:fix
-```
-
-**Features:**
-
-- **Safety first**: Defaults to DRY_RUN mode for previewing actions
-- **Complete cleanup**: Removes all users and organizations
-- **Graceful handling**: 5-second countdown with cancel option (Ctrl+C)
-- **Error handling**: Continues if individual deletions fail
-- **Clear feedback**: Detailed console output with emojis for status
-
-**Environment variables required:**
-
-- `CLERK_SECRET_KEY`: Your Clerk secret key
-- `CLERK_PUBLISHABLE_KEY`: Your Clerk publishable key
-- `DRY_RUN`: Set to `false` to perform actual deletions
 
 ## Common Issues & Solutions
 
@@ -338,17 +264,8 @@ pnpm lint:fix
 - **Auto-redirect logic**: Users without organizations are redirected to create one
 - **Invitation handling**: Users with pending invitations are redirected to accept them
 
-## Next Steps
-
-- Add more user-specific features
-- Implement proper error boundaries
-- Add comprehensive testing
-- Consider adding more shared utilities
-- Expand the component library
-
 ## Development Notes
 
-- Restart dev server after environment variable changes
 - Use absolute imports (`@/`) for better maintainability
 - Keep components focused and testable
 - Follow the established patterns for consistency
@@ -358,108 +275,6 @@ pnpm lint:fix
 - **Responsive design**: UI components adapt between mobile and desktop with appropriate sizing
 - **Theme customization**: Custom sidebar theme colors defined in `globals.css` with `--sidebar-primary`
 - **Navigation consistency**: All routes use Next.js Link with proper active state management
-
-## Implementation Roadmap
-
-### Phase 1: Foundation & Tag Management ✅ COMPLETED
-
-- [x] Update platform documentation
-- [x] Create Convex schema for all entities (tags, timeblocks, questions, threads, messages, userSettings)
-- [x] Implement tag CRUD operations in Convex
-- [x] Build comprehensive tag management UI with advanced features
-- [x] Add TypeScript types to shared package
-- [x] Create unified TagFormDialog component for create/edit operations
-- [x] Implement advanced tag filtering, searching, and sorting
-- [x] Add clickable tags with inline editing
-- [x] Design polished UI with responsive layout and improved spacing
-
-**Tag Management Features Completed:**
-
-- ✅ Full CRUD operations (Create, Read, Update, Delete)
-- ✅ Advanced filtering (All, My Tags, Public, Private)
-- ✅ Real-time search across name and description
-- ✅ Sorting by name, creation date, or modification date
-- ✅ Tag categorization with color coding
-- ✅ Answer mode configuration (on-demand vs scheduled)
-- ✅ Response time settings for on-demand tags
-- ✅ Public/private tag visibility controls
-- ✅ Inline editing by clicking on tags
-- ✅ Stylish create tag card with intuitive UX
-- ✅ Organization-scoped data with proper permissions
-- ✅ Form validation and error handling
-- ✅ Loading states and optimistic updates
-
-### Phase 2: Timeblock Management ✅ COMPLETED
-
-- [x] Calendar integration architecture
-- [x] Timeblock CRUD operations
-- [x] Calendar view for timeblocks (month/week/day/agenda views)
-- [x] Tag-to-timeblock associations
-- [x] Recurring event support (daily, weekly, weekdays)
-- [x] Advanced recurring event exception handling
-- [x] EventDialog with comprehensive editing capabilities
-- [x] Performance optimizations with Zustand state management
-- [x] Event color customization and persistence
-- [x] Responsive UI with drag-and-drop support
-- [ ] External calendar sync (Google/Outlook) - **Future Phase**
-
-**Timeblock Management Features Completed:**
-
-- ✅ Full timeblock CRUD operations with proper validation
-- ✅ Multi-view calendar (month, week, day, agenda) with navigation
-- ✅ Recurring event creation and management (DAILY, WEEKLY, WEEKDAYS patterns)
-- ✅ **Smart exception handling** for recurring events with two-option dialog:
-  - **"This event only"**: Creates exception + standalone non-recurring event
-  - **"All events"**: Updates entire recurring series
-- ✅ Exception storage as UTC midnight timestamps on timeblock entity
-- ✅ Automatic filtering of exception dates during event expansion
-- ✅ Event color customization with persistence
-- ✅ Tag association interface with enhanced selector UI
-- ✅ Performance optimization using Zustand store (split from 593-line component)
-- ✅ Comprehensive EventDialog with organized sections and field validation
-- ✅ Real-time event updates with optimistic UI feedback
-- ✅ Responsive design with proper mobile/desktop scaling
-- ✅ Organization-scoped data with proper permission controls
-
-### Phase 3: Question System 🚀 CURRENT
-
-- [ ] Question creation workflow
-- [ ] User assignment & availability display
-- [ ] Question status management
-- [ ] Tag-based filtering and sorting
-- [ ] Question dashboard
-
-### Phase 4: Threading & Messaging
-
-- [ ] Thread creation on question answer
-- [ ] Real-time messaging system
-- [ ] File attachment support
-- [ ] Message reactions and mentions
-- [ ] Thread management UI
-
-### Phase 5: Notification Engine
-
-- [ ] Smart notification batching
-- [ ] Time-based notification scheduling
-- [ ] User preference management
-- [ ] Email/in-app notification system
-- [ ] Notification history
-
-### Phase 6: External Calendar Integration
-
-- [ ] Google Calendar sync (bi-directional)
-- [ ] Outlook Calendar sync (bi-directional)
-- [ ] External event import and conflict resolution
-- [ ] Calendar integration settings and preferences
-- [ ] Automatic timeblock creation from external events
-
-### Phase 7: Analytics & Insights
-
-- [ ] Response time analytics
-- [ ] Question volume metrics
-- [ ] User engagement tracking
-- [ ] Tag usage analytics
-- [ ] Performance dashboard
 
 ## API Design Patterns
 
@@ -485,8 +300,6 @@ pnpm lint:fix
 - **Availability changes**: Update availability indicators
 
 ### Recurring Event Exception Patterns
-
-e
 
 - **Exception storage**: Array of UTC midnight timestamps on timeblock document
 - **Exception filtering**: Client-side filtering during event expansion
