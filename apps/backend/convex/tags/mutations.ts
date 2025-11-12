@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { Doc } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
-import { getUser } from "../auth/user";
+import { getUser, getUserWithPermissions } from "../auth/user";
+import { hasPermission } from "../auth/permissions";
 
 export const createTag = mutation({
   args: {
@@ -72,8 +73,10 @@ export const updateTag = mutation({
       throw new Error("Tag not found in your organization");
     }
 
-    if (existingTag.createdBy !== userId) {
-      throw new Error("Only the tag creator can edit this tag");
+    // Check permissions: must be creator OR have edit permission
+    const canEdit = await hasPermission(ctx, "tags", args.id, "edit");
+    if (existingTag.createdBy !== userId && !canEdit) {
+      throw new Error("You don't have permission to edit this tag");
     }
 
     const newName = args.name;
@@ -135,8 +138,10 @@ export const deleteTag = mutation({
       throw new Error("Tag not found in your organization");
     }
 
-    if (existingTag.createdBy !== userId) {
-      throw new Error("Only the tag creator can delete this tag");
+    // Check permissions: must be creator OR have delete permission
+    const canDelete = await hasPermission(ctx, "tags", args.id, "delete");
+    if (existingTag.createdBy !== userId && !canDelete) {
+      throw new Error("You don't have permission to delete this tag");
     }
 
     // TODO: Check if tag is being used by questions or timeblocks

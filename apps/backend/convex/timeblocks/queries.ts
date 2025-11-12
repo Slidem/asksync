@@ -1,16 +1,18 @@
 /* eslint-disable import/order */
-import { getUser } from "../auth/user";
+import { getUserWithPermissions } from "../auth/user";
 import { query } from "../_generated/server";
 import { v } from "convex/values";
+import { getAccessibleResourceIds } from "../permissions/queries";
 
 export const listTimeblocks = query({
   args: {
     userId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // verify auth
-    const { orgId, id: authedUserId } = await getUser(ctx);
+    const user = await getUserWithPermissions(ctx);
+    const { orgId, id: authedUserId, role } = user;
     const userId = args.userId || authedUserId;
+
     const timeBlocks = await ctx.db
       .query("timeblocks")
       .withIndex("by_org_and_user", (q) =>
@@ -18,7 +20,19 @@ export const listTimeblocks = query({
       )
       .collect();
 
-    // add permission based filtering if needed in the future
+    // Filter by permissions if viewing another user's timeblocks
+    if (userId !== authedUserId && role !== "admin") {
+      const accessibleTimeblockIds = await getAccessibleResourceIds(
+        "timeblocks",
+        "view",
+        user,
+      );
+
+      return timeBlocks.filter((tb) =>
+        accessibleTimeblockIds.includes(tb._id),
+      );
+    }
+
     return timeBlocks;
   },
 });

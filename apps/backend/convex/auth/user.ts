@@ -1,4 +1,5 @@
 import { Auth } from "convex/server";
+import { QueryCtx as BaseQueryCtx } from "../_generated/server";
 
 export const getUser = async (ctx: { auth: Auth }) => {
   const identity = await ctx.auth.getUserIdentity();
@@ -13,10 +14,58 @@ export const getUser = async (ctx: { auth: Auth }) => {
     throw new Error("No active organization");
   }
 
+  // role is added as a custom claim in the JWT by clerk
+  // defaults to "basic_member" if not set
+  const orgRole = identity.role as string | undefined;
+  const role = orgRole === "org:admin" ? "admin" : "member";
+
   return {
     id: identity.subject,
     email: identity.email,
     name: identity.name,
     orgId: orgId,
+    role: role as "admin" | "member",
   };
+};
+
+// Extended version that includes group memberships and permissions
+export const getUserWithPermissions = async (ctx: BaseQueryCtx) => {
+  const user = await getUser(ctx);
+
+  // Get user's group memberships
+  const groupMemberships = await ctx.db
+    .query("groupMembers")
+    .withIndex("by_user_and_org", (q) =>
+      q.eq("userId", user.id).eq("orgId", user.orgId),
+    )
+    .collect();
+
+  const groupIds = groupMemberships.map((gm) => gm.groupId);
+
+  // Get permissions for all user's groups
+  const allPermissions = await Promise.all(
+    groupIds.map((groupId) =>
+      ctx.db
+        .query("groupPermissions")
+        .withIndex("by_group", (q) => q.eq("groupId", groupId))
+        .collect(),
+    ),
+  );
+
+  const permissions = allPermissions.flat();
+
+  return {
+    ...user,
+    groupIds,
+    permissions,
+  };
+};
+
+// Helper to check if user is admin
+export const requireAdmin = async (ctx: { auth: Auth }) => {
+  const user = await getUser(ctx);
+  if (user.role !== "admin") {
+    throw new Error("Admin access required");
+  }
+  return user;
 };

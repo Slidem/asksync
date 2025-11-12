@@ -190,4 +190,51 @@ export default defineSchema({
   })
     .index("by_user_and_org", ["userId", "orgId"])
     .index("by_org", ["orgId"]),
+
+  // User Groups - groups for organizing members and permissions
+  userGroups: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.string(), // hex color for UI
+    orgId: v.string(),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_and_name", ["orgId", "name"]),
+
+  // Group Members - membership of users in groups
+  groupMembers: defineTable({
+    groupId: v.string(),
+    userId: v.string(),
+    orgId: v.string(),
+    addedBy: v.string(),
+    addedAt: v.number(),
+  })
+    .index("by_group", ["groupId"])
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"]),
+
+  // Group Permissions - permissions assigned to groups
+  groupPermissions: defineTable({
+    groupId: v.string(),
+    orgId: v.string(),
+    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
+    resourceId: v.string(), // specific resource ID or "*" for all
+    permissions: v.array(
+      v.union(
+        v.literal("view"),
+        v.literal("create"),
+        v.literal("edit"),
+        v.literal("delete"),
+      ),
+    ),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_group", ["groupId"])
+    .index("by_resource", ["resourceType", "resourceId"])
+    .index("by_org", ["orgId"]),
 });

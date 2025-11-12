@@ -2,6 +2,7 @@
 import { MutationCtx, QueryCtx } from "../_generated/server";
 
 import { Id } from "../_generated/dataModel";
+import { hasPermission } from "../auth/permissions";
 
 export async function validateTagsPermissions(
   args: { tagIds?: string[] },
@@ -27,11 +28,13 @@ export async function getExistingTimeblock({
   args,
   orgId,
   userId,
+  requiredPermission,
 }: {
   ctx: QueryCtx | MutationCtx;
   args: { id: Id<"timeblocks"> };
   orgId: string;
   userId: string;
+  requiredPermission?: "edit" | "delete";
 }) {
   const existingTimeblock = await ctx.db.get(args.id);
 
@@ -42,8 +45,25 @@ export async function getExistingTimeblock({
   if (existingTimeblock.orgId !== orgId) {
     throw new Error("Not authorized to modify this timeblock");
   }
-  if (existingTimeblock.userId !== userId) {
-    throw new Error("Can only modify your own timeblocks");
+
+  // Check permissions: must be owner OR have required permission
+  if (requiredPermission) {
+    const canPerform = await hasPermission(
+      ctx,
+      "timeblocks",
+      args.id,
+      requiredPermission,
+    );
+    if (existingTimeblock.userId !== userId && !canPerform) {
+      throw new Error(
+        `You don't have permission to ${requiredPermission} this timeblock`,
+      );
+    }
+  } else {
+    // Backward compatibility: if no permission specified, require ownership
+    if (existingTimeblock.userId !== userId) {
+      throw new Error("Can only modify your own timeblocks");
+    }
   }
 
   return existingTimeblock;

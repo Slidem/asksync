@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { getUser } from "../auth/user";
+import { getUserWithPermissions } from "../auth/user";
+import { getAccessibleResourceIds } from "../permissions/queries";
 
 /**
  * Get all tags for the current organization
@@ -20,7 +21,8 @@ export const listTagsByOrg = query({
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
-    const { orgId, id: userId } = await getUser(ctx);
+    const user = await getUserWithPermissions(ctx);
+    const { orgId, id: userId, role } = user;
 
     const tagsQuery = ctx.db
       .query("tags")
@@ -37,11 +39,16 @@ export const listTagsByOrg = query({
       };
     }
 
-    // User cannot see personal tags of other users
-    // TODO: We'll add shared tags later (with specific user groups)
-    const visibleTags = orgTags.filter(
-      (tag) => tag.createdBy === userId || tag.isPublic,
-    );
+    // Get tags accessible through group permissions
+    const accessibleTagIds = await getAccessibleResourceIds("tags", "view", user);
+
+    // User can see: their own tags, public tags, tags shared via groups, or all if admin
+    const visibleTags = orgTags.filter((tag) => {
+      if (role === "admin") return true;
+      if (tag.createdBy === userId) return true;
+      if (tag.isPublic) return true;
+      return accessibleTagIds.includes(tag._id);
+    });
     const userTags = visibleTags.filter((tag) => tag.createdBy === userId);
     const publicTags = visibleTags.filter((tag) => tag.isPublic);
 

@@ -87,6 +87,7 @@ export const updateTimeblock = mutation({
       args,
       orgId,
       userId,
+      requiredPermission: "edit",
     });
 
     const newStartTime = args.startTime ?? existingTimeblock.startTime;
@@ -128,6 +129,7 @@ export const deleteTimeblock = mutation({
       args,
       orgId,
       userId,
+      requiredPermission: "delete",
     });
 
     await ctx.db.delete(args.id);
@@ -148,6 +150,7 @@ export const addTimeblockException = mutation({
       args: { id: args.timeblockId },
       orgId,
       userId,
+      requiredPermission: "edit",
     });
 
     validateRecurringTimeblock(timeblock);

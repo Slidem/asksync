@@ -7,7 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Clock, Edit3, Lock, MoreVertical, Trash2, Users } from "lucide-react";
+import {
+  Clock,
+  Edit3,
+  Eye,
+  Lock,
+  MoreVertical,
+  Shield,
+  Trash2,
+  Users,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +27,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@asksync/shared";
+import { api } from "@convex/api";
 import { formatResponseTime } from "@/lib/time";
+import { toTagId } from "@/lib/convexTypes";
 import { useDeleteTag } from "@/tags/hooks/mutations";
 import { useEditTagDialog } from "@/tags/components/dialog/TagDialogContext";
+import { useQuery } from "convex/react";
 
 interface TagCardProps {
   tag: Tag;
@@ -35,6 +47,22 @@ export function TagCard({
 }: TagCardProps) {
   const { deleteTag } = useDeleteTag();
   const { openDialog } = useEditTagDialog();
+
+  const permissions = useQuery(
+    api.permissions.queries.getMyResourcePermissions,
+    {
+      resourceType: "tags",
+      resourceId: toTagId(tag.id),
+    },
+  );
+
+  const canEdit = permissions?.canEdit ?? isOwner;
+  const canDelete = permissions?.canDelete ?? isOwner;
+  const sharedViaGroup =
+    permissions &&
+    !permissions.isOwner &&
+    !permissions.isAdmin &&
+    permissions.canView;
 
   return (
     <Card
@@ -52,6 +80,7 @@ export function TagCard({
             {!tag.isPublic && (
               <Lock className="h-5 w-5 text-muted-foreground" />
             )}
+            {sharedViaGroup && <Shield className="h-5 w-5 text-blue-500" />}
           </div>
           {showActions && (
             <DropdownMenu>
@@ -66,28 +95,34 @@ export function TagCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {isOwner && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDialog(tag);
-                      }}
-                    >
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteTag(tag);
-                      }}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
+                {canEdit && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDialog(tag);
+                    }}
+                  >
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTag(tag);
+                    }}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+                {!canEdit && !canDelete && (
+                  <DropdownMenuItem disabled>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View only
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -124,6 +159,37 @@ export function TagCard({
                 </>
               )}
             </Badge>
+
+            {sharedViaGroup && (
+              <Badge
+                variant="outline"
+                className="text-sm px-3 py-1 border-blue-500 text-blue-600"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Shared
+              </Badge>
+            )}
+
+            {permissions && !permissions.isOwner && !permissions.isAdmin && (
+              <Badge
+                variant="outline"
+                className="text-sm px-3 py-1 text-muted-foreground"
+              >
+                {canEdit && canDelete ? (
+                  "Full access"
+                ) : canEdit ? (
+                  <>
+                    <Edit3 className="h-3 w-3 mr-1" />
+                    Can edit
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3 w-3 mr-1" />
+                    View only
+                  </>
+                )}
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

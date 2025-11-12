@@ -8,6 +8,7 @@ import {
   MessageCircleQuestionMark,
   SquareTerminal,
   TagIcon,
+  Users,
   Zap,
 } from "lucide-react";
 import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
@@ -45,6 +46,11 @@ const items = [
     title: "Knowledge base",
     url: "/knowledge-base",
     icon: BookOpen,
+  },
+  {
+    title: "Members",
+    url: "/members",
+    icon: Users,
   },
 ];
 

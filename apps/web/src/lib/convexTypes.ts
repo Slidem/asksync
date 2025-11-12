@@ -106,7 +106,10 @@ function toConvexId<
     | "questions"
     | "threads"
     | "messages"
-    | "userSettings",
+    | "userSettings"
+    | "userGroups"
+    | "groupMembers"
+    | "groupPermissions",
 >(id: string): Id<T> {
   return id as Id<T>;
 }
@@ -117,3 +120,7 @@ export const toQuestionId = (id: string) => toConvexId<"questions">(id);
 export const toThreadId = (id: string) => toConvexId<"threads">(id);
 export const toMessageId = (id: string) => toConvexId<"messages">(id);
 export const toUserSettingsId = (id: string) => toConvexId<"userSettings">(id);
+export const toGroupId = (id: string) => toConvexId<"userGroups">(id);
+export const toGroupMemberId = (id: string) => toConvexId<"groupMembers">(id);
+export const toGroupPermissionId = (id: string) =>
+  toConvexId<"groupPermissions">(id);

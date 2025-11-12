@@ -3,7 +3,11 @@
   "compilerOptions": {
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": false,
+    "declaration": false,
+    "declarationMap": false
   },
   "include": ["convex/**/*"],
   "exclude": ["convex/_generated/**/*"]
