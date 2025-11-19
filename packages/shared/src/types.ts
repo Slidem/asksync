@@ -34,6 +34,7 @@ export interface Tag {
   isPublic: boolean;
   createdAt: number;
   updatedAt: number;
+  permissions: PermissionGrant[];
 }
 
 export interface Timeblock {
@@ -46,7 +47,7 @@ export interface Timeblock {
   timezone: string;
   recurrenceRule?: RecurrenceRule | null;
   tagIds: string[];
-  userId: string;
+  createdBy: string;
   orgId: string;
   source: CalendarSource;
   externalId?: string; // ID from external calendar
@@ -54,13 +55,14 @@ export interface Timeblock {
   exceptionDates?: number[]; // UTC midnight timestamps of excluded dates
   createdAt: number;
   updatedAt: number;
+  permissions: PermissionGrant[];
 }
 
 export interface Question {
   id: string;
   title: string;
   content: string;
-  creatorId: string;
+  createdBy: string;
   participantIds: string[];
   participants?: { id: string; isAssignee: boolean; isCreator: boolean }[];
   assigneeIds: string[];
@@ -107,7 +109,7 @@ export interface Message {
   messageType: MessageType;
   attachments: MessageAttachment[];
   threadId: string;
-  userId: string; // sender
+  createdBy: string; // sender
   orgId: string;
   isAcceptedAnswer: boolean; // whether this message is marked as an accepted answer
   acceptedBy?: string; // userId who marked this as accepted
@@ -167,6 +169,17 @@ export interface CreateQuestionForm {
   tagIds: string[];
   assigneeIds: string[];
   participants?: string[];
+}
+
+export type PermissionLevel = "view" | "edit" | "manage";
+
+export interface PermissionGrant {
+  id: string;
+  type: "user" | "group" | "all";
+  userId?: string;
+  groupId?: string;
+  permission: PermissionLevel;
+  isCreator?: boolean;
 }
 
 export interface QuestionFilters {

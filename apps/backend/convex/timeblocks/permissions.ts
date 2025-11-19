@@ -2,7 +2,7 @@
 import { MutationCtx, QueryCtx } from "../_generated/server";
 
 import { Id } from "../_generated/dataModel";
-import { hasPermission } from "../auth/permissions";
+import { hasPermission } from "../permissions/common";
 
 export async function validateTagsPermissions(
   args: { tagIds?: string[] },
@@ -34,7 +34,7 @@ export async function getExistingTimeblock({
   args: { id: Id<"timeblocks"> };
   orgId: string;
   userId: string;
-  requiredPermission?: "edit" | "delete";
+  requiredPermission?: "edit" | "manage";
 }) {
   const existingTimeblock = await ctx.db.get(args.id);
 

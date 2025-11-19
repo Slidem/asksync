@@ -13,7 +13,6 @@ import {
   Eye,
   Lock,
   MoreVertical,
-  Shield,
   Trash2,
   Users,
 } from "lucide-react";
@@ -27,12 +26,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@asksync/shared";
-import { api } from "@convex/api";
 import { formatResponseTime } from "@/lib/time";
-import { toTagId } from "@/lib/convexTypes";
 import { useDeleteTag } from "@/tags/hooks/mutations";
 import { useEditTagDialog } from "@/tags/components/dialog/TagDialogContext";
-import { useQuery } from "convex/react";
 
 interface TagCardProps {
   tag: Tag;
@@ -47,22 +43,10 @@ export function TagCard({
 }: TagCardProps) {
   const { deleteTag } = useDeleteTag();
   const { openDialog } = useEditTagDialog();
-
-  const permissions = useQuery(
-    api.permissions.queries.getMyResourcePermissions,
-    {
-      resourceType: "tags",
-      resourceId: toTagId(tag.id),
-    },
+  const canEdit = tag.permissions.some(
+    (p) => p.permission === "edit" || p.permission === "manage",
   );
-
-  const canEdit = permissions?.canEdit ?? isOwner;
-  const canDelete = permissions?.canDelete ?? isOwner;
-  const sharedViaGroup =
-    permissions &&
-    !permissions.isOwner &&
-    !permissions.isAdmin &&
-    permissions.canView;
+  const canDelete = tag.permissions.some((p) => p.permission === "manage");
 
   return (
     <Card
@@ -80,7 +64,6 @@ export function TagCard({
             {!tag.isPublic && (
               <Lock className="h-5 w-5 text-muted-foreground" />
             )}
-            {sharedViaGroup && <Shield className="h-5 w-5 text-blue-500" />}
           </div>
           {showActions && (
             <DropdownMenu>
@@ -160,17 +143,7 @@ export function TagCard({
               )}
             </Badge>
 
-            {sharedViaGroup && (
-              <Badge
-                variant="outline"
-                className="text-sm px-3 py-1 border-blue-500 text-blue-600"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Shared
-              </Badge>
-            )}
-
-            {permissions && !permissions.isOwner && !permissions.isAdmin && (
+            {!isOwner && (
               <Badge
                 variant="outline"
                 className="text-sm px-3 py-1 text-muted-foreground"

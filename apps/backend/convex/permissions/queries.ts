@@ -1,229 +1,24 @@
-import { v } from "convex/values";
-import { Id } from "../_generated/dataModel";
+/* eslint-disable import/order */
+import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
-import { hasPermission } from "../auth/permissions";
-import { getUserWithPermissions } from "../auth/user";
+import { v } from "convex/values";
 
-// Helper: Get accessible resource IDs for internal use
-export async function getAccessibleResourceIds(
-  resourceType: "tags" | "timeblocks",
-  permission: "view" | "create" | "edit" | "delete",
-  user: Awaited<ReturnType<typeof getUserWithPermissions>>,
-): Promise<string[]> {
-  // Admins can access all
-  if (user.role === "admin") {
-    return []; // Empty array means "all" when combined with admin check
-  }
-
-  // Check for wildcard permissions
-  const wildcardPermissions = user.permissions.filter(
-    (p) => p.resourceType === resourceType && p.resourceId === "*",
-  );
-
-  for (const perm of wildcardPermissions) {
-    if (perm.permissions.includes(permission)) {
-      return []; // Empty array means "all" when combined with wildcard check
-    }
-  }
-
-  // Collect specific resource IDs
-  const resourceIds = new Set<string>();
-
-  const specificPermissions = user.permissions.filter(
-    (p) => p.resourceType === resourceType && p.resourceId !== "*",
-  );
-
-  for (const perm of specificPermissions) {
-    if (perm.permissions.includes(permission)) {
-      resourceIds.add(perm.resourceId);
-    }
-  }
-
-  return Array.from(resourceIds);
-}
-
-// Get current user's permission summary
-export const getMyPermissions = query({
-  handler: async (
-    ctx,
-  ): Promise<{
-    userId: string;
-    role: "admin" | "member";
-    isAdmin: boolean;
-    groupIds: string[];
-    tagPermissions: Array<{
-      resourceId: string;
-      canView: boolean;
-      canEdit: boolean;
-      canDelete: boolean;
-    }>;
-    timeblockPermissions: Array<{
-      resourceId: string;
-      canView: boolean;
-      canEdit: boolean;
-      canDelete: boolean;
-    }>;
-  }> => {
-    const user = await getUserWithPermissions(ctx);
-
-    // Organize permissions by resource type
-    const tagPerms = user.permissions.filter((p) => p.resourceType === "tags");
-    const timeblockPerms = user.permissions.filter(
-      (p) => p.resourceType === "timeblocks",
-    );
-
-    return {
-      userId: user.id,
-      role: user.role,
-      isAdmin: user.role === "admin",
-      groupIds: user.groupIds,
-      tagPermissions: tagPerms.map((p) => ({
-        resourceId: p.resourceId,
-        canView: p.permissions.includes("view"),
-        canEdit: p.permissions.includes("edit"),
-        canDelete: p.permissions.includes("delete"),
-      })),
-      timeblockPermissions: timeblockPerms.map((p) => ({
-        resourceId: p.resourceId,
-        canView: p.permissions.includes("view"),
-        canEdit: p.permissions.includes("edit"),
-        canDelete: p.permissions.includes("delete"),
-      })),
-    };
-  },
-});
-
-// Check if current user has a specific permission for a resource
-export const checkPermission = query({
-  args: {
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
-    resourceId: v.union(v.id("tags"), v.id("timeblocks")),
-    permission: v.union(
-      v.literal("view"),
-      v.literal("create"),
-      v.literal("edit"),
-      v.literal("delete"),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUserWithPermissions(ctx);
-
-    // Admins have all permissions
-    if (user.role === "admin") {
-      return true;
-    }
-
-    // Check if user owns the resource
-    let resource = null;
-
-    if (args.resourceType === "tags") {
-      resource = await ctx.db.get(args.resourceId as Id<"tags">);
-    } else if (args.resourceType === "timeblocks") {
-      resource = await ctx.db.get(args.resourceId as Id<"timeblocks">);
-    }
-
-    if (resource) {
-      if ("createdBy" in resource && resource.createdBy === user.id) {
-        return true;
-      }
-      if ("userId" in resource && resource.userId === user.id) {
-        return true;
-      }
-    }
-
-    // Check specific resource permissions
-    const specificPermissions = user.permissions.filter(
-      (p) =>
-        p.resourceType === args.resourceType &&
-        p.resourceId === args.resourceId,
-    );
-
-    for (const perm of specificPermissions) {
-      if (perm.permissions.includes(args.permission)) {
-        return true;
-      }
-    }
-
-    // Check wildcard permissions
-    const wildcardPermissions = user.permissions.filter(
-      (p) => p.resourceType === args.resourceType && p.resourceId === "*",
-    );
-
-    for (const perm of wildcardPermissions) {
-      if (perm.permissions.includes(args.permission)) {
-        return true;
-      }
-    }
-
-    return false;
-  },
-});
-
-// Get all resources of a type that user can access
-export const getAccessibleResources = query({
-  args: {
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
-    permission: v.optional(
-      v.union(
-        v.literal("view"),
-        v.literal("create"),
-        v.literal("edit"),
-        v.literal("delete"),
-      ),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUserWithPermissions(ctx);
-    const permission = args.permission ?? "view";
-
-    // Admins can access all
-    if (user.role === "admin") {
-      return { hasWildcardAccess: true, resourceIds: [] };
-    }
-
-    // Check for wildcard permissions
-    const wildcardPermissions = user.permissions.filter(
-      (p) => p.resourceType === args.resourceType && p.resourceId === "*",
-    );
-
-    for (const perm of wildcardPermissions) {
-      if (perm.permissions.includes(permission)) {
-        return { hasWildcardAccess: true, resourceIds: [] };
-      }
-    }
-
-    // Collect specific resource IDs
-    const resourceIds = new Set<string>();
-
-    const specificPermissions = user.permissions.filter(
-      (p) => p.resourceType === args.resourceType && p.resourceId !== "*",
-    );
-
-    for (const perm of specificPermissions) {
-      if (perm.permissions.includes(permission)) {
-        resourceIds.add(perm.resourceId);
-      }
-    }
-
-    return {
-      hasWildcardAccess: false,
-      resourceIds: Array.from(resourceIds),
-    };
-  },
-});
-
-// Get permissions for a specific resource
+// Get all permission grants for a specific resource
 export const getResourcePermissions = query({
   args: {
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
+    resourceType: v.union(
+      v.literal("tags"),
+      v.literal("timeblocks"),
+      v.literal("questions"),
+    ),
     resourceId: v.string(),
   },
   handler: async (ctx, args) => {
-    const { orgId } = await getUserWithPermissions(ctx);
+    const { orgId } = await getUserWithGroups(ctx);
 
-    // Get all permissions for this resource
+    // Get all permissions for this specific resource
     const permissions = await ctx.db
-      .query("groupPermissions")
+      .query("permissions")
       .withIndex("by_resource", (q) =>
         q
           .eq("resourceType", args.resourceType)
@@ -232,151 +27,190 @@ export const getResourcePermissions = query({
       .filter((q) => q.eq(q.field("orgId"), orgId))
       .collect();
 
-    // Also get wildcard permissions
-    const wildcardPermissions = await ctx.db
-      .query("groupPermissions")
-      .withIndex("by_resource", (q) =>
-        q.eq("resourceType", args.resourceType).eq("resourceId", "*"),
-      )
-      .filter((q) => q.eq(q.field("orgId"), orgId))
-      .collect();
-
     return {
       specific: permissions,
-      wildcard: wildcardPermissions,
+      all: [...permissions],
     };
   },
 });
 
-// Get all permissions in the organization (admin only)
-export const listAllPermissions = query({
+// Get current user's permission summary
+export const getMyPermissions = query({
+  args: {},
   handler: async (ctx) => {
-    const user = await getUserWithPermissions(ctx);
+    const user = await getUserWithGroups(ctx);
 
-    if (user.role !== "admin") {
-      throw new Error("Admin access required");
-    }
-
-    const permissions = await ctx.db
-      .query("groupPermissions")
-      .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
+    // Get direct user permissions
+    const userPermissions = await ctx.db
+      .query("permissions")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", user.id).eq("orgId", user.orgId),
+      )
       .collect();
 
-    return permissions.map((p) => ({
-      id: p._id,
-      groupId: p.groupId,
-      orgId: p.orgId,
-      resourceType: p.resourceType,
-      resourceId: p.resourceId,
-      permissions: p.permissions,
-      createdBy: p.createdBy,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-    }));
+    const groupPermissions = [];
+    for (const groupId of user.groupIds) {
+      const perms = await ctx.db
+        .query("permissions")
+        .withIndex("by_group", (q) => q.eq("groupId", groupId))
+        .filter((q) => q.eq(q.field("orgId"), user.orgId))
+        .collect();
+      groupPermissions.push(...perms);
+    }
+
+    // Organize by resource type
+    const tagPerms = [
+      ...userPermissions.filter((p) => p.resourceType === "tags"),
+      ...groupPermissions.filter((p) => p.resourceType === "tags"),
+    ];
+    const timeblockPerms = [
+      ...userPermissions.filter((p) => p.resourceType === "timeblocks"),
+      ...groupPermissions.filter((p) => p.resourceType === "timeblocks"),
+    ];
+    const questionPerms = [
+      ...userPermissions.filter((p) => p.resourceType === "questions"),
+      ...groupPermissions.filter((p) => p.resourceType === "questions"),
+    ];
+
+    return {
+      userId: user.id,
+      role: user.role,
+      isAdmin: user.role === "admin",
+      groupIds: user.groupIds,
+      permissions: {
+        tags: tagPerms,
+        timeblocks: timeblockPerms,
+        questions: questionPerms,
+      },
+    };
   },
 });
 
-// Check if user can manage groups (is admin)
-export const canManageGroups = query({
-  handler: async (ctx): Promise<boolean> => {
-    const user = await getUserWithPermissions(ctx);
-    return user.role === "admin";
-  },
-});
-
-// Get permission breakdown for current user (useful for debugging)
-// Get current user's permissions for a specific resource
+// Get current user's permissions on a specific resource
 export const getMyResourcePermissions = query({
   args: {
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
-    resourceId: v.string(),
+    resourceType: v.union(
+      v.literal("tags"),
+      v.literal("timeblocks"),
+      v.literal("questions"),
+    ),
+    resourceId: v.union(v.id("tags"), v.id("timeblocks"), v.id("questions")),
   },
   handler: async (ctx, args) => {
-    const user = await getUserWithPermissions(ctx);
+    const user = await getUserWithGroups(ctx);
 
-    // Check if user is owner
-    const resource = await ctx.db.get(
-      args.resourceId as Id<"tags" | "timeblocks">,
-    );
-    const isOwner =
-      resource &&
-      (("createdBy" in resource && resource.createdBy === user.id) ||
-        ("userId" in resource && resource.userId === user.id));
-
-    // Admin and owners have all permissions
-    if (user.role === "admin" || isOwner) {
+    // Admin has full access
+    if (user.role === "admin") {
       return {
         canView: true,
         canEdit: true,
         canDelete: true,
-        isOwner: !!isOwner,
-        isAdmin: user.role === "admin",
+        isAdmin: true,
+        isOwner: false,
       };
     }
 
-    // Check group permissions
-    const canView = await hasPermission(
-      ctx,
-      args.resourceType,
-      args.resourceId,
-      "view",
-    );
-    const canEdit = await hasPermission(
-      ctx,
-      args.resourceType,
-      args.resourceId,
-      "edit",
-    );
-    const canDelete = await hasPermission(
-      ctx,
-      args.resourceType,
-      args.resourceId,
-      "delete",
-    );
+    // Check if user is the creator/owner
+    let resource:
+      | {
+          orgId?: string;
+          createdBy?: string;
+          userId?: string;
+        }
+      | null
+      | undefined = null;
+    try {
+      resource = await ctx.db.get(args.resourceId);
+    } catch {
+      // Resource doesn't exist or wrong type
+      return {
+        canView: false,
+        canEdit: false,
+        canDelete: false,
+        isAdmin: false,
+        isOwner: false,
+      };
+    }
+
+    if (!resource || resource.orgId !== user.orgId) {
+      return {
+        canView: false,
+        canEdit: false,
+        canDelete: false,
+        isAdmin: false,
+        isOwner: false,
+      };
+    }
+
+    const isOwner =
+      resource.createdBy === user.id || resource.userId === user.id;
+
+    // Owner has full access
+    if (isOwner) {
+      return {
+        canView: true,
+        canEdit: true,
+        canDelete: true,
+        isAdmin: false,
+        isOwner: true,
+      };
+    }
+
+    // Check individual user permissions
+    const userPermissions = await ctx.db
+      .query("permissions")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", user.id).eq("orgId", user.orgId),
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("resourceType"), args.resourceType),
+          q.or(q.eq(q.field("resourceId"), args.resourceId)),
+        ),
+      )
+      .collect();
+
+    const groupPermissions = [];
+
+    for (const groupId of user.groupIds) {
+      const perms = await ctx.db
+        .query("permissions")
+        .withIndex("by_group", (q) => q.eq("groupId", groupId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("orgId"), user.orgId),
+            q.eq(q.field("resourceType"), args.resourceType),
+            q.or(q.eq(q.field("resourceId"), args.resourceId)),
+          ),
+        )
+        .collect();
+      groupPermissions.push(...perms);
+    }
+
+    // Combine all permissions and get highest level
+    const allPerms = [...userPermissions, ...groupPermissions];
+
+    if (allPerms.length === 0) {
+      return {
+        canView: false,
+        canEdit: false,
+        canDelete: false,
+        isAdmin: false,
+        isOwner: false,
+      };
+    }
+
+    // Get highest permission level
+    const hasManage = allPerms.some((p) => p.permission === "manage");
+    const hasEdit = allPerms.some((p) => p.permission === "edit");
+    const hasView = allPerms.some((p) => p.permission === "view");
 
     return {
-      canView,
-      canEdit,
-      canDelete,
-      isOwner: false,
+      canView: hasManage || hasEdit || hasView,
+      canEdit: hasManage || hasEdit,
+      canDelete: hasManage,
       isAdmin: false,
-    };
-  },
-});
-
-export const getMyPermissionBreakdown = query({
-  handler: async (ctx) => {
-    const user = await getUserWithPermissions(ctx);
-
-    // Organize permissions by resource type
-    const tagPermissions = user.permissions.filter(
-      (p) => p.resourceType === "tags",
-    );
-    const timeblockPermissions = user.permissions.filter(
-      (p) => p.resourceType === "timeblocks",
-    );
-
-    return {
-      role: user.role as "admin" | "member",
-      isAdmin: user.role === "admin",
-      groupCount: user.groupIds.length,
-      permissionSummary: {
-        tags: {
-          wildcardCount: tagPermissions.filter((p) => p.resourceId === "*")
-            .length,
-          specificCount: tagPermissions.filter((p) => p.resourceId !== "*")
-            .length,
-        },
-        timeblocks: {
-          wildcardCount: timeblockPermissions.filter(
-            (p) => p.resourceId === "*",
-          ).length,
-          specificCount: timeblockPermissions.filter(
-            (p) => p.resourceId !== "*",
-          ).length,
-        },
-      },
-      totalPermissions: user.permissions.length,
+      isOwner: false,
     };
   },
 });

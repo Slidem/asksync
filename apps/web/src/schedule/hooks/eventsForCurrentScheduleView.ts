@@ -75,12 +75,6 @@ export const useEventsForCurrentScheduleView = () => {
     [rawTimeblocks],
   );
 
-  // Fetch permissions for all timeblocks
-  const timeblockPermissions = useQuery(
-    api.permissions.queries.getMyPermissions,
-    {},
-  );
-
   return useMemo(() => {
     const getViewRange = () => {
       switch (view) {
@@ -99,32 +93,6 @@ export const useEventsForCurrentScheduleView = () => {
 
     const { start, end } = getViewRange();
 
-    const events = expandRecurringEvents(timeblocks, start, end);
-
-    // Add permission info to events if permissions are loaded
-    if (timeblockPermissions) {
-      const permissionMap = new Map(
-        timeblockPermissions.timeblockPermissions.map(
-          (p: { resourceId: string; canEdit: boolean; canDelete: boolean }) => [
-            p.resourceId,
-            p,
-          ],
-        ),
-      );
-
-      return events.map((event) => {
-        const perm = permissionMap.get(event.id);
-        if (perm && event.source === "asksync") {
-          return {
-            ...event,
-            canEdit: perm.canEdit,
-            canDelete: perm.canDelete,
-          };
-        }
-        return event;
-      });
-    }
-
-    return events;
-  }, [currentDate, view, timeblocks, timeblockPermissions]);
+    return expandRecurringEvents(timeblocks, start, end);
+  }, [currentDate, view, timeblocks]);
 };

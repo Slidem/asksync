@@ -36,7 +36,8 @@ export default defineSchema({
       ),
     ),
     tagIds: v.array(v.string()), // which tags this timeblock handles
-    userId: v.string(), // who owns this timeblock
+    userId: v.optional(v.string()), // who owns this timeblock
+    createdBy: v.string(),
     orgId: v.string(),
     source: v.union(
       v.literal("asksync"),
@@ -60,7 +61,7 @@ export default defineSchema({
     content: v.string(),
 
     // Assignment and participation
-    creatorId: v.string(), // who asked the question (always a participant)
+    createdBy: v.string(),
     participantIds: v.array(v.string()), // all users who can view/comment (includes creator and assignees)
     assigneeIds: v.array(v.string()), // subset of participants responsible for answering
     orgId: v.string(),
@@ -94,7 +95,7 @@ export default defineSchema({
     threadId: v.string(), // thread is created immediately with question
   })
     .index("by_org", ["orgId"])
-    .index("by_org_and_creator", ["orgId", "creatorId"])
+    .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_status", ["orgId", "status"])
     .index("by_org_and_expected_time", ["orgId", "expectedAnswerTime"])
     .index("by_org_and_overdue", ["orgId", "isOverdue"]),
@@ -139,7 +140,7 @@ export default defineSchema({
 
     // Attribution
     threadId: v.string(),
-    userId: v.string(), // sender
+    createdBy: v.string(),
     orgId: v.string(),
 
     // Accepted answer tracking
@@ -152,7 +153,7 @@ export default defineSchema({
     editedAt: v.optional(v.number()),
   })
     .index("by_thread", ["threadId"])
-    .index("by_org_and_user", ["orgId", "userId"])
+    .index("by_org_and_user", ["orgId", "createdBy"])
     .index("by_thread_and_accepted", ["threadId", "isAcceptedAnswer"]),
 
   // User Settings - per-user, per-organization configuration
@@ -216,25 +217,37 @@ export default defineSchema({
     .index("by_user_and_org", ["userId", "orgId"])
     .index("by_org", ["orgId"]),
 
-  // Group Permissions - permissions assigned to groups
-  groupPermissions: defineTable({
-    groupId: v.string(),
+  // Permissions - assigned to groups or individual users
+  // Either groupId OR userId must be set (not both)
+  permissions: defineTable({
+    all: v.optional(v.boolean()), // if true, permission applies to all users in the org
+    groupId: v.optional(v.string()), // if set, permission is for a group
+    userId: v.optional(v.string()), // if set, permission is for an individual user
     orgId: v.string(),
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
-    resourceId: v.string(), // specific resource ID or "*" for all
-    permissions: v.array(
-      v.union(
-        v.literal("view"),
-        v.literal("create"),
-        v.literal("edit"),
-        v.literal("delete"),
-      ),
+    resourceType: v.union(
+      v.literal("tags"),
+      v.literal("timeblocks"),
+      v.literal("questions"),
+    ),
+    resourceId: v.string(),
+    permission: v.union(
+      v.literal("view"),
+      v.literal("edit"),
+      v.literal("manage"),
     ),
     createdBy: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_group", ["groupId"])
+    .index("by_user", ["userId"])
     .index("by_resource", ["resourceType", "resourceId"])
-    .index("by_org", ["orgId"]),
+    .index("by_org", ["orgId"])
+    .index("by_org_and_type", ["orgId", "resourceType"])
+    .index("by_org_and_type_and_resourceId", [
+      "orgId",
+      "resourceType",
+      "resourceId",
+    ])
+    .index("by_user_and_org", ["userId", "orgId"]),
 });

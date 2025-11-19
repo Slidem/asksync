@@ -19,8 +19,12 @@ import { TagFormData, tagFormSchema } from "@/tags/model";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { ResourcePermissionsManager } from "@/components/permissions";
+import { Separator } from "@/components/ui/separator";
 import { TAG_COLORS } from "@asksync/shared";
+import { getDefaultCreateResourceGrants } from "@/components/permissions/types";
 import { useForm } from "react-hook-form";
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface TagFormDialogProps {
@@ -32,6 +36,7 @@ interface TagFormDialogProps {
   onSubmit: (data: TagFormData) => void;
   onOpenChange: (open: boolean) => void;
   isLoading?: boolean;
+  isCreating?: boolean; // Show permission manager only during creation
   defaultValues?: Pick<
     TagFormData,
     | "name"
@@ -40,6 +45,7 @@ interface TagFormDialogProps {
     | "answerMode"
     | "responseTimeMinutes"
     | "isPublic"
+    | "permissions"
   >;
 }
 
@@ -53,7 +59,10 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
   onOpenChange,
   defaultValues,
   isLoading = false,
+  isCreating = false,
 }) => {
+  const { user } = useUser();
+
   const form = useForm<TagFormData>({
     resolver: zodResolver(tagFormSchema),
     defaultValues: defaultValues || {
@@ -62,6 +71,7 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
       color: TAG_COLORS[0],
       answerMode: "scheduled",
       isPublic: true,
+      permissions: getDefaultCreateResourceGrants(user?.id || ""),
     },
   });
 
@@ -75,22 +85,41 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
     }
   }, [defaultValues, form, open]);
 
+  const handleSubmit = (data: TagFormData) => {
+    onSubmit(data);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <Name form={form} />
             <Description form={form} />
             <Color form={form} />
             <AnswerMode form={form} />
             <ResponseTime form={form} />
             <IsPublic form={form} />
+
+            <Separator className="my-4" />
+
+            <ResourcePermissionsManager
+              grants={form.watch("permissions") || []}
+              canEdit={true}
+              isCreating={isCreating}
+              onChange={(permissions) =>
+                form.setValue("permissions", permissions)
+              }
+            />
+
             <DialogFooter>
               <Button
                 type="button"

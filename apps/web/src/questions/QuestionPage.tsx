@@ -500,14 +500,14 @@ export function QuestionPage({ questionId }: { questionId: string }) {
                       <div key={message.id} className="flex gap-3">
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarFallback className="text-xs">
-                            {message.userId.slice(0, 2).toUpperCase()}
+                            {message.createdBy.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
-                                {getUserDisplayName(message.userId)}
+                                {getUserDisplayName(message.createdBy)}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 {formatMessageTime(message.createdAt)}
@@ -524,7 +524,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
                                 </Badge>
                               )}
                             </div>
-                            {message.userId === user?.id &&
+                            {message.createdBy === user?.id &&
                               question.status !== "resolved" && (
                                 <div className="flex items-center gap-1">
                                   <Button

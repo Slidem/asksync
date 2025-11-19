@@ -40,7 +40,7 @@ export const createTimeblock = mutation({
 
     const timeblockId = await ctx.db.insert("timeblocks", {
       orgId,
-      userId,
+      createdBy: userId,
       title: args.title,
       description: args.description,
       location: args.location,
@@ -51,6 +51,19 @@ export const createTimeblock = mutation({
       tagIds: args.tagIds,
       color: args.color,
       source: "asksync",
+      updatedAt: Date.now(),
+    });
+
+    // Grant manage permission to creator
+    await ctx.db.insert("permissions", {
+      all: false,
+      userId,
+      orgId,
+      resourceType: "timeblocks",
+      resourceId: timeblockId,
+      permission: "manage",
+      createdBy: userId,
+      createdAt: Date.now(),
       updatedAt: Date.now(),
     });
 
@@ -129,7 +142,7 @@ export const deleteTimeblock = mutation({
       args,
       orgId,
       userId,
-      requiredPermission: "delete",
+      requiredPermission: "manage",
     });
 
     await ctx.db.delete(args.id);

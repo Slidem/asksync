@@ -13,19 +13,24 @@ import { EventLocationField } from "@/schedule/dialogs/eventDialog/components/Ev
 import { EventRecurrenceFields } from "@/schedule/dialogs/eventDialog/components/EventRecurrenceFields";
 import { EventTagSelector } from "@/schedule/dialogs/eventDialog/components/EventTagSelector";
 import { EventTitleField } from "@/schedule/dialogs/eventDialog/components/EventTitleField";
+import { ResourcePermissionsManager } from "@/components/permissions";
 import { SectionDivider } from "@/schedule/dialogs/eventDialog/components/SectionDivider";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const EventDialog: React.FC = () => {
-  const { isOpen, close, error } = useEventDialogStore(
-    useShallow((state) => ({
-      isOpen: state.isOpen,
-      close: state.close,
-      error: state.formFields.error,
-    })),
-  );
+  const { isOpen, close, error, permissions, setPermissions, eventId } =
+    useEventDialogStore(
+      useShallow((state) => ({
+        isOpen: state.isOpen,
+        close: state.close,
+        error: state.formFields.error,
+        permissions: state.formFields.permissions,
+        setPermissions: state.setPermissions,
+        eventId: state.eventMetadata.eventId,
+      })),
+    );
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -38,7 +43,7 @@ export const EventDialog: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <EventDialogHeader />
 
         {error && (
@@ -60,6 +65,13 @@ export const EventDialog: React.FC = () => {
           <SectionDivider />
           <EventExternalInfo />
           <EventColorPicker />
+          <SectionDivider />
+          <ResourcePermissionsManager
+            grants={permissions}
+            canEdit={true}
+            isCreating={!eventId}
+            onChange={setPermissions}
+          />
         </div>
 
         <EventDialogFooter />

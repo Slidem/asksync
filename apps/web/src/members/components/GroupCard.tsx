@@ -1,16 +1,23 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Pencil, Trash2, Users, Shield } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Users } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GroupMembersDialog } from "../dialogs/groupMembersDialog/GroupMembersDialog";
-import { GroupPermissionsDialog } from "../dialogs/groupPermissionsDialog/GroupPermissionsDialog";
-import { GroupWithMemberCount } from "@/members/model";
+import { GroupWithMemberCount } from "../types";
 import { api } from "@convex/api";
 import { toGroupId } from "@/lib/convexTypes";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
@@ -24,12 +31,11 @@ interface GroupCardProps {
 
 export function GroupCard({ group, canManage }: GroupCardProps) {
   const [showMembers, setShowMembers] = useState(false);
-  const [showPermissions, setShowPermissions] = useState(false);
   const openEdit = useGroupDialogStore((state) => state.openEdit);
   const deleteGroup = useMutation(api.groups.mutations.deleteGroup);
 
   const handleEdit = () => {
-    openEdit(group._id, group.name, group.description, group.color);
+    openEdit(group.id, group.name, group.description, group.color);
   };
 
   const handleDelete = async () => {
@@ -42,7 +48,7 @@ export function GroupCard({ group, canManage }: GroupCardProps) {
     }
 
     try {
-      await deleteGroup({ groupId: toGroupId(group._id) });
+      await deleteGroup({ groupId: toGroupId(group.id) });
     } catch (error) {
       console.error("Failed to delete group:", error);
       alert("Failed to delete group. Please try again.");
@@ -50,20 +56,22 @@ export function GroupCard({ group, canManage }: GroupCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+    <Card className="group hover:shadow-md transition-all hover:border-primary/50">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
             <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: group.color }}
+              className="mt-1 w-4 h-4 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-background"
+              style={{
+                backgroundColor: group.color,
+              }}
             />
-            <div>
-              <h3 className="font-semibold">{group.name}</h3>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg">{group.name}</CardTitle>
               {group.description && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <CardDescription className="mt-1.5 line-clamp-2">
                   {group.description}
-                </p>
+                </CardDescription>
               )}
             </div>
           </div>
@@ -71,66 +79,57 @@ export function GroupCard({ group, canManage }: GroupCardProps) {
           {canManage && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleEdit}>
                   <Pencil className="h-4 w-4 mr-2" />
-                  Edit
+                  Edit Group
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleDelete}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  Delete Group
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-1">
+      <CardContent className="pt-0">
         <Button
-          variant="ghost"
-          className="w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+          variant="outline"
+          className="w-full justify-start gap-2"
           onClick={() => setShowMembers(true)}
         >
-          <Users className="h-4 w-4 mr-2" />
+          <Users className="h-4 w-4" />
           <span>
             {group.memberCount} {group.memberCount === 1 ? "member" : "members"}
           </span>
+          {group.memberCount > 0 && (
+            <Badge variant="secondary" className="ml-auto">
+              View
+            </Badge>
+          )}
         </Button>
-        {canManage && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => setShowPermissions(true)}
-          >
-            <Shield className="h-4 w-4 mr-2" />
-            <span>Manage permissions</span>
-          </Button>
-        )}
       </CardContent>
 
       <GroupMembersDialog
-        groupId={group._id}
+        groupId={group.id}
         groupName={group.name}
         isOpen={showMembers}
         onClose={() => setShowMembers(false)}
         canManage={canManage}
       />
-
-      {canManage && (
-        <GroupPermissionsDialog
-          groupId={group._id}
-          groupName={group.name}
-          isOpen={showPermissions}
-          onClose={() => setShowPermissions(false)}
-        />
-      )}
     </Card>
   );
 }

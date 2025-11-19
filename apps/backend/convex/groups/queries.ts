@@ -5,6 +5,7 @@ import { getUser } from "../auth/user";
 
 // List all groups in organization
 export const listGroups = query({
+  args: {},
   handler: async (ctx) => {
     const { orgId } = await getUser(ctx);
 
@@ -72,6 +73,7 @@ export const getGroupWithMembers = query({
 
 // Get all groups with member counts
 export const listGroupsWithMemberCounts = query({
+  args: {},
   handler: async (ctx) => {
     const { orgId } = await getUser(ctx);
 
@@ -133,6 +135,7 @@ export const getUserGroups = query({
 
 // Get current user's groups
 export const getMyGroups = query({
+  args: {},
   handler: async (ctx) => {
     const { orgId, id: userId } = await getUser(ctx);
 
@@ -200,7 +203,7 @@ export const getGroupPermissions = query({
     }
 
     const permissions = await ctx.db
-      .query("groupPermissions")
+      .query("permissions")
       .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
       .collect();
 
@@ -230,7 +233,7 @@ export const getGroupDetails = query({
 
     // Get permissions
     const permissions = await ctx.db
-      .query("groupPermissions")
+      .query("permissions")
       .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
       .collect();
 

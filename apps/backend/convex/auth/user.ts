@@ -1,7 +1,8 @@
 import { Auth } from "convex/server";
 import { QueryCtx as BaseQueryCtx } from "../_generated/server";
+import { User, UserWithGroups } from "../common/types";
 
-export const getUser = async (ctx: { auth: Auth }) => {
+export const getUser = async (ctx: { auth: Auth }): Promise<User> => {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new Error("Not authenticated");
@@ -29,7 +30,10 @@ export const getUser = async (ctx: { auth: Auth }) => {
 };
 
 // Extended version that includes group memberships and permissions
-export const getUserWithPermissions = async (ctx: BaseQueryCtx) => {
+// TODO: We should move group memberships to jwt claims for performance later !
+export const getUserWithGroups = async (
+  ctx: BaseQueryCtx,
+): Promise<UserWithGroups> => {
   const user = await getUser(ctx);
 
   // Get user's group memberships
@@ -42,22 +46,9 @@ export const getUserWithPermissions = async (ctx: BaseQueryCtx) => {
 
   const groupIds = groupMemberships.map((gm) => gm.groupId);
 
-  // Get permissions for all user's groups
-  const allPermissions = await Promise.all(
-    groupIds.map((groupId) =>
-      ctx.db
-        .query("groupPermissions")
-        .withIndex("by_group", (q) => q.eq("groupId", groupId))
-        .collect(),
-    ),
-  );
-
-  const permissions = allPermissions.flat();
-
   return {
     ...user,
     groupIds,
-    permissions,
   };
 };
 

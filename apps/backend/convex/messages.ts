@@ -35,7 +35,7 @@ export const sendMessage = mutation({
       messageType: args.messageType || "text",
       attachments: [],
       threadId: args.threadId,
-      userId: identity.subject,
+      createdBy: identity.subject,
       orgId,
       isAcceptedAnswer: false,
       isDeleted: false,
@@ -134,7 +134,7 @@ export const editMessage = mutation({
     }
 
     // Only sender can edit their own messages
-    if (message.userId !== identity.subject) {
+    if (message.createdBy !== identity.subject) {
       throw new ConvexError("You can only edit your own messages");
     }
 
@@ -167,7 +167,7 @@ export const deleteMessage = mutation({
     }
 
     // Only sender can delete their own messages
-    if (message.userId !== identity.subject) {
+    if (message.createdBy !== identity.subject) {
       throw new ConvexError("You can only delete your own messages");
     }
 

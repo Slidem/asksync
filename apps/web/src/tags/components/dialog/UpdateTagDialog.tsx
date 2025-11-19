@@ -2,6 +2,7 @@ import React from "react";
 import { Tag } from "@asksync/shared";
 import { TagFormData } from "@/tags/model";
 import TagFormDialog from "@/tags/components/dialog/TagDialog";
+import { useSyncPermissions } from "@/components/permissions";
 import { useUpdateTag } from "@/tags/hooks/mutations";
 
 interface Props {
@@ -11,12 +12,19 @@ interface Props {
 
 export const UpdateTagDialog: React.FC<Props> = ({ tag, onOpenChange }) => {
   const { updateTag, isUpdating } = useUpdateTag();
-
+  const syncPermissions = useSyncPermissions();
   const handleSubmit = async (data: TagFormData) => {
     if (!tag) return;
-    await updateTag(tag.id, data);
+    const { permissions: newPermissions, ...updateData } = data;
+    await updateTag(tag.id, updateData);
+    if (newPermissions) {
+      await syncPermissions("tags", tag.id, tag.permissions, newPermissions);
+    }
+
     onOpenChange(false);
   };
+
+  if (!tag) return null;
 
   return (
     <TagFormDialog
@@ -26,7 +34,8 @@ export const UpdateTagDialog: React.FC<Props> = ({ tag, onOpenChange }) => {
       loadingText="Updating..."
       submitButtonText="Update Tag"
       isLoading={isUpdating}
-      defaultValues={tag || undefined}
+      isCreating={false}
+      defaultValues={tag}
       onSubmit={handleSubmit}
       onOpenChange={onOpenChange}
     />

@@ -27,6 +27,7 @@ export const CreateTagDialog: React.FC<Props> = ({
       loadingText="Creating..."
       submitButtonText="Create Tag"
       isLoading={isCreating}
+      isCreating={true} // For UI purposes (shows "Only you will have access" text)
       onSubmit={handleSubmit}
       onOpenChange={setOpen}
     />

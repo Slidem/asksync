@@ -1,7 +1,12 @@
-import { v } from "convex/values";
+/* eslint-disable import/order */
+import {
+  decorateResourceWithGrants,
+  getPermittedResourcesForType,
+} from "../permissions/common";
+
+import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
-import { getUserWithPermissions } from "../auth/user";
-import { getAccessibleResourceIds } from "../permissions/queries";
+import { v } from "convex/values";
 
 /**
  * Get all tags for the current organization
@@ -21,7 +26,7 @@ export const listTagsByOrg = query({
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
-    const user = await getUserWithPermissions(ctx);
+    const user = await getUserWithGroups(ctx);
     const { orgId, id: userId, role } = user;
 
     const tagsQuery = ctx.db
@@ -39,16 +44,21 @@ export const listTagsByOrg = query({
       };
     }
 
-    // Get tags accessible through group permissions
-    const accessibleTagIds = await getAccessibleResourceIds("tags", "view", user);
+    // Get tags accessible through permissions (groups + direct user permissions)
+    const accessibleTagIds = await getPermittedResourcesForType(
+      ctx,
+      "tags",
+      "view",
+    );
 
-    // User can see: their own tags, public tags, tags shared via groups, or all if admin
+    // User can see: their own tags, public tags, tags shared via permissions, or all if admin
     const visibleTags = orgTags.filter((tag) => {
       if (role === "admin") return true;
       if (tag.createdBy === userId) return true;
       if (tag.isPublic) return true;
       return accessibleTagIds.includes(tag._id);
     });
+
     const userTags = visibleTags.filter((tag) => tag.createdBy === userId);
     const publicTags = visibleTags.filter((tag) => tag.isPublic);
 
@@ -88,7 +98,7 @@ export const listTagsByOrg = query({
     }
 
     return {
-      tags,
+      tags: await decorateResourceWithGrants(ctx, orgId, "tags", tags),
       totalVisibleTags: visibleTags.length,
       totalUserTags: userTags.length,
       totalPublicTags: publicTags.length,

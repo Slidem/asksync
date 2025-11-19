@@ -8,10 +8,17 @@ export function GroupNameInput() {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="group-name">Group Name</Label>
+      <div>
+        <Label htmlFor="group-name" className="text-sm font-medium">
+          Group Name <span className="text-destructive">*</span>
+        </Label>
+        <p className="text-xs text-muted-foreground mt-1">
+          Choose a clear, descriptive name for this group
+        </p>
+      </div>
       <Input
         id="group-name"
-        placeholder="Engineering, Sales, Support..."
+        placeholder="e.g., Engineering, Marketing, Support Team"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required

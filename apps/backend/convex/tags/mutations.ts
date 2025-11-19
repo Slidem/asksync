@@ -1,8 +1,9 @@
-import { v } from "convex/values";
+/* eslint-disable import/order */
 import { Doc } from "../_generated/dataModel";
+import { getUser } from "../auth/user";
+import { hasPermission } from "../permissions/common";
 import { mutation } from "../_generated/server";
-import { getUser, getUserWithPermissions } from "../auth/user";
-import { hasPermission } from "../auth/permissions";
+import { v } from "convex/values";
 
 export const createTag = mutation({
   args: {
@@ -42,6 +43,19 @@ export const createTag = mutation({
       createdBy: userId,
       updatedAt: Date.now(),
       isPublic: args.isPublic ?? true,
+    });
+
+    // Grant manage permission to creator
+    await ctx.db.insert("permissions", {
+      all: false,
+      userId,
+      orgId,
+      resourceType: "tags",
+      resourceId: tagId,
+      permission: "manage",
+      createdBy: userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
 
     return tagId;
@@ -138,9 +152,9 @@ export const deleteTag = mutation({
       throw new Error("Tag not found in your organization");
     }
 
-    // Check permissions: must be creator OR have delete permission
-    const canDelete = await hasPermission(ctx, "tags", args.id, "delete");
-    if (existingTag.createdBy !== userId && !canDelete) {
+    // Check permissions: must be creator OR have manage permission
+    const canManage = await hasPermission(ctx, "tags", args.id, "manage");
+    if (existingTag.createdBy !== userId && !canManage) {
       throw new Error("You don't have permission to delete this tag");
     }
 

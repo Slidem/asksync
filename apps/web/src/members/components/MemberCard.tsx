@@ -1,6 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { RoleBadge } from "./RoleBadge";
+import { Mail, Shield, User } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
 import { OrganizationMembershipResource } from "@/members/types";
 
 interface MemberCardProps {
@@ -29,37 +31,51 @@ export function MemberCard({
       : identifier?.charAt(0).toUpperCase() || "?";
 
   const isCurrentUser = publicUserData?.userId === currentUserId;
-  const memberRole = role === "org:admin" ? "admin" : "member";
+  const isAdmin = role === "org:admin";
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12">
+    <Card className="group hover:shadow-md transition-all hover:border-primary/50">
+      <CardContent className="p-5">
+        <div className="flex items-start gap-4">
+          <Avatar className="h-14 w-14 ring-2 ring-muted">
             <AvatarImage src={imageUrl} alt={displayName} />
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarFallback className="text-base">{initials}</AvatarFallback>
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium truncate">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-base truncate">
                 {displayName}
-                {isCurrentUser && (
-                  <span className="text-muted-foreground text-sm ml-2">
-                    (You)
-                  </span>
-                )}
               </h3>
-              <RoleBadge role={memberRole} />
+              {isCurrentUser && (
+                <Badge variant="outline" className="text-xs">
+                  You
+                </Badge>
+              )}
+              {isAdmin && (
+                <Badge variant="secondary" className="gap-1">
+                  <Shield className="h-3 w-3" />
+                  Admin
+                </Badge>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {identifier}
-            </p>
+
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
+              <Mail className="h-3.5 w-3.5" />
+              <p className="truncate">{identifier}</p>
+            </div>
+
+            {!isAdmin && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <User className="h-3 w-3" />
+                <span>Member</span>
+              </div>
+            )}
           </div>
 
           {canManage && !isCurrentUser && (
-            <div className="flex gap-2">
-              {/* Action buttons will be added in Phase 4 */}
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action buttons will be added in future phases */}
             </div>
           )}
         </div>

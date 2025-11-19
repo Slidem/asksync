@@ -2,6 +2,17 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireAdmin } from "../auth/user";
 
+// Helper to map old permission format to new format
+// Old: ["view", "create", "edit", "delete"] -> New: "view" | "edit" | "manage"
+const mapOldPermissionToNew = (
+  oldPermission: "view" | "create" | "edit" | "delete",
+): "view" | "edit" | "manage" => {
+  if (oldPermission === "delete" || oldPermission === "create") {
+    return "manage"; // create/delete map to manage
+  }
+  return oldPermission; // view/edit stay the same
+};
+
 // Create a new group (admin only)
 export const createGroup = mutation({
   args: {
@@ -119,7 +130,7 @@ export const deleteGroup = mutation({
 
     // Delete all group permissions
     const permissions = await ctx.db
-      .query("groupPermissions")
+      .query("permissions")
       .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
       .collect();
 
@@ -216,102 +227,10 @@ export const removeMemberFromGroup = mutation({
   },
 });
 
-// Add permission to group (admin only)
-export const addPermissionToGroup = mutation({
-  args: {
-    groupId: v.id("userGroups"),
-    resourceType: v.union(v.literal("tags"), v.literal("timeblocks")),
-    resourceId: v.string(), // specific ID or "*" for all
-    permissions: v.array(
-      v.union(
-        v.literal("view"),
-        v.literal("create"),
-        v.literal("edit"),
-        v.literal("delete"),
-      ),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await requireAdmin(ctx);
-
-    // Get group
-    const group = await ctx.db.get(args.groupId);
-    if (!group) {
-      throw new Error("Group not found");
-    }
-
-    // Verify group belongs to user's org
-    if (group.orgId !== user.orgId) {
-      throw new Error("Group not found");
-    }
-
-    // Check if permission already exists for this resource
-    const existing = await ctx.db
-      .query("groupPermissions")
-      .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("resourceType"), args.resourceType),
-          q.eq(q.field("resourceId"), args.resourceId),
-        ),
-      )
-      .first();
-
-    if (existing) {
-      // Update existing permission
-      await ctx.db.patch(existing._id, {
-        permissions: args.permissions,
-        updatedAt: Date.now(),
-      });
-      return existing._id;
-    }
-
-    // Create new permission
-    const permissionId = await ctx.db.insert("groupPermissions", {
-      groupId: args.groupId,
-      orgId: user.orgId,
-      resourceType: args.resourceType,
-      resourceId: args.resourceId,
-      permissions: args.permissions,
-      createdBy: user.id,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-
-    return permissionId;
-  },
-});
-
-// Remove permission from group (admin only)
-export const removePermissionFromGroup = mutation({
-  args: {
-    permissionId: v.id("groupPermissions"),
-  },
-  handler: async (ctx, args) => {
-    const user = await requireAdmin(ctx);
-
-    // Get permission
-    const permission = await ctx.db.get(args.permissionId);
-    if (!permission) {
-      throw new Error("Permission not found");
-    }
-
-    // Verify permission belongs to user's org
-    if (permission.orgId !== user.orgId) {
-      throw new Error("Permission not found");
-    }
-
-    // Delete permission
-    await ctx.db.delete(args.permissionId);
-
-    return { removed: true };
-  },
-});
-
 // Update permission (admin only)
 export const updatePermission = mutation({
   args: {
-    permissionId: v.id("groupPermissions"),
+    permissionId: v.id("permissions"),
     permissions: v.array(
       v.union(
         v.literal("view"),
@@ -325,19 +244,24 @@ export const updatePermission = mutation({
     const user = await requireAdmin(ctx);
 
     // Get permission
-    const permission = await ctx.db.get(args.permissionId);
-    if (!permission) {
+    const existingPermission = await ctx.db.get(args.permissionId);
+    if (!existingPermission) {
       throw new Error("Permission not found");
     }
 
     // Verify permission belongs to user's org
-    if (permission.orgId !== user.orgId) {
+    if (existingPermission.orgId !== user.orgId) {
       throw new Error("Permission not found");
     }
 
+    // Note: old implementation supported arrays, now we only support single permission
+    // Take the first permission from the array for backward compatibility
+    const oldPermission = args.permissions[0] || "view";
+    const permission = mapOldPermissionToNew(oldPermission);
+
     // Update permission
     await ctx.db.patch(args.permissionId, {
-      permissions: args.permissions,
+      permission,
       updatedAt: Date.now(),
     });
 

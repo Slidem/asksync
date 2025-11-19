@@ -3,17 +3,24 @@ import {
   calendarEventToCreateTimeblock,
   calendarEventToUpdateTimeblock,
 } from "@/schedule/utils";
+import {
+  useResourceExistingGrants,
+  useSyncPermissions,
+} from "@/components/permissions/hooks";
 
 import { CalendarEvent } from "@/schedule/types";
 import { api } from "@convex/api";
+import { getDefaultCreateResourceGrants } from "@/components/permissions/types";
 import { toTimeblockId } from "@/lib/convexTypes";
 import { toast } from "sonner";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/nextjs";
 
 export const useOpenCreateEventDialog = () => {
   const openDialog = useEventDialogStore((state) => state.open);
+  const { user } = useUser();
   return useCallback(
     ({ start, end }: { start: Date; end?: Date }) => {
       // Snap start time to 15-minute intervals if not already snapped
@@ -40,11 +47,12 @@ export const useOpenCreateEventDialog = () => {
         start: start,
         end: eventEnd,
         allDay: false,
+        permissions: getDefaultCreateResourceGrants(user?.id || ""),
       };
 
       openDialog(newEvent);
     },
-    [openDialog],
+    [openDialog, user?.id],
   );
 };
 
@@ -77,6 +85,12 @@ export const useCreateEvent = () => {
     (state) => state.validateAndGetEvent,
   );
 
+  const permissions = useEventDialogStore(
+    (state) => state.formFields.permissions,
+  );
+
+  const syncPermissions = useSyncPermissions();
+
   const close = useEventDialogStore((state) => state.close);
 
   return async () => {
@@ -90,7 +104,11 @@ export const useCreateEvent = () => {
         throw new Error("No event to create");
       }
       const timeblockData = calendarEventToCreateTimeblock(newEvent);
-      await createTimeblockMutation(timeblockData);
+
+      const timeblockId = await createTimeblockMutation(timeblockData);
+
+      await syncPermissions("timeblocks", timeblockId, [], permissions || []);
+
       toast.success("Timeblock created successfully");
       close();
     } catch (error) {
@@ -105,15 +123,22 @@ export const useUpdateEvent = () => {
   const updateTimeblockMutation = useMutation(
     api.timeblocks.mutations.updateTimeblock,
   );
-
+  const syncPermissions = useSyncPermissions();
   const validateAndGetEvent = useEventDialogStore(
     (state) => state.validateAndGetEvent,
   );
-
+  const currentPermissions = useResourceExistingGrants(
+    "timeblocks",
+    useEventDialogStore.getState().eventMetadata.eventId || "",
+  );
   const close = useEventDialogStore((state) => state.close);
 
   return async () => {
-    const { event: updatedEvent, error } = validateAndGetEvent();
+    const {
+      event: updatedEvent,
+      permissions: updatedPermissions,
+      error,
+    } = validateAndGetEvent();
     if (error) {
       toast.error(error);
       close();
@@ -124,13 +149,31 @@ export const useUpdateEvent = () => {
       throw new Error("No event to update");
     }
 
-    const updateData = calendarEventToUpdateTimeblock(updatedEvent);
-    await updateTimeblockMutation({
-      id: toTimeblockId(updatedEvent.id),
-      ...updateData,
-    });
-    toast.success("Timeblock updated successfully");
-    close();
+    try {
+      // Update timeblock first
+      const updateData = calendarEventToUpdateTimeblock(updatedEvent);
+      await updateTimeblockMutation({
+        id: toTimeblockId(updatedEvent.id),
+        ...updateData,
+      });
+
+      // Then sync permissions
+      if (updatedPermissions) {
+        await syncPermissions(
+          "timeblocks",
+          updatedEvent.id,
+          currentPermissions,
+          updatedPermissions,
+        );
+      }
+
+      toast.success("Timeblock updated successfully");
+      close();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update timeblock",
+      );
+    }
   };
 };
 
@@ -140,6 +183,7 @@ export const useDeleteEvent = () => {
   );
 
   const eventId = useEventDialogStore((state) => state.eventMetadata.eventId);
+  const close = useEventDialogStore((state) => state.close);
 
   return async () => {
     if (!eventId) {

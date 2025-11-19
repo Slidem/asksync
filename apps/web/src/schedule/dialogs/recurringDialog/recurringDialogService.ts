@@ -9,6 +9,7 @@ import { toTimeblockId } from "@/lib/convexTypes";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { useRecurringDialogStore } from "@/schedule/dialogs/recurringDialog/recurringDialogStore";
+import { useSyncPermissions } from "@/components/permissions";
 
 export const useUpdateRecurringEvent = () => {
   const updateTimeblockMutation = useMutation(
@@ -25,6 +26,8 @@ export const useUpdateRecurringEvent = () => {
 
   const event = useRecurringDialogStore((state) => state.event);
 
+  const syncPermissions = useSyncPermissions();
+
   async function addExceptionToThisEventOnly() {
     const instanceDate = new Date(event!.start);
     const exceptionDate = getUTCMidnight(instanceDate);
@@ -40,7 +43,13 @@ export const useUpdateRecurringEvent = () => {
 
     const standaloneData = calendarEventToCreateTimeblock(event!);
     standaloneData.recurrenceRule = undefined;
-    await createTimeblockMutation(standaloneData);
+    const newEventId = await createTimeblockMutation(standaloneData);
+    await syncPermissions(
+      "timeblocks",
+      newEventId,
+      [],
+      event?.permissions || [],
+    );
     toast.success("Single timeblock instance updated successfully");
   }
 

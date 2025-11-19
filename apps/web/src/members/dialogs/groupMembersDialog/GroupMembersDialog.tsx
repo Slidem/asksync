@@ -13,6 +13,8 @@ import { useMutation, useQuery } from "convex/react";
 import { AvailableMembersList } from "./AvailableMembersList";
 import { CurrentMembersList } from "./CurrentMembersList";
 import { MemberSearchInput } from "./MemberSearchInput";
+import { Separator } from "@/components/ui/separator";
+import { Users } from "lucide-react";
 import { api } from "@convex/api";
 import { toGroupId } from "@/lib/convexTypes";
 import { useOrganization } from "@clerk/nextjs";
@@ -101,17 +103,26 @@ export function GroupMembersDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="min-w-lg max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Members of {groupName}</DialogTitle>
-          <DialogDescription>
-            {canManage
-              ? "Add or remove members from this group"
-              : "View members in this group"}
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl">{groupName} Members</DialogTitle>
+              <DialogDescription>
+                {canManage
+                  ? "Manage group membership by adding or removing members"
+                  : "View all members in this group"}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <Separator />
+
+        <div className="space-y-5 flex-1 overflow-hidden flex flex-col">
           <MemberSearchInput value={searchQuery} onChange={setSearchQuery} />
 
           <CurrentMembersList
@@ -121,10 +132,13 @@ export function GroupMembersDialog({
           />
 
           {canManage && (
-            <AvailableMembersList
-              members={availableMembers}
-              onAdd={handleAddMember}
-            />
+            <>
+              <Separator />
+              <AvailableMembersList
+                members={availableMembers}
+                onAdd={handleAddMember}
+              />
+            </>
           )}
         </div>
       </DialogContent>

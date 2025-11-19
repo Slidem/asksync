@@ -171,6 +171,7 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
     canEdit: !isExternal,
     canDelete: !isExternal,
     canEditTags: true,
+    permissions: timeblock.permissions || [],
   };
 }
 

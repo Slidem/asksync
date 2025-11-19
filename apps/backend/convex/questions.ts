@@ -1,6 +1,8 @@
+/* eslint-disable import/order */
 import { ConvexError, v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+
+import { Id } from "./_generated/dataModel";
 
 // Helper function to calculate expected answer time from tags
 async function calculateExpectedAnswerTime(
@@ -106,6 +108,7 @@ export const createQuestion = mutation({
       identity.subject,
       args.tagIds,
     );
+
     if (!hasTagPermissions) {
       throw new ConvexError("Invalid tag permissions");
     }
@@ -136,7 +139,7 @@ export const createQuestion = mutation({
     const questionId = await ctx.db.insert("questions", {
       title: args.title,
       content: args.content,
-      creatorId: identity.subject,
+      createdBy: identity.subject,
       participantIds: Array.from(allParticipants),
       assigneeIds: args.assigneeIds,
       orgId,
@@ -209,7 +212,7 @@ export const listQuestionsByUser = query({
     switch (args.filter) {
       case "created":
         questions = allQuestions.filter(
-          (q) => q.creatorId === identity.subject,
+          (q) => q.createdBy === identity.subject,
         );
         break;
       case "assigned":
@@ -370,7 +373,7 @@ export const getQuestionById = query({
     const participants = question.participantIds.map((userId) => ({
       id: userId,
       isAssignee: question.assigneeIds.includes(userId),
-      isCreator: question.creatorId === userId,
+      isCreator: question.createdBy === userId,
     }));
 
     return {
@@ -408,7 +411,7 @@ export const updateParticipants = mutation({
 
     // Check authorization (creator or current assignee)
     if (
-      question.creatorId !== identity.subject &&
+      question.createdBy !== identity.subject &&
       !question.assigneeIds.includes(identity.subject)
     ) {
       throw new ConvexError("Not authorized to update participants");
@@ -420,9 +423,9 @@ export const updateParticipants = mutation({
     }
 
     // Ensure creator is always a participant
-    const newParticipants = Array.from(
-      new Set([question.creatorId, ...args.participants]),
-    );
+    const newParticipants = question.createdBy
+      ? Array.from(new Set([question.createdBy, ...args.participants]))
+      : Array.from(new Set([...args.participants]));
 
     // Ensure all assignees are participants
     const finalParticipants = Array.from(
@@ -663,7 +666,7 @@ export const deleteQuestion = mutation({
     }
 
     // Only creator can delete
-    if (question.creatorId !== identity.subject) {
+    if (question.createdBy !== identity.subject) {
       throw new ConvexError("Only the question creator can delete questions");
     }
 

@@ -1,4 +1,8 @@
-import { CalendarSource, RecurrenceRule } from "@asksync/shared";
+import {
+  CalendarSource,
+  PermissionGrant,
+  RecurrenceRule,
+} from "@asksync/shared";
 
 export enum CalendarView {
   DAY = "day",
@@ -24,6 +28,7 @@ export interface CalendarEvent {
   canEdit?: boolean;
   canDelete?: boolean;
   canEditTags?: boolean;
+  permissions: PermissionGrant[];
 }
 
 export type EventColor =

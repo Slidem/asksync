@@ -29,27 +29,37 @@ export function MemberListItem({
       .toUpperCase() || "?";
 
   return (
-    <div className="flex items-center justify-between p-2 hover:bg-muted rounded-md">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-8 w-8">
+    <div className="group flex items-center justify-between p-3 hover:bg-background rounded-lg transition-colors border border-transparent hover:border-border">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Avatar className="h-9 w-9 ring-2 ring-muted">
           <AvatarImage src={imageUrl} alt={displayName} />
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
-        <div>
-          <p className="text-sm font-medium">{displayName}</p>
-          <p className="text-xs text-muted-foreground">{identifier}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{displayName}</p>
+          <p className="text-xs text-muted-foreground truncate">{identifier}</p>
         </div>
       </div>
       <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
+        variant={actionType === "remove" ? "ghost" : "secondary"}
+        size="sm"
+        className={`h-8 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity ${
+          actionType === "remove"
+            ? "hover:bg-destructive/10 hover:text-destructive"
+            : ""
+        }`}
         onClick={() => onAction(userId)}
       >
         {actionType === "remove" ? (
-          <X className="h-4 w-4" />
+          <>
+            <X className="h-3.5 w-3.5" />
+            <span className="text-xs">Remove</span>
+          </>
         ) : (
-          <UserPlus className="h-4 w-4" />
+          <>
+            <UserPlus className="h-3.5 w-3.5" />
+            <span className="text-xs">Add</span>
+          </>
         )}
       </Button>
     </div>

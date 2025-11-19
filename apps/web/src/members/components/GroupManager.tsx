@@ -1,17 +1,16 @@
-import { useQuery } from "convex/react";
-import { api } from "@convex/api";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { GroupCard } from "./GroupCard";
+import { GroupWithMemberCount } from "../types";
+import { Plus } from "lucide-react";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
-import { GroupWithMemberCount } from "@/members/model";
+import { useGroups } from "@/members/queries/queries";
 
 interface GroupManagerProps {
   canManage: boolean;
 }
 
 export function GroupManager({ canManage }: GroupManagerProps) {
-  const groups = useQuery(api.groups.queries.listGroupsWithMemberCounts);
+  const groups = useGroups();
   const openCreate = useGroupDialogStore((state) => state.openCreate);
 
   if (!groups) {
@@ -56,7 +55,7 @@ export function GroupManager({ canManage }: GroupManagerProps) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group: GroupWithMemberCount) => (
-            <GroupCard key={group._id} group={group} canManage={canManage} />
+            <GroupCard key={group.id} group={group} canManage={canManage} />
           ))}
         </div>
       )}

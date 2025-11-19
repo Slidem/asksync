@@ -131,7 +131,7 @@ export function EventItem({
     return differenceInMinutes(displayEnd, displayStart);
   }, [displayStart, displayEnd]);
 
-  const getEventTime = () => {
+  const eventTime = useMemo(() => {
     if (event.allDay) return "All day";
 
     // For short events (less than 45 minutes), only show start time
@@ -143,7 +143,7 @@ export function EventItem({
     return `${formatTimeWithOptionalMinutes(
       displayStart,
     )} - ${formatTimeWithOptionalMinutes(displayEnd)}`;
-  };
+  }, [event.allDay, durationMinutes, displayStart, displayEnd]);
 
   if (view === "month") {
     return (
@@ -211,7 +211,7 @@ export function EventItem({
             <div className="truncate font-medium">{event.title}</div>
             {showTime && (
               <div className="truncate font-normal opacity-70 sm:text-[11px]">
-                {getEventTime()}
+                {eventTime}
               </div>
             )}
           </>
@@ -220,7 +220,6 @@ export function EventItem({
     );
   }
 
-  // Agenda view - kept separate since it's significantly different
   return (
     <button
       className={cn(

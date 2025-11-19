@@ -1,3 +1,4 @@
+import { PermissionGrant } from "@asksync/shared";
 import z from "zod";
 
 export const tagFormSchema = z.object({
@@ -7,6 +8,9 @@ export const tagFormSchema = z.object({
   answerMode: z.enum(["on-demand", "scheduled"]),
   responseTimeMinutes: z.number().optional(),
   isPublic: z.boolean(),
+  permissions: z.array(z.any()).optional(), // PermissionGrant[] - not validated here
 });
 
-export type TagFormData = z.infer<typeof tagFormSchema>;
+export type TagFormData = z.infer<typeof tagFormSchema> & {
+  permissions?: PermissionGrant[];
+};

@@ -13,6 +13,8 @@ import { GroupNameInput } from "./GroupNameInput";
 import { GroupDescriptionInput } from "./GroupDescriptionInput";
 import { GroupColorPicker } from "./GroupColorPicker";
 import { GroupDialogActions } from "./GroupDialogActions";
+import { Separator } from "@/components/ui/separator";
+import { UsersRound } from "lucide-react";
 
 export function GroupDialog() {
   const isOpen = useGroupDialogStore((state) => state.isOpen);
@@ -29,23 +31,34 @@ export function GroupDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit Group" : "Create New Group"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? "Update the group details."
-              : "Create a group to organize members and manage permissions."}
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10">
+              <UsersRound className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl">
+                {isEditing ? "Edit Group" : "Create New Group"}
+              </DialogTitle>
+              <DialogDescription>
+                {isEditing
+                  ? "Update group details and settings"
+                  : "Organize members with groups for easier permission management"}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <Separator />
+
+        <div className="space-y-6 py-2">
           <GroupNameInput />
           <GroupDescriptionInput />
           <GroupColorPicker />
         </div>
+
+        <Separator />
 
         <DialogFooter>
           <GroupDialogActions />

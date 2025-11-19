@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import {
-  BookOpen,
   Calendar1,
   MessageCircleQuestionMark,
   SquareTerminal,
@@ -41,11 +40,6 @@ const items = [
     title: "Questions",
     url: "/questions",
     icon: MessageCircleQuestionMark,
-  },
-  {
-    title: "Knowledge base",
-    url: "/knowledge-base",
-    icon: BookOpen,
   },
   {
     title: "Members",

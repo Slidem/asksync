@@ -1,16 +1,22 @@
 /* eslint-disable import/order */
-import { getUserWithPermissions } from "../auth/user";
+import {
+  decorateResourceWithGrants,
+  getPermittedResourcesForType,
+} from "../permissions/common";
+
+import { QueryCtx as BaseQueryCtx } from "../_generated/server";
+import { Doc } from "../_generated/dataModel";
+import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { getAccessibleResourceIds } from "../permissions/queries";
 
 export const listTimeblocks = query({
   args: {
     userId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getUserWithPermissions(ctx);
-    const { orgId, id: authedUserId, role } = user;
+    const user = await getUserWithGroups(ctx);
+    const { orgId, id: authedUserId } = user;
     const userId = args.userId || authedUserId;
 
     const timeBlocks = await ctx.db
@@ -20,19 +26,26 @@ export const listTimeblocks = query({
       )
       .collect();
 
-    // Filter by permissions if viewing another user's timeblocks
-    if (userId !== authedUserId && role !== "admin") {
-      const accessibleTimeblockIds = await getAccessibleResourceIds(
-        "timeblocks",
-        "view",
-        user,
-      );
+    const filteredTimeblocks = await filterPermittedResources(timeBlocks, ctx);
 
-      return timeBlocks.filter((tb) =>
-        accessibleTimeblockIds.includes(tb._id),
-      );
-    }
-
-    return timeBlocks;
+    return decorateResourceWithGrants(
+      ctx,
+      orgId,
+      "timeblocks",
+      filteredTimeblocks,
+    );
   },
 });
+
+async function filterPermittedResources(
+  timeblocks: Doc<"timeblocks">[],
+  ctx: BaseQueryCtx,
+): Promise<Doc<"timeblocks">[]> {
+  const accessibleTimeblockIds = await getPermittedResourcesForType(
+    ctx,
+    "timeblocks",
+    "view",
+  );
+
+  return timeblocks.filter((tb) => accessibleTimeblockIds.includes(tb._id));
+}

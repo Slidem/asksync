@@ -1,5 +1,9 @@
 import type { CalendarEvent, EventColor } from "@/schedule/types";
-import { CalendarSource, RecurrenceRule } from "@asksync/shared";
+import {
+  CalendarSource,
+  PermissionGrant,
+  RecurrenceRule,
+} from "@asksync/shared";
 import {
   DEFAULT_END_HOUR,
   DEFAULT_START_HOUR,
@@ -21,6 +25,7 @@ interface FormFields {
   color: EventColor;
   selectedTagIds: string[];
   recurrenceRule: RecurrenceRule | null;
+  permissions: PermissionGrant[];
   error: string | null;
 }
 
@@ -48,11 +53,12 @@ export interface EventDialogState {
   setFormFields: (fields: Partial<FormFields>) => void;
   setEventMetadata: (metadata: Partial<EventMetadata>) => void;
   toggleTagId: (tagId: string) => void;
+  setPermissions: (permissions: PermissionGrant[]) => void;
   loadEvent: (event: CalendarEvent | null) => void;
   reset: () => void;
   validateAndGetEvent: () =>
-    | { event: CalendarEvent; error: null }
-    | { event: null; error: string };
+    | { event: CalendarEvent; permissions: PermissionGrant[]; error: null }
+    | { event: null; permissions: []; error: string };
 }
 
 // Helper function for formatting time
@@ -74,6 +80,7 @@ const getDefaultFormFieldsState = (): FormFields => ({
   location: "",
   color: "sky" as EventColor,
   selectedTagIds: [],
+  permissions: [],
   error: null,
 });
 
@@ -135,6 +142,11 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       };
     }),
 
+  setPermissions: (permissions) =>
+    set((state) => ({
+      formFields: { ...state.formFields, permissions },
+    })),
+
   loadEvent: (event) =>
     set(() => {
       if (!event) {
@@ -160,6 +172,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         color: (event.color as EventColor) || "sky",
         selectedTagIds: event.tagIds || [],
         recurrenceRule: event.recurrenceRule || null,
+        permissions: event.permissions || [],
       };
 
       const eventMetadata: EventMetadata = {
@@ -221,7 +234,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       ) {
         const error = `Selected time must be between ${START_HOUR}:00 and ${END_HOUR}:00`;
         set({ formFields: { ...formFields, error } });
-        return { event: null, error };
+        return { event: null, permissions: [], error };
       }
       start.setHours(startHours, startMinutes, 0);
       end.setHours(endHours, endMinutes, 0);
@@ -230,7 +243,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
     if (end < start) {
       const error = "End date cannot be before start date";
       set({ formFields: { ...formFields, error } });
-      return { event: null, error };
+      return { event: null, permissions: [], error };
     }
 
     // Use generic title if empty
@@ -255,9 +268,10 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       canEdit: eventMetadata.canEdit,
       canDelete: eventMetadata.canDelete,
       canEditTags: eventMetadata.canEditTags,
+      permissions: formFields.permissions,
     };
 
     set({ formFields: { ...formFields, error: null } });
-    return { event, error: null };
+    return { event, permissions: formFields.permissions, error: null };
   },
 }));
