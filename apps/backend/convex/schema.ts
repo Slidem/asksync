@@ -12,13 +12,12 @@ export default defineSchema({
     responseTimeMinutes: v.optional(v.number()),
     orgId: v.string(),
     createdBy: v.string(),
-    isPublic: v.boolean(),
+    isPublic: v.optional(v.boolean()), // Deprecated: use permissions instead
     updatedAt: v.number(),
   })
     .index("by_org", ["orgId"])
     .index("by_org_and_name", ["orgId", "name"])
-    .index("by_org_and_creator", ["orgId", "createdBy"])
-    .index("by_org_and_public", ["orgId", "isPublic"]),
+    .index("by_org_and_creator", ["orgId", "createdBy"]),
 
   timeblocks: defineTable({
     title: v.string(),

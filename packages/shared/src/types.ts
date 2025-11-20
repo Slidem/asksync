@@ -31,10 +31,11 @@ export interface Tag {
   responseTimeMinutes?: number;
   orgId: string;
   createdBy: string;
-  isPublic: boolean;
   createdAt: number;
   updatedAt: number;
   permissions: PermissionGrant[];
+  canEdit?: boolean;
+  canManage?: boolean;
 }
 
 export interface Timeblock {
@@ -151,7 +152,6 @@ export interface CreateTagForm {
   color: string;
   answerMode: AnswerMode;
   responseTimeMinutes?: number;
-  isPublic?: boolean;
 }
 
 export interface UpdateTagForm {
@@ -160,7 +160,6 @@ export interface UpdateTagForm {
   color?: string;
   answerMode?: AnswerMode;
   responseTimeMinutes?: number;
-  isPublic?: boolean;
 }
 
 export interface CreateQuestionForm {

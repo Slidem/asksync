@@ -3,10 +3,6 @@ import {
   calendarEventToCreateTimeblock,
   calendarEventToUpdateTimeblock,
 } from "@/schedule/utils";
-import {
-  useResourceExistingGrants,
-  useSyncPermissions,
-} from "@/components/permissions/hooks";
 
 import { CalendarEvent } from "@/schedule/types";
 import { api } from "@convex/api";
@@ -16,6 +12,7 @@ import { toast } from "sonner";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useMutation } from "convex/react";
+import { useSyncPermissions } from "@/components/permissions/hooks";
 import { useUser } from "@clerk/nextjs";
 
 export const useOpenCreateEventDialog = () => {
@@ -127,16 +124,13 @@ export const useUpdateEvent = () => {
   const validateAndGetEvent = useEventDialogStore(
     (state) => state.validateAndGetEvent,
   );
-  const currentPermissions = useResourceExistingGrants(
-    "timeblocks",
-    useEventDialogStore.getState().eventMetadata.eventId || "",
-  );
   const close = useEventDialogStore((state) => state.close);
 
   return async () => {
     const {
       event: updatedEvent,
       permissions: updatedPermissions,
+      initialPermissions: currentPermissions,
       error,
     } = validateAndGetEvent();
     if (error) {

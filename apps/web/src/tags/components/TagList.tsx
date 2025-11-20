@@ -1,7 +1,5 @@
 "use client";
 
-import { Filter, Search } from "lucide-react";
-import { SearchTagCategory, SortOrder, TagSortBy } from "@asksync/shared";
 import {
   Select,
   SelectContent,
@@ -9,11 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SortOrder, TagSortBy } from "@asksync/shared";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { NewTagButton } from "@/tags/components/cards/NewTagButton";
 import { NewTagCard } from "@/tags/components/cards/NewTagCard";
+import { Search } from "lucide-react";
 import { TagCard } from "./cards/TagCard";
 import { useState } from "react";
 import { useTags } from "@/tags/hooks/queries";
@@ -22,18 +22,17 @@ import { useUser } from "@clerk/nextjs";
 export function TagList() {
   const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<SearchTagCategory>(
-    SearchTagCategory.ALL,
-  );
   const [sortBy, setSortBy] = useState<TagSortBy>(TagSortBy.NAME);
 
-  const { tags, totalPublicTags, totalUserTags, totalVisibleTags } = useTags({
-    filter: { category: filterCategory, searchTerm },
+  const { tags } = useTags({
+    filter: { searchTerm },
     sorting: {
       sortBy,
       sortOrder: sortBy === TagSortBy.NAME ? SortOrder.ASC : SortOrder.DESC,
     },
   });
+
+  console.log("tags", tags);
 
   return (
     <div className="space-y-6">
@@ -48,7 +47,7 @@ export function TagList() {
         <NewTagButton />
       </div>
 
-      {/* Filters and Search */}
+      {/* Search and Sort */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
@@ -61,70 +60,34 @@ export function TagList() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Filter Mode */}
-          <Select
-            value={filterCategory}
-            onValueChange={(value: SearchTagCategory) =>
-              setFilterCategory(value)
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Tags ({totalVisibleTags})</SelectItem>
-              <SelectItem value="personal">
-                My Tags ({totalUserTags})
-              </SelectItem>
-              <SelectItem value="public">Public ({totalPublicTags})</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Sort Mode */}
-          <Select
-            value={sortBy}
-            onValueChange={(value: TagSortBy) => setSortBy(value)}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="createdAt">Created</SelectItem>
-              <SelectItem value="updatedAt">Updated</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Sort Mode */}
+        <Select
+          value={sortBy}
+          onValueChange={(value: TagSortBy) => setSortBy(value)}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="createdAt">Created</SelectItem>
+            <SelectItem value="updatedAt">Updated</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {(searchTerm || filterCategory !== SearchTagCategory.ALL) && (
+      {searchTerm && (
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Active filters:</span>
-          {searchTerm && (
-            <Badge variant="secondary" className="gap-1">
-              Search: {searchTerm}
-              <button
-                onClick={() => setSearchTerm("")}
-                className="ml-1 hover:text-foreground"
-              >
-                ×
-              </button>
-            </Badge>
-          )}
-          {filterCategory !== SearchTagCategory.ALL && (
-            <Badge variant="secondary" className="gap-1">
-              {filterCategory === SearchTagCategory.PERSONAL && "My Tags"}
-              {filterCategory === SearchTagCategory.PUBLIC && "Public"}
-              <button
-                onClick={() => setFilterCategory(SearchTagCategory.ALL)}
-                className="ml-1 hover:text-foreground"
-              >
-                ×
-              </button>
-            </Badge>
-          )}
+          <Badge variant="secondary" className="gap-1">
+            Search: {searchTerm}
+            <button
+              onClick={() => setSearchTerm("")}
+              className="ml-1 hover:text-foreground"
+            >
+              ×
+            </button>
+          </Badge>
         </div>
       )}
 
@@ -139,16 +102,15 @@ export function TagList() {
         <NewTagCard />
       </div>
 
-      {tags.length === 0 &&
-        (searchTerm || filterCategory !== SearchTagCategory.ALL) && (
-          <div className="text-center py-12">
-            <div className="space-y-3">
-              <div className="text-muted-foreground">
-                No tags match your current filters
-              </div>
+      {tags.length === 0 && searchTerm && (
+        <div className="text-center py-12">
+          <div className="space-y-3">
+            <div className="text-muted-foreground">
+              No tags match your search
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

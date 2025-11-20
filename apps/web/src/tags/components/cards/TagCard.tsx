@@ -7,15 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Clock,
-  Edit3,
-  Eye,
-  Lock,
-  MoreVertical,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Clock, Edit3, Eye, MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,10 +35,6 @@ export function TagCard({
 }: TagCardProps) {
   const { deleteTag } = useDeleteTag();
   const { openDialog } = useEditTagDialog();
-  const canEdit = tag.permissions.some(
-    (p) => p.permission === "edit" || p.permission === "manage",
-  );
-  const canDelete = tag.permissions.some((p) => p.permission === "manage");
 
   return (
     <Card
@@ -61,9 +49,6 @@ export function TagCard({
               style={{ backgroundColor: tag.color }}
             />
             <CardTitle className="text-xl">{tag.name}</CardTitle>
-            {!tag.isPublic && (
-              <Lock className="h-5 w-5 text-muted-foreground" />
-            )}
           </div>
           {showActions && (
             <DropdownMenu>
@@ -78,7 +63,7 @@ export function TagCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {canEdit && (
+                {(tag.canEdit || tag.canManage) && (
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
@@ -89,7 +74,7 @@ export function TagCard({
                     Edit
                   </DropdownMenuItem>
                 )}
-                {canDelete && (
+                {tag.canManage && (
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
@@ -101,7 +86,7 @@ export function TagCard({
                     Delete
                   </DropdownMenuItem>
                 )}
-                {!canEdit && !canDelete && (
+                {!tag.canEdit && !tag.canManage && (
                   <DropdownMenuItem disabled>
                     <Eye className="h-4 w-4 mr-2" />
                     View only
@@ -129,28 +114,14 @@ export function TagCard({
               </Badge>
             )}
 
-            <Badge variant="outline" className="text-sm px-3 py-1">
-              {tag.isPublic ? (
-                <>
-                  <Users className="h-4 w-4 mr-2" />
-                  Public
-                </>
-              ) : (
-                <>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Private
-                </>
-              )}
-            </Badge>
-
             {!isOwner && (
               <Badge
                 variant="outline"
                 className="text-sm px-3 py-1 text-muted-foreground"
               >
-                {canEdit && canDelete ? (
+                {tag.canEdit && tag.canManage ? (
                   "Full access"
-                ) : canEdit ? (
+                ) : tag.canEdit ? (
                   <>
                     <Edit3 className="h-3 w-3 mr-1" />
                     Can edit

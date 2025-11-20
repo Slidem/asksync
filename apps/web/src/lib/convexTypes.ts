@@ -4,6 +4,7 @@ import { Doc, Id } from "@convex/dataModel";
 import {
   Message,
   NotificationTime,
+  PermissionGrant,
   Question,
   RecurrenceRule,
   Tag,
@@ -15,7 +16,13 @@ import {
 import { FunctionReturnType } from "convex/server";
 import { api } from "@convex/api";
 
-export function docToTag(doc: Doc<"tags">): Tag {
+type TagType = Doc<"tags"> & {
+  permissions: PermissionGrant[];
+  canEdit?: boolean;
+  canManage?: boolean;
+};
+
+export function docToTag(doc: TagType): Tag {
   const { _id, _creationTime, ...rest } = doc;
   return {
     id: _id,
@@ -24,7 +31,13 @@ export function docToTag(doc: Doc<"tags">): Tag {
   };
 }
 
-export function docToTimeblock(doc: Doc<"timeblocks">): Timeblock {
+type TimeblockType = Doc<"timeblocks"> & {
+  permissions: PermissionGrant[];
+  canEdit?: boolean;
+  canManage?: boolean;
+};
+
+export function docToTimeblock(doc: TimeblockType): Timeblock {
   const { _id, _creationTime, recurrenceRule, exceptionDates, ...rest } = doc;
   return {
     id: _id,

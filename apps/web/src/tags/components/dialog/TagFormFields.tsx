@@ -176,24 +176,3 @@ export const ResponseTime = ({
   );
 };
 
-export const IsPublic = ({ form }: { form: UseFormReturn<TagFormData> }) => {
-  return (
-    <FormField
-      control={form.control}
-      name="isPublic"
-      render={({ field }) => (
-        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-          <div className="space-y-0.5">
-            <FormLabel>Public Tag</FormLabel>
-            <FormDescription>
-              Allow all organization members to use this tag
-            </FormDescription>
-          </div>
-          <FormControl>
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-          </FormControl>
-        </FormItem>
-      )}
-    />
-  );
-};

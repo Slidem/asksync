@@ -7,7 +7,6 @@ export const tagFormSchema = z.object({
   color: z.string().min(1, "Color is required"),
   answerMode: z.enum(["on-demand", "scheduled"]),
   responseTimeMinutes: z.number().optional(),
-  isPublic: z.boolean(),
   permissions: z.array(z.any()).optional(), // PermissionGrant[] - not validated here
 });
 

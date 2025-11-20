@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PermissionGrant } from "@asksync/shared";
 import { PermissionSelector } from "./PermissionSelector";
 import { useMemo } from "react";
+import { useUser } from "@clerk/nextjs";
 
 type PermissionLevel = "view" | "edit" | "manage";
 
@@ -25,8 +26,8 @@ export function PermissionGrantItem({
   onUpdate,
   onRemove,
 }: PermissionGrantItemProps) {
+  const { user } = useUser();
   const users = useMemberships();
-
   const groups = useGroups();
 
   const { name, imageUrl, color } = useMemo(() => {
@@ -85,7 +86,7 @@ export function PermissionGrantItem({
           <div className="flex items-center gap-2">
             <span className="font-medium truncate">
               {name}
-              {isCreator && (
+              {grant.userId === user?.id && (
                 <span className="text-muted-foreground ml-1">(You)</span>
               )}
             </span>

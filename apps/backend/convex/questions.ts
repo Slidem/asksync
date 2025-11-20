@@ -1,8 +1,13 @@
 /* eslint-disable import/order */
 import { ConvexError, v } from "convex/values";
+import {
+  decorateResourceWithGrants,
+  hasPermission,
+} from "./permissions/common";
 import { mutation, query } from "./_generated/server";
 
 import { Id } from "./_generated/dataModel";
+import { getUserWithGroups } from "./auth/user";
 
 // Helper function to calculate expected answer time from tags
 async function calculateExpectedAnswerTime(
@@ -52,8 +57,9 @@ async function validateTagPermissions(
       return false;
     }
 
-    // Check if user has access to non-public tags
-    if (!tag.isPublic && tag.createdBy !== userId) {
+    // Check if user has access to tag via permissions
+    const hasAccess = await hasPermission(ctx, "tags", tagId, "view");
+    if (tag.createdBy !== userId && !hasAccess) {
       return false;
     }
   }
@@ -191,38 +197,26 @@ export const listQuestionsByUser = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const user = await getUserWithGroups(ctx);
 
     // Get all questions for the organization first
     const allQuestions = await ctx.db
       .query("questions")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
       .collect();
 
     // Filter questions based on filter type in memory
     let questions: typeof allQuestions;
     switch (args.filter) {
       case "created":
-        questions = allQuestions.filter(
-          (q) => q.createdBy === identity.subject,
-        );
+        questions = allQuestions.filter((q) => q.createdBy === user.id);
         break;
       case "assigned":
-        questions = allQuestions.filter((q) =>
-          q.assigneeIds.includes(identity.subject),
-        );
+        questions = allQuestions.filter((q) => q.assigneeIds.includes(user.id));
         break;
       case "participating":
         questions = allQuestions.filter((q) =>
-          q.participantIds.includes(identity.subject),
+          q.participantIds.includes(user.id),
         );
         break;
       default:
@@ -304,6 +298,15 @@ export const listQuestionsByUser = query({
           ),
         );
 
+        const filteredTags = tags.filter((tag) => tag !== null);
+
+        const tagsWithPermissions = await decorateResourceWithGrants({
+          ctx,
+          currentUser: user,
+          resourceType: "tags",
+          resources: filteredTags,
+        });
+
         // Get thread and message count
         const thread = await ctx.db.get(question.threadId as Id<"threads">);
         const messageCount = await ctx.db
@@ -313,11 +316,11 @@ export const listQuestionsByUser = query({
           .then((messages) => messages.filter((m) => !m.isDeleted).length);
 
         // Check for unread messages
-        const hasUnread = question.unreadBy.includes(identity.subject);
+        const hasUnread = question.unreadBy.includes(user.id);
 
         return {
           ...question,
-          tags: tags.filter(Boolean),
+          tags: tagsWithPermissions,
           thread,
           messageCount,
           hasUnread,
@@ -333,23 +336,15 @@ export const listQuestionsByUser = query({
 export const getQuestionById = query({
   args: { questionId: v.id("questions") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const user = await getUserWithGroups(ctx);
 
     const question = await ctx.db.get(args.questionId);
-    if (!question || question.orgId !== orgId) {
+    if (!question || question.orgId !== user.orgId) {
       throw new ConvexError("Question not found");
     }
 
     // Check if user is a participant
-    if (!question.participantIds.includes(identity.subject)) {
+    if (!question.participantIds.includes(user.id)) {
       throw new ConvexError("Not authorized to view this question");
     }
 
@@ -360,6 +355,15 @@ export const getQuestionById = query({
     const tags = await Promise.all(
       question.tagIds.map((tagId: string) => ctx.db.get(tagId as Id<"tags">)),
     );
+
+    const filteredTags = tags.filter((tag) => tag !== null);
+
+    const tagsWithPermissions = await decorateResourceWithGrants({
+      ctx,
+      currentUser: user,
+      resourceType: "tags",
+      resources: filteredTags,
+    });
 
     const thread = await ctx.db.get(question.threadId as Id<"threads">);
 
@@ -378,7 +382,7 @@ export const getQuestionById = query({
 
     return {
       ...question,
-      tags: tags.filter(Boolean),
+      tags: tagsWithPermissions,
       thread,
       messages: messages.filter((m) => !m.isDeleted),
       participants,

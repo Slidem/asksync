@@ -8,6 +8,12 @@ export interface TimeOption {
 
 export type Permission = "view" | "edit" | "manage";
 
+export const PermissionLevels: { [key in Permission]: number } = {
+  view: 1,
+  edit: 2,
+  manage: 3,
+};
+
 export interface User {
   id: string;
   email?: string;

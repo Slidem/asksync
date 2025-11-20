@@ -33,12 +33,24 @@ export function ResourcePermissionsManager({
   const existingGroupIds = new Set(
     grants.filter((g) => g.type === "group").map((g) => g.groupId!),
   );
+  const hasEveryonePermission = grants.some((g) => g.type === "all");
 
   const handleAdd = (
-    type: "user" | "group",
-    id: string,
+    type: "user" | "group" | "all",
+    id: string | null,
     permission: PermissionLevel,
   ) => {
+    if (type === "all") {
+      const newGrant: PermissionGrant = {
+        id: `temp-${Date.now()}`,
+        type: "all",
+        permission,
+        isCreator: false,
+      };
+      onChange([...grants, newGrant]);
+      return;
+    }
+
     const isUser = type === "user";
     const entity = isUser
       ? users.find((u) => u.id === id)
@@ -49,8 +61,8 @@ export function ResourcePermissionsManager({
     const newGrant: PermissionGrant = {
       id: `temp-${Date.now()}`,
       type,
-      userId: isUser ? id : undefined,
-      groupId: !isUser ? id : undefined,
+      userId: isUser ? (id ?? undefined) : undefined,
+      groupId: !isUser ? (id ?? undefined) : undefined,
       permission,
       isCreator: false,
     };
@@ -135,6 +147,7 @@ export function ResourcePermissionsManager({
         groups={groups}
         existingUserIds={existingUserIds}
         existingGroupIds={existingGroupIds}
+        hasEveryonePermission={hasEveryonePermission}
         onAdd={handleAdd}
       />
     </Card>

@@ -28,12 +28,12 @@ export const listTimeblocks = query({
 
     const filteredTimeblocks = await filterPermittedResources(timeBlocks, ctx);
 
-    return decorateResourceWithGrants(
+    return decorateResourceWithGrants({
       ctx,
-      orgId,
-      "timeblocks",
-      filteredTimeblocks,
-    );
+      currentUser: user,
+      resourceType: "timeblocks",
+      resources: filteredTimeblocks,
+    });
   },
 });
 

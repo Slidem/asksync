@@ -2,7 +2,6 @@ import {
   AnswerMode,
   Color,
   Description,
-  IsPublic,
   Name,
   ResponseTime,
 } from "@/tags/components/dialog/TagFormFields";
@@ -44,7 +43,6 @@ interface TagFormDialogProps {
     | "color"
     | "answerMode"
     | "responseTimeMinutes"
-    | "isPublic"
     | "permissions"
   >;
 }
@@ -70,7 +68,6 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
       description: "",
       color: TAG_COLORS[0],
       answerMode: "scheduled",
-      isPublic: true,
       permissions: getDefaultCreateResourceGrants(user?.id || ""),
     },
   });
@@ -107,7 +104,6 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
             <Color form={form} />
             <AnswerMode form={form} />
             <ResponseTime form={form} />
-            <IsPublic form={form} />
 
             <Separator className="my-4" />
 

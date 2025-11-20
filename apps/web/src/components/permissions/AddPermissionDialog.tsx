@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Globe, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PermissionSelector } from "./PermissionSelector";
-import { Users } from "lucide-react";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 
@@ -39,9 +39,10 @@ interface AddPermissionDialogProps {
   groups: SelectableGroup[];
   existingUserIds: Set<string>;
   existingGroupIds: Set<string>;
+  hasEveryonePermission: boolean;
   onAdd: (
-    type: "user" | "group",
-    id: string,
+    type: "user" | "group" | "all",
+    id: string | null,
     permission: PermissionLevel,
   ) => void;
 }
@@ -53,9 +54,12 @@ export function AddPermissionDialog({
   groups,
   existingUserIds,
   existingGroupIds,
+  hasEveryonePermission,
   onAdd,
 }: AddPermissionDialogProps) {
-  const [selectedTab, setSelectedTab] = useState<"user" | "group">("user");
+  const [selectedTab, setSelectedTab] = useState<"user" | "group" | "all">(
+    "user",
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [permission, setPermission] = useState<PermissionLevel>("view");
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,8 +80,12 @@ export function AddPermissionDialog({
   );
 
   const handleAdd = () => {
-    if (!selectedId) return;
-    onAdd(selectedTab, selectedId, permission);
+    if (selectedTab === "all") {
+      onAdd("all", null, permission);
+    } else {
+      if (!selectedId) return;
+      onAdd(selectedTab, selectedId, permission);
+    }
     setSelectedId(null);
     setPermission("view");
     setSearchQuery("");
@@ -103,11 +111,14 @@ export function AddPermissionDialog({
 
         <Tabs
           value={selectedTab}
-          onValueChange={(v) => setSelectedTab(v as "user" | "group")}
+          onValueChange={(v) => setSelectedTab(v as "user" | "group" | "all")}
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="user">Users</TabsTrigger>
             <TabsTrigger value="group">Groups</TabsTrigger>
+            <TabsTrigger value="all" disabled={hasEveryonePermission}>
+              Everyone
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="user" className="space-y-4">
@@ -188,9 +199,28 @@ export function AddPermissionDialog({
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="all" className="space-y-4">
+            <div className="flex items-center gap-3 p-4 rounded-md border bg-muted/30">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Globe className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-medium">Everyone</div>
+                <div className="text-sm text-muted-foreground">
+                  This permission applies to all users in your organization.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Permission level:</span>
+              <PermissionSelector value={permission} onChange={setPermission} />
+            </div>
+          </TabsContent>
         </Tabs>
 
-        {selectedId && (
+        {selectedId && selectedTab !== "all" && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Permission level:</span>
             <PermissionSelector value={permission} onChange={setPermission} />
@@ -205,7 +235,10 @@ export function AddPermissionDialog({
           >
             Cancel
           </Button>
-          <Button onClick={handleAdd} disabled={!selectedId}>
+          <Button
+            onClick={handleAdd}
+            disabled={selectedTab !== "all" && !selectedId}
+          >
             Add Permission
           </Button>
         </DialogFooter>

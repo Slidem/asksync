@@ -24,12 +24,15 @@ export const grantPermission = mutation({
   handler: async (ctx, args) => {
     const user = await requireAdmin(ctx);
 
-    // Validate that either groupId or userId is provided (not both, not neither)
-    if (!args.groupId && !args.userId) {
-      throw new Error("Must provide either groupId or userId");
+    // Validate exactly one of: all, groupId, or userId
+    const scopeCount = [args.all, args.groupId, args.userId].filter(
+      Boolean,
+    ).length;
+    if (scopeCount === 0) {
+      throw new Error("Must provide either all: true, groupId, or userId");
     }
-    if (args.groupId && args.userId) {
-      throw new Error("Cannot provide both groupId and userId");
+    if (scopeCount > 1) {
+      throw new Error("Cannot provide multiple scopes (all, groupId, userId)");
     }
 
     // Check if permission already exists
@@ -40,9 +43,11 @@ export const grantPermission = mutation({
           q.eq(q.field("orgId"), user.orgId),
           q.eq(q.field("resourceType"), args.resourceType),
           q.eq(q.field("resourceId"), args.resourceId),
-          args.groupId
-            ? q.eq(q.field("groupId"), args.groupId)
-            : q.eq(q.field("userId"), args.userId),
+          args.all
+            ? q.eq(q.field("all"), true)
+            : args.groupId
+              ? q.eq(q.field("groupId"), args.groupId)
+              : q.eq(q.field("userId"), args.userId),
         ),
       )
       .first();

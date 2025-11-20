@@ -1,12 +1,8 @@
-import { SearchTagCategory, SortOrder, TagSortBy } from "@asksync/shared";
+import { SortOrder, TagSortBy } from "@asksync/shared";
 
 import { api } from "@convex/api";
 import { docToTag } from "@/lib/convexTypes";
 import { useQuery } from "convex/react";
-
-const DEFAULT_FILTER = {
-  category: SearchTagCategory.ALL,
-};
 
 const DEFAULT_SORTING = {
   sortBy: TagSortBy.NAME,
@@ -16,7 +12,6 @@ const DEFAULT_SORTING = {
 interface UseTagsOptions {
   filter?: {
     searchTerm?: string;
-    category?: SearchTagCategory;
   };
   sorting?: {
     sortBy: TagSortBy;
@@ -25,18 +20,15 @@ interface UseTagsOptions {
 }
 
 export const useTags = ({
-  filter = DEFAULT_FILTER,
+  filter = {},
   sorting = DEFAULT_SORTING,
 }: UseTagsOptions) => {
   const result = useQuery(api.tags.queries.listTagsByOrg, {
-    category: filter.category,
     sortOrder: sorting.sortOrder,
     sortBy: sorting.sortBy,
   }) || {
     tags: [],
     totalVisibleTags: 0,
-    totalUserTags: 0,
-    totalPublicTags: 0,
   };
 
   let filteredTagsBySearchTerm = result.tags.map(docToTag);
@@ -51,7 +43,5 @@ export const useTags = ({
   return {
     tags: filteredTagsBySearchTerm,
     totalVisibleTags: result.totalVisibleTags,
-    totalUserTags: result.totalUserTags,
-    totalPublicTags: result.totalPublicTags,
   };
 };

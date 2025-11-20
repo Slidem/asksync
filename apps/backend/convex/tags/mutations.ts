@@ -12,7 +12,6 @@ export const createTag = mutation({
     color: v.string(),
     answerMode: v.union(v.literal("on-demand"), v.literal("scheduled")),
     responseTimeMinutes: v.optional(v.number()),
-    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { orgId, id: userId } = await getUser(ctx);
@@ -42,7 +41,6 @@ export const createTag = mutation({
       responseTimeMinutes: args.responseTimeMinutes,
       createdBy: userId,
       updatedAt: Date.now(),
-      isPublic: args.isPublic ?? true,
     });
 
     // Grant manage permission to creator
@@ -72,7 +70,6 @@ export const updateTag = mutation({
       v.union(v.literal("on-demand"), v.literal("scheduled")),
     ),
     responseTimeMinutes: v.optional(v.number()),
-    isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Get the user identity
@@ -125,7 +122,6 @@ export const updateTag = mutation({
       color: args.color ?? existingTag.color,
       answerMode: newAnswerMode,
       responseTimeMinutes: newResponseTime,
-      isPublic: args.isPublic ?? existingTag.isPublic,
     };
 
     await ctx.db.patch(args.id, update);

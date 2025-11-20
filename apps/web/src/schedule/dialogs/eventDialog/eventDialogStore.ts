@@ -37,6 +37,7 @@ interface EventMetadata {
   canEdit: boolean | undefined;
   canDelete: boolean | undefined;
   canEditTags: boolean | undefined;
+  initialPermissions: PermissionGrant[];
 }
 
 export interface EventDialogState {
@@ -57,8 +58,13 @@ export interface EventDialogState {
   loadEvent: (event: CalendarEvent | null) => void;
   reset: () => void;
   validateAndGetEvent: () =>
-    | { event: CalendarEvent; permissions: PermissionGrant[]; error: null }
-    | { event: null; permissions: []; error: string };
+    | {
+        event: CalendarEvent;
+        permissions: PermissionGrant[];
+        initialPermissions: PermissionGrant[];
+        error: null;
+      }
+    | { event: null; permissions: []; initialPermissions: []; error: string };
 }
 
 // Helper function for formatting time
@@ -92,6 +98,7 @@ const getDefaultEventMetadata = (): EventMetadata => ({
   canEdit: undefined,
   canDelete: undefined,
   canEditTags: undefined,
+  initialPermissions: [],
 });
 
 export const useEventDialogStore = create<EventDialogState>((set, get) => ({
@@ -184,6 +191,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         canEdit: event.canEdit,
         canDelete: event.canDelete,
         canEditTags: event.canEditTags,
+        initialPermissions: event.permissions || [],
       };
 
       return { formFields, eventMetadata, eventToUpdate: event };
@@ -234,7 +242,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       ) {
         const error = `Selected time must be between ${START_HOUR}:00 and ${END_HOUR}:00`;
         set({ formFields: { ...formFields, error } });
-        return { event: null, permissions: [], error };
+        return { event: null, permissions: [], initialPermissions: [], error };
       }
       start.setHours(startHours, startMinutes, 0);
       end.setHours(endHours, endMinutes, 0);
@@ -243,7 +251,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
     if (end < start) {
       const error = "End date cannot be before start date";
       set({ formFields: { ...formFields, error } });
-      return { event: null, permissions: [], error };
+      return { event: null, permissions: [], initialPermissions: [], error };
     }
 
     // Use generic title if empty
@@ -272,6 +280,11 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
     };
 
     set({ formFields: { ...formFields, error: null } });
-    return { event, permissions: formFields.permissions, error: null };
+    return {
+      event,
+      permissions: formFields.permissions,
+      initialPermissions: eventMetadata.initialPermissions,
+      error: null,
+    };
   },
 }));

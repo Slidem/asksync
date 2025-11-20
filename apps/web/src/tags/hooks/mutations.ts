@@ -1,31 +1,32 @@
-import { CreateTagForm, Tag, UpdateTagForm } from "@asksync/shared";
+import {
+  CreateTagForm,
+  PermissionGrant,
+  Tag,
+  UpdateTagForm,
+} from "@asksync/shared";
 
-import { PermissionGrant } from "@/components/permissions";
 import React from "react";
 import { api } from "@convex/api";
 import { toTagId } from "@/lib/convexTypes";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
+import { useSyncPermissions } from "@/components/permissions";
 
 export const useCreateTag = () => {
   const [isCreating, setIsCreating] = React.useState(false);
   const createTagMutation = useMutation(api.tags.mutations.createTag);
+  const syncPermissions = useSyncPermissions();
   const createTag = async (
     data: CreateTagForm & { permissions?: PermissionGrant[] },
   ) => {
     try {
       setIsCreating(true);
-
-      // Convert PermissionGrant[] to backend format
-      const permissions = data.permissions?.map((grant) => ({
-        groupId: grant.groupId,
-        userId: grant.userId,
-        permission: grant.permission,
-      }));
-
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { permissions: _, ...tagData } = data;
-      await createTagMutation({ ...tagData, permissions });
+      const tagId = await createTagMutation({ ...tagData });
+      if (data.permissions) {
+        await syncPermissions("tags", tagId, [], data.permissions);
+      }
       toast.success("Tag created successfully");
     } catch (error) {
       toast.error(

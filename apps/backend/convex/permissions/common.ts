@@ -1,14 +1,16 @@
+import { Doc } from "../_generated/dataModel";
 import { QueryCtx as BaseQueryCtx } from "../_generated/server";
 /* eslint-disable import/order */
-import { Doc } from "../_generated/dataModel";
-import { Permission } from "../common/types";
 import { PermissionGrant } from "@asksync/shared";
 import { getUserWithGroups } from "../auth/user";
+import { Permission, PermissionLevels, UserWithGroups } from "../common/types";
 
 export type ResourceType = "tags" | "timeblocks" | "questions";
 
 export type DecoratedResource<T> = T & {
   permissions: PermissionGrant[];
+  canEdit?: boolean;
+  canManage?: boolean;
 };
 
 /**
@@ -22,19 +24,7 @@ const meetsPermissionLevel = ({
   granted: Permission;
   required: Permission;
 }): boolean => {
-  if (granted === "manage") {
-    return true;
-  }
-
-  if (granted === "edit" && required !== "manage") {
-    return true;
-  }
-
-  if (granted === "view" && required === "view") {
-    return true;
-  }
-
-  return false;
+  return PermissionLevels[granted] >= PermissionLevels[required];
 };
 
 /**
@@ -72,18 +62,56 @@ export const hasPermission = async (
   );
 };
 
+interface DecorateResourceWithGrantsOptions<
+  T extends { _id: string; createdBy: string },
+> {
+  ctx: BaseQueryCtx;
+  currentUser: UserWithGroups;
+  resourceType: ResourceType;
+  resources: T[];
+}
+
+export const getPermissionLevelFromGrants = (
+  user: UserWithGroups,
+  grants: PermissionGrant[],
+): Permission | null => {
+  let highestPermission: Permission | null = null;
+
+  for (const grant of grants) {
+    if (
+      grant.type === "all" ||
+      (grant.userId && grant.userId === user.id) ||
+      (grant.groupId && user.groupIds.includes(grant.groupId))
+    ) {
+      const permissionToCheck = grant.permission;
+
+      if (
+        highestPermission === null ||
+        PermissionLevels[permissionToCheck] >
+          PermissionLevels[highestPermission]
+      ) {
+        highestPermission = permissionToCheck;
+      }
+    }
+  }
+  return highestPermission;
+};
+
+/**
+ * Decorate resources with their permission grants
+ */
 export const decorateResourceWithGrants = async <
   T extends { _id: string; createdBy: string },
->(
-  ctx: BaseQueryCtx,
-  orgId: string,
-  resourceType: ResourceType,
-  resources: T[],
-): Promise<DecoratedResource<T>[]> => {
+>({
+  ctx,
+  currentUser,
+  resourceType,
+  resources,
+}: DecorateResourceWithGrantsOptions<T>): Promise<DecoratedResource<T>[]> => {
   const permissions = await ctx.db
     .query("permissions")
     .withIndex("by_org_and_type", (q) =>
-      q.eq("orgId", orgId).eq("resourceType", resourceType),
+      q.eq("orgId", currentUser.orgId).eq("resourceType", resourceType),
     )
     .collect();
 
@@ -109,7 +137,29 @@ export const decorateResourceWithGrants = async <
       userId: perm.userId,
       permission: perm.permission,
     }));
-    return { ...res, permissions: grants };
+
+    const currentUserPermissionLevel = getPermissionLevelFromGrants(
+      currentUser,
+      grants,
+    );
+
+    const canEdit =
+      currentUser.id === res.createdBy ||
+      (currentUserPermissionLevel !== null &&
+        meetsPermissionLevel({
+          granted: currentUserPermissionLevel,
+          required: "edit",
+        }));
+
+    const canManage =
+      currentUser.id === res.createdBy ||
+      (currentUserPermissionLevel !== null &&
+        meetsPermissionLevel({
+          granted: currentUserPermissionLevel,
+          required: "manage",
+        }));
+
+    return { ...res, permissions: grants, canEdit, canManage };
   });
 };
 
