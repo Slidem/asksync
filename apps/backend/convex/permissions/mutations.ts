@@ -1,6 +1,9 @@
+import { getUserWithGroups } from "../auth/user";
+import { ResourceIdType } from "../resources/model";
+import { hasPermission } from "./common";
 /* eslint-disable import/order */
 import { mutation } from "../_generated/server";
-import { requireAdmin } from "../auth/user";
+/* eslint-disable import/order */
 import { v } from "convex/values";
 
 // Grant permission to a group or user for a resource
@@ -22,7 +25,20 @@ export const grantPermission = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await requireAdmin(ctx);
+    const user = await getUserWithGroups(ctx);
+
+    if (
+      (await hasPermission(
+        ctx,
+        args.resourceType,
+        args.resourceId as ResourceIdType,
+        "manage",
+      )) === false
+    ) {
+      throw new Error(
+        "You don't have permission to manage permissions for this resource",
+      );
+    }
 
     // Validate exactly one of: all, groupId, or userId
     const scopeCount = [args.all, args.groupId, args.userId].filter(
@@ -38,17 +54,18 @@ export const grantPermission = mutation({
     // Check if permission already exists
     const existingPermission = await ctx.db
       .query("permissions")
+      .withIndex("by_org_and_type_and_resourceId", (q) =>
+        q
+          .eq("orgId", user.orgId)
+          .eq("resourceType", args.resourceType)
+          .eq("resourceId", args.resourceId),
+      )
       .filter((q) =>
-        q.and(
-          q.eq(q.field("orgId"), user.orgId),
-          q.eq(q.field("resourceType"), args.resourceType),
-          q.eq(q.field("resourceId"), args.resourceId),
-          args.all
-            ? q.eq(q.field("all"), true)
-            : args.groupId
-              ? q.eq(q.field("groupId"), args.groupId)
-              : q.eq(q.field("userId"), args.userId),
-        ),
+        args.all
+          ? q.eq(q.field("all"), true)
+          : args.groupId
+            ? q.eq("groupId", args.groupId)
+            : q.eq("userId", args.userId!),
       )
       .first();
 
@@ -85,12 +102,23 @@ export const revokePermission = mutation({
     permissionId: v.id("permissions"),
   },
   handler: async (ctx, args) => {
-    const user = await requireAdmin(ctx);
+    const user = await getUserWithGroups(ctx);
 
     // Get permission
     const permission = await ctx.db.get(args.permissionId);
     if (!permission) {
       throw new Error("Permission not found");
+    }
+
+    if (
+      !(await hasPermission(
+        ctx,
+        permission.resourceType,
+        permission.resourceId as ResourceIdType,
+        "manage",
+      ))
+    ) {
+      throw new Error("You don't have permission to revoke this permission");
     }
 
     // Verify permission belongs to user's org
@@ -116,12 +144,23 @@ export const updatePermission = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await requireAdmin(ctx);
+    const user = await getUserWithGroups(ctx);
 
     // Get permission
     const permission = await ctx.db.get(args.permissionId);
     if (!permission) {
       throw new Error("Permission not found");
+    }
+
+    if (
+      !(await hasPermission(
+        ctx,
+        permission.resourceType,
+        permission.resourceId as ResourceIdType,
+        "manage",
+      ))
+    ) {
+      throw new Error("You don't have permission to update this permission");
     }
 
     // Verify permission belongs to user's org

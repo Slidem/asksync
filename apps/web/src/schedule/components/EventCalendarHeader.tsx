@@ -41,6 +41,8 @@ export const EventCalendarHeader = () => {
   const setCurrentDate = useCalendarViewStore((state) => state.setCurrentDate);
   const openCreateEventDialogAtNow = useOpenCreateEventDialogAtNow();
   const isOpen = useEventDialogStore((state) => state.isOpen);
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
+  const isReadOnly = selectedUserId !== null;
 
   const handlePrevious = useCallback(() => {
     let newDate: Date;
@@ -243,18 +245,20 @@ export const EventCalendarHeader = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            className="max-[479px]:aspect-square max-[479px]:p-0!"
-            size="sm"
-            onClick={openCreateEventDialogAtNow}
-          >
-            <PlusIcon
-              className="opacity-60 sm:-ms-1"
-              size={16}
-              aria-hidden="true"
-            />
-            <span className="max-sm:sr-only">New event</span>
-          </Button>
+          {!isReadOnly && (
+            <Button
+              className="max-[479px]:aspect-square max-[479px]:p-0!"
+              size="sm"
+              onClick={openCreateEventDialogAtNow}
+            >
+              <PlusIcon
+                className="opacity-60 sm:-ms-1"
+                size={16}
+                aria-hidden="true"
+              />
+              <span className="max-sm:sr-only">New event</span>
+            </Button>
+          )}
         </div>
       </div>
     </>

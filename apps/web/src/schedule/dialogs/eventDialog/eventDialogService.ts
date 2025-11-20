@@ -9,6 +9,7 @@ import { api } from "@convex/api";
 import { getDefaultCreateResourceGrants } from "@/components/permissions/types";
 import { toTimeblockId } from "@/lib/convexTypes";
 import { toast } from "sonner";
+import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useMutation } from "convex/react";
@@ -18,8 +19,14 @@ import { useUser } from "@clerk/nextjs";
 export const useOpenCreateEventDialog = () => {
   const openDialog = useEventDialogStore((state) => state.open);
   const { user } = useUser();
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
+  const isReadOnly = selectedUserId !== null;
+
   return useCallback(
     ({ start, end }: { start: Date; end?: Date }) => {
+      if (isReadOnly) {
+        return;
+      }
       // Snap start time to 15-minute intervals if not already snapped
       const minutes = start.getMinutes();
       const remainder = minutes % 15;
@@ -49,7 +56,7 @@ export const useOpenCreateEventDialog = () => {
 
       openDialog(newEvent);
     },
-    [openDialog, user?.id],
+    [isReadOnly, openDialog, user?.id],
   );
 };
 
@@ -65,11 +72,17 @@ export const useOpenCreateEventDialogAtNow = () => {
 
 export const useSelectEventInDialog = () => {
   const openDialog = useEventDialogStore((state) => state.open);
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
+
   return useCallback(
     (event: CalendarEvent) => {
+      // Don't open dialog when viewing another user's calendar
+      if (selectedUserId !== null) {
+        return;
+      }
       openDialog(event);
     },
-    [openDialog],
+    [openDialog, selectedUserId],
   );
 };
 

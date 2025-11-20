@@ -1,11 +1,10 @@
+import { PermissionGrant } from "@asksync/shared";
 import { Doc } from "../_generated/dataModel";
 import { QueryCtx as BaseQueryCtx } from "../_generated/server";
-/* eslint-disable import/order */
-import { PermissionGrant } from "@asksync/shared";
 import { getUserWithGroups } from "../auth/user";
 import { Permission, PermissionLevels, UserWithGroups } from "../common/types";
-
-export type ResourceType = "tags" | "timeblocks" | "questions";
+import { getResourceById } from "../resources/common";
+import { ResourceIdType, ResourceType } from "../resources/model";
 
 export type DecoratedResource<T> = T & {
   permissions: PermissionGrant[];
@@ -34,12 +33,14 @@ const meetsPermissionLevel = ({
 export const hasPermission = async (
   ctx: BaseQueryCtx,
   resourceType: ResourceType,
-  resourceId: string,
+  resourceId: ResourceIdType,
   permission: Permission,
 ): Promise<boolean> => {
   const user = await getUserWithGroups(ctx);
 
-  if (user.role === "admin") {
+  const existingResource = await getResourceById(ctx, resourceId);
+
+  if (existingResource?.createdBy === user.id) {
     return true;
   }
 

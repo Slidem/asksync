@@ -13,6 +13,7 @@ import { GhostEventOverlay } from "@/schedule/components/GhostEventOverlay";
 import { PositionedEventRenderer } from "@/schedule/components/PositionedEventRenderer";
 import { QuarterHourGrid } from "@/schedule/components/QuarterHourGrid";
 import { createEventClickHandler } from "../utils";
+import { noOp } from "@/lib/utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useDayEventsPositioning } from "@/schedule/hooks/eventsPositioning";
 import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
@@ -28,7 +29,10 @@ export function DayView() {
   const openSelectEventInDialog = useSelectEventInDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();
   const currentDate = useCalendarViewStore((state) => state.currentDate);
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
   const events = useEventsForCurrentScheduleView();
+
+  const isReadOnly = selectedUserId !== null;
 
   // Use extracted hooks
   const hours = useHourGrid(currentDate);
@@ -129,11 +133,13 @@ export function DayView() {
           ))}
 
           {/* Ghost event */}
-          <GhostEventOverlay
-            view="day"
-            ghostEvent={ghostEvent}
-            isDragging={isDragging}
-          />
+          {!isReadOnly && (
+            <GhostEventOverlay
+              view="day"
+              ghostEvent={ghostEvent}
+              isDragging={isDragging}
+            />
+          )}
 
           {/* Current time indicator */}
           <CurrentTimeIndicator view="day" />
@@ -144,9 +150,10 @@ export function DayView() {
               key={hour.toString()}
               hour={hour}
               date={currentDate}
+              dayColumnIndex={0}
               isCreating={isCreating}
-              onMouseDown={handleCellMouseDown}
-              onCellClick={handleCellClick}
+              onMouseDown={isReadOnly ? noOp : handleCellMouseDown}
+              onCellClick={isReadOnly ? noOp : handleCellClick}
               idPrefix="day-cell"
             />
           ))}

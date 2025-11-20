@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef } from "react";
+import { cn, noOp } from "@/lib/utils";
 import {
   eachDayOfInterval,
   endOfWeek,
@@ -20,7 +21,6 @@ import { EventItem } from "@/schedule/components/EventItem";
 import { GhostEventOverlay } from "@/schedule/components/GhostEventOverlay";
 import { PositionedEventRenderer } from "@/schedule/components/PositionedEventRenderer";
 import { QuarterHourGrid } from "@/schedule/components/QuarterHourGrid";
-import { cn } from "@/lib/utils";
 import { createEventClickHandler } from "../utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
@@ -37,7 +37,10 @@ export function WeekView() {
   const openSelectEventInDialog = useSelectEventInDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();
   const currentDate = useCalendarViewStore((state) => state.currentDate);
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
   const events = useEventsForCurrentScheduleView();
+
+  const isReadOnly = selectedUserId !== null;
 
   // Calculate days and hours
   const days = useMemo(() => {
@@ -201,12 +204,14 @@ export function WeekView() {
             ))}
 
             {/* Ghost event */}
-            <GhostEventOverlay
-              view="week"
-              dayIndex={dayIndex}
-              ghostEvent={ghostEvent}
-              isDragging={isDragging}
-            />
+            {!isReadOnly && (
+              <GhostEventOverlay
+                view="week"
+                dayIndex={dayIndex}
+                ghostEvent={ghostEvent}
+                isDragging={isDragging}
+              />
+            )}
 
             {/* Current time indicator */}
             <CurrentTimeIndicator view="week" day={day} />
@@ -219,8 +224,8 @@ export function WeekView() {
                 date={day}
                 dayColumnIndex={dayIndex}
                 isCreating={isCreating}
-                onMouseDown={handleCellMouseDown}
-                onCellClick={handleCellClick}
+                onMouseDown={isReadOnly ? noOp : handleCellMouseDown}
+                onCellClick={isReadOnly ? noOp : handleCellClick}
                 idPrefix="week-cell"
               />
             ))}

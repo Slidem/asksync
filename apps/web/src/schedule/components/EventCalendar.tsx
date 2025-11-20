@@ -8,6 +8,7 @@ import {
 
 import { AgendaView } from "@/schedule/components/AgendaView";
 import { CalendarDndProvider } from "@/schedule/components/CalendarDndContext";
+import { CalendarUserSelector } from "@/schedule/components/CalendarUserSelector";
 import { DayView } from "@/schedule/components/DayView";
 import { EventCalendarHeader } from "@/schedule/components/EventCalendarHeader";
 import { MonthView } from "@/schedule/components/MonthView";
@@ -28,6 +29,7 @@ export function EventCalendar() {
         } as React.CSSProperties
       }
     >
+      <CalendarUserSelector />
       <EventCalendarHeader />
       <CalendarDndProvider>
         <div className="flex flex-1 flex-col">

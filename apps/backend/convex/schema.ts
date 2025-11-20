@@ -35,7 +35,6 @@ export default defineSchema({
       ),
     ),
     tagIds: v.array(v.string()), // which tags this timeblock handles
-    userId: v.optional(v.string()), // who owns this timeblock
     createdBy: v.string(),
     orgId: v.string(),
     source: v.union(
@@ -48,7 +47,7 @@ export default defineSchema({
     exceptionDates: v.optional(v.array(v.number())), // UTC midnight timestamps of excluded dates
     updatedAt: v.number(),
   })
-    .index("by_org_and_user", ["orgId", "userId"])
+    .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_time", ["orgId", "startTime"])
     .index("by_tag_ids", ["tagIds"])
     .index("by_external_id", ["externalId"]),

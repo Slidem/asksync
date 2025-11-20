@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { getHours } from "date-fns";
 import { DroppableCell } from "@/schedule/components/DroppableCell";
+import React from "react";
 import { cn } from "@/lib/utils";
+import { getHours } from "date-fns";
 
 interface QuarterHourGridProps {
   hour: Date;

@@ -49,7 +49,7 @@ async function validateTagPermissions(
   ctx: any,
   orgId: string,
   userId: string,
-  tagIds: string[],
+  tagIds: Id<"tags">[],
 ): Promise<boolean> {
   for (const tagId of tagIds) {
     const tag = await ctx.db.get(tagId as Id<"tags">);
@@ -112,7 +112,7 @@ export const createQuestion = mutation({
       ctx,
       orgId,
       identity.subject,
-      args.tagIds,
+      args.tagIds as Id<"tags">[],
     );
 
     if (!hasTagPermissions) {

@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { TagFormData } from "@/tags/model";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
@@ -175,4 +174,3 @@ export const ResponseTime = ({
     />
   );
 };
-

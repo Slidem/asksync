@@ -54,14 +54,14 @@ export async function getExistingTimeblock({
       args.id,
       requiredPermission,
     );
-    if (existingTimeblock.userId !== userId && !canPerform) {
+    if (existingTimeblock.createdBy !== userId && !canPerform) {
       throw new Error(
         `You don't have permission to ${requiredPermission} this timeblock`,
       );
     }
   } else {
     // Backward compatibility: if no permission specified, require ownership
-    if (existingTimeblock.userId !== userId) {
+    if (existingTimeblock.createdBy !== userId) {
       throw new Error("Can only modify your own timeblocks");
     }
   }

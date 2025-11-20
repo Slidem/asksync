@@ -69,7 +69,10 @@ const getDefaultViewRange = (currentDate: Date) => {
 export const useEventsForCurrentScheduleView = () => {
   const view = useCalendarViewStore((state) => state.calendarView);
   const currentDate = useCalendarViewStore((state) => state.currentDate);
-  const rawTimeblocks = useQuery(api.timeblocks.queries.listTimeblocks, {});
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
+  const rawTimeblocks = useQuery(api.timeblocks.queries.listTimeblocks, {
+    userId: selectedUserId ?? undefined,
+  });
   const timeblocks: Timeblock[] = useMemo(
     () => (rawTimeblocks || []).map(docToTimeblock),
     [rawTimeblocks],

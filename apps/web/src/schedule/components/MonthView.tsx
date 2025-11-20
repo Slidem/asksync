@@ -39,6 +39,7 @@ import { DraggableEvent } from "@/schedule/components/DraggableEvent";
 import { DroppableCell } from "@/schedule/components/DroppableCell";
 import { EventItem } from "@/schedule/components/EventItem";
 import { createEventClickHandler } from "../utils";
+import { noOp } from "@/lib/utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useEventVisibility } from "@/schedule/hooks/eventVisibility";
 import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
@@ -49,8 +50,11 @@ export function MonthView() {
   const openCreateEventDialog = useOpenCreateEventDialog();
 
   const currentDate = useCalendarViewStore((state) => state.currentDate);
+  const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
 
   const events = useEventsForCurrentScheduleView();
+
+  const isReadOnly = selectedUserId !== null;
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
@@ -175,11 +179,15 @@ export function MonthView() {
                   <DroppableCell
                     id={cellId}
                     date={day}
-                    onClick={() => {
-                      const start = new Date(day);
-                      start.setHours(DEFAULT_START_HOUR, 0, 0);
-                      openCreateEventDialog({ start });
-                    }}
+                    onClick={
+                      isReadOnly
+                        ? noOp
+                        : () => {
+                            const start = new Date(day);
+                            start.setHours(DEFAULT_START_HOUR, 0, 0);
+                            openCreateEventDialog({ start });
+                          }
+                    }
                   >
                     <div className="group-data-today:bg-primary group-data-today:text-primary-foreground mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm">
                       {format(day, "d")}

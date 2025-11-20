@@ -21,8 +21,8 @@ export const listTimeblocks = query({
 
     const timeBlocks = await ctx.db
       .query("timeblocks")
-      .withIndex("by_org_and_user", (q) =>
-        q.eq("orgId", orgId).eq("userId", userId),
+      .withIndex("by_org_and_creator", (q) =>
+        q.eq("orgId", orgId).eq("createdBy", userId),
       )
       .collect();
 
