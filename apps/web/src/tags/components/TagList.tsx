@@ -32,8 +32,6 @@ export function TagList() {
     },
   });
 
-  console.log("tags", tags);
-
   return (
     <div className="space-y-6">
       {/* Header */}
