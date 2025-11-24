@@ -1,22 +1,22 @@
-import { Clock, MapPin } from "lucide-react";
+import { ChevronDown, Clock, MapPin } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { SortOrder, TagSortBy } from "@asksync/shared";
 
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { ExpandedTimeblock } from "../dialogs/createQuestion/createQuestionDialogStore";
 import { format } from "date-fns";
 import { useTags } from "@/tags/hooks/queries";
 
 interface AvailableTimeblocksListProps {
   timeblocks: ExpandedTimeblock[] | undefined;
-  selectedTimeblock: ExpandedTimeblock | null;
-  onSelect: (timeblock: ExpandedTimeblock) => void;
 }
 
 export function AvailableTimeblocksList({
   timeblocks,
-  selectedTimeblock,
-  onSelect,
 }: AvailableTimeblocksListProps) {
   const { tags } = useTags({
     sorting: { sortBy: TagSortBy.NAME, sortOrder: SortOrder.ASC },
@@ -50,80 +50,80 @@ export function AvailableTimeblocksList({
   }
 
   return (
-    <div className="space-y-3">
-      {timeblocks.map((timeblock, index) => {
-        const isSelected =
-          selectedTimeblock?.timeblockId === timeblock.timeblockId &&
-          selectedTimeblock?.startTime === timeblock.startTime;
-
-        return (
-          <Card
-            key={`${timeblock.timeblockId}-${timeblock.startTime}-${index}`}
-            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-              isSelected
-                ? "border-primary border-2 bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
-            onClick={() => onSelect(timeblock)}
-          >
-            {/* Date and time */}
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <div className="font-semibold text-base">
-                  {format(new Date(timeblock.startTime), "EEEE, MMM d")}
+    <div className="space-y-2">
+      {timeblocks.map((timeblock, index) => (
+        <Collapsible key={`${timeblock.timeblockId}-${timeblock.startTime}-${index}`}>
+          <CollapsibleTrigger className="w-full group">
+            <div className="bg-muted/30 hover:bg-muted/50 rounded-lg p-3 transition-colors">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="text-left flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate">
+                      {timeblock.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date(timeblock.startTime), "MMM d, h:mm a")} -{" "}
+                      {format(new Date(timeblock.endTime), "h:mm a")}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>
-                    {format(new Date(timeblock.startTime), "h:mm a")} -{" "}
-                    {format(new Date(timeblock.endTime), "h:mm a")}
-                  </span>
-                  <span className="text-xs">({timeblock.timezone})</span>
-                  <span className="mx-1">•</span>
-                  <span className="text-xs">
-                    {formatDuration(timeblock.startTime, timeblock.endTime)}
-                  </span>
-                </div>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
               </div>
             </div>
-
-            {/* Title */}
-            <div className="font-medium text-sm mb-2">{timeblock.title}</div>
-
-            {/* Location */}
-            {timeblock.location && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                <MapPin className="h-3 w-3" />
-                <span>{timeblock.location}</span>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="px-3 py-3 space-y-2 text-sm">
+              {/* Duration */}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                <span>
+                  Duration: {formatDuration(timeblock.startTime, timeblock.endTime)}
+                </span>
               </div>
-            )}
 
-            {/* Tags */}
-            {timeblock.tagIds.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {timeblock.tagIds.map((tagId) => {
-                  const tag = getTagById(tagId);
-                  if (!tag) return null;
-                  return (
-                    <Badge
-                      key={tagId}
-                      variant="outline"
-                      className="text-xs"
-                      style={{
-                        backgroundColor: `${tag.color}15`,
-                        borderColor: tag.color,
-                        color: tag.color,
-                      }}
-                    >
-                      {tag.name}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        );
-      })}
+              {/* Location */}
+              {timeblock.location && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>{timeblock.location}</span>
+                </div>
+              )}
+
+              {/* Description */}
+              {timeblock.description && (
+                <div className="text-muted-foreground pt-1">
+                  {timeblock.description}
+                </div>
+              )}
+
+              {/* Tags */}
+              {timeblock.tagIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {timeblock.tagIds.map((tagId) => {
+                    const tag = getTagById(tagId);
+                    if (!tag) return null;
+                    return (
+                      <Badge
+                        key={tagId}
+                        variant="outline"
+                        className="text-xs"
+                        style={{
+                          backgroundColor: `${tag.color}15`,
+                          borderColor: tag.color,
+                          color: tag.color,
+                        }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      ))}
     </div>
   );
 }

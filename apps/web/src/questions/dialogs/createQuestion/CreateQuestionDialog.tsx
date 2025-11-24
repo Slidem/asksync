@@ -22,8 +22,7 @@ export function CreateQuestionDialog() {
     step,
     closeDialog,
     reset,
-    selectedUserId,
-    selectedTimeblock,
+    selectedUserIds,
     selectedTagIds,
     questionTitle,
     questionContent,
@@ -40,8 +39,8 @@ export function CreateQuestionDialog() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedUserId) {
-      toast.error("Please select a user");
+    if (selectedUserIds.length === 0) {
+      toast.error("Please select at least one user");
       return;
     }
 
@@ -62,11 +61,8 @@ export function CreateQuestionDialog() {
         title: questionTitle,
         content: questionContent,
         tagIds: selectedTagIds,
-        assigneeIds: [selectedUserId],
+        assigneeIds: selectedUserIds,
         participants: [],
-        selectedTimeblockId: selectedTimeblock?.timeblockId,
-        selectedTimeblockStart: selectedTimeblock?.startTime,
-        selectedTimeblockEnd: selectedTimeblock?.endTime,
       });
 
       toast.success("Question created successfully!");
@@ -83,9 +79,9 @@ export function CreateQuestionDialog() {
   const getStepTitle = () => {
     switch (step) {
       case 1:
-        return "Select User";
+        return "Select People";
       case 2:
-        return "Select Timeblock";
+        return "Select Tags";
       case 3:
         return "Enter Question";
       default:
@@ -95,27 +91,30 @@ export function CreateQuestionDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-xl lg:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">{getStepTitle()}</DialogTitle>
-          <div className="flex items-center gap-2 pt-3">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-2">
+          {/* Step Progress */}
+          <div className="flex items-center gap-0 w-full pt-4">
+            {[1, 2, 3].map((s, idx) => (
+              <div key={s} className="flex items-center flex-1 last:flex-none">
                 <div
-                  className={`h-2 w-2 rounded-full transition-colors ${
+                  className={`h-2.5 w-2.5 rounded-full transition-all shrink-0 ${
                     s === step
-                      ? "bg-primary"
+                      ? "bg-primary ring-4 ring-primary/20 scale-110"
                       : s < step
-                        ? "bg-primary/50"
+                        ? "bg-primary/60"
                         : "bg-muted"
                   }`}
                 />
-                {s < 3 && (
-                  <div
-                    className={`h-0.5 w-12 ${
-                      s < step ? "bg-primary/50" : "bg-muted"
-                    }`}
-                  />
+                {idx < 2 && (
+                  <div className="flex-1 h-0.5 mx-2">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        s < step ? "bg-primary/50" : "bg-muted"
+                      }`}
+                    />
+                  </div>
                 )}
               </div>
             ))}

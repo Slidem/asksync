@@ -56,7 +56,7 @@ export const useTagsWithAvailableTimeblocksForUser = (userId: string) => {
     endDate,
   });
 
-  return useMemo(() => {
+  const tags = useMemo(() => {
     const tags = rawTags ? rawTags.map(docToTag) : [];
     return tags.map((tag) => {
       const minutes = tag.fastestAnswerMinutes || 0;
@@ -80,4 +80,9 @@ export const useTagsWithAvailableTimeblocksForUser = (userId: string) => {
       };
     });
   }, [rawTags]);
+
+  return {
+    tags,
+    isLoading: rawTags === undefined,
+  };
 };

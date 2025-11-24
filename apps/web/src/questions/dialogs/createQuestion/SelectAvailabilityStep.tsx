@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, User } from "lucide-react";
+import { Check, Info } from "lucide-react";
 
 import { AvailableTimeblocksList } from "@/questions/components/AvailableTimeblocksList";
 import { Badge } from "@/components/ui/badge";
@@ -11,23 +11,28 @@ import { useTagsWithAvailableTimeblocksForUser } from "@/tags/hooks/queries";
 
 export function SelectAvailabilityStep() {
   const {
-    selectedUserId,
+    selectedUserIds,
     selectedTagIds,
-    selectedTimeblock,
     setSelectedTagIds,
-    setSelectedTimeblock,
     previousStep,
     nextStep,
   } = useCreateQuestionDialogStore();
 
   const memberships = useMemberships();
-  const tags = useTagsWithAvailableTimeblocksForUser(selectedUserId || "");
-  const timeblocks = useAvailableTimeblocksForUserAndTags({
-    userId: selectedUserId || "",
-    tagIds: selectedTagIds,
-  });
 
-  const selectedUser = memberships?.find((m) => m.id === selectedUserId);
+  // Use first selected user for timeblock display (timeblocks are just informational now)
+  const firstUserId = selectedUserIds[0] || "";
+  const { tags, isLoading: areTagsLoading } =
+    useTagsWithAvailableTimeblocksForUser(firstUserId);
+  const { timeblocks, isLoading: areAvailableTimeblocksLoading } =
+    useAvailableTimeblocksForUserAndTags({
+      userId: firstUserId,
+      tagIds: selectedTagIds,
+    });
+
+  const selectedUsers = memberships?.filter((m) =>
+    selectedUserIds.includes(m.id),
+  );
 
   const handleTagToggle = (tagId: string) => {
     setSelectedTagIds(
@@ -35,46 +40,47 @@ export function SelectAvailabilityStep() {
         ? selectedTagIds.filter((id) => id !== tagId)
         : [...selectedTagIds, tagId],
     );
-    setSelectedTimeblock(null);
-  };
-
-  const handleSkip = () => {
-    setSelectedTimeblock(null);
-    nextStep();
   };
 
   return (
     <div className="space-y-6">
-      {/* Selected user info */}
-      {selectedUser && (
-        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>
-              {selectedUser.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="font-medium">{selectedUser.name}</div>
-            <div className="text-sm text-muted-foreground">
-              {selectedUser.email}
-            </div>
+      {/* Selected users info */}
+      {selectedUsers && selectedUsers.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Asking {selectedUsers.length}{" "}
+            {selectedUsers.length === 1 ? "person" : "people"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {selectedUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="text-xs">
+                    {user.name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium">{user.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       <div>
-        <h3 className="text-lg font-semibold mb-2">
-          Select timeblock (optional)
-        </h3>
+        <h3 className="text-lg font-semibold mb-2">Select tags</h3>
         <p className="text-sm text-muted-foreground">
-          Choose tags to filter available timeblocks
+          Choose tags for your question. Available timeblocks shown for
+          reference.
         </p>
       </div>
 
       {/* Tag selector */}
       <div>
         <p className="text-sm font-medium mb-3 block">Select tags</p>
-        {tags.length === 0 ? (
+        {!areTagsLoading && tags.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/20">
             <p className="text-sm">
               No tags with available timeblocks for this user
@@ -119,7 +125,7 @@ export function SelectAvailabilityStep() {
                         {tag.name}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Fastest answer: ~{tag.answerTimeDisplay}
+                        Fastest answer in ~ {tag.answerTimeDisplay}
                       </span>
                     </div>
                     {tag.description && (
@@ -135,31 +141,37 @@ export function SelectAvailabilityStep() {
         )}
       </div>
 
-      {/* Available timeblocks list */}
-      {selectedTagIds.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Available timeblocks</p>
-            {timeblocks && timeblocks.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {timeblocks.length} available
-              </Badge>
-            )}
+      {/* Available timeblocks list (informational only) */}
+      {selectedTagIds.length > 0 && !areAvailableTimeblocksLoading && (
+        <div className="space-y-4">
+          <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-900/50">
+            <div className="flex gap-3">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  Your question will be answered in one of the following
+                  timeblocks
+                </div>
+                <div className="text-xs text-blue-700 dark:text-blue-300">
+                  {timeblocks && timeblocks.length > 0 ? (
+                    <span>
+                      {timeblocks.length} available{" "}
+                      {timeblocks.length === 1 ? "slot" : "slots"} match your
+                      selected tags
+                    </span>
+                  ) : (
+                    <span>No timeblocks available for the selected tags</span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="max-h-[500px] overflow-y-auto pr-2">
-            <AvailableTimeblocksList
-              timeblocks={timeblocks}
-              selectedTimeblock={selectedTimeblock}
-              onSelect={setSelectedTimeblock}
-            />
-          </div>
-        </div>
-      )}
 
-      {selectedTagIds.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/20">
-          <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Select tags to view available timeblocks</p>
+          {timeblocks && timeblocks.length > 0 && (
+            <div className="max-h-[400px] overflow-y-auto">
+              <AvailableTimeblocksList timeblocks={timeblocks} />
+            </div>
+          )}
         </div>
       )}
 
@@ -168,14 +180,9 @@ export function SelectAvailabilityStep() {
         <Button variant="outline" onClick={previousStep}>
           Back
         </Button>
-        <div className="flex gap-2">
-          <Button variant="ghost" onClick={handleSkip}>
-            Skip
-          </Button>
-          <Button onClick={nextStep} disabled={!selectedTimeblock}>
-            Next
-          </Button>
-        </div>
+        <Button onClick={nextStep} disabled={selectedTagIds.length === 0}>
+          Next
+        </Button>
       </div>
     </div>
   );

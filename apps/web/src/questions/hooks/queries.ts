@@ -20,5 +20,8 @@ export function useAvailableTimeblocksForUserAndTags({
     endDate,
   });
 
-  return timeblocks || [];
+  return {
+    timeblocks,
+    isLoading: timeblocks === undefined,
+  };
 }

@@ -86,11 +86,6 @@ export default defineSchema({
     isOverdue: v.boolean(), // whether question is past expected answer time
     answeredAt: v.optional(v.number()), // when first answer was provided
 
-    // Timeblock association (optional)
-    selectedTimeblockId: v.optional(v.string()), // associated timeblock
-    selectedTimeblockStart: v.optional(v.number()), // for recurring: specific instance start
-    selectedTimeblockEnd: v.optional(v.number()), // for recurring: specific instance end
-
     // Read status tracking
     unreadBy: v.array(v.string()), // userIds who haven't seen latest updates
 

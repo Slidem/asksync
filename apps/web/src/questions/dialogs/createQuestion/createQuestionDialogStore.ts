@@ -19,11 +19,10 @@ interface CreateQuestionDialogState {
   step: 1 | 2 | 3;
 
   // Step 1: User selection
-  selectedUserId: string | null;
+  selectedUserIds: string[];
 
   // Step 2: Availability selection
   selectedTagIds: string[];
-  selectedTimeblock: ExpandedTimeblock | null;
 
   // Step 3: Question details
   questionTitle: string;
@@ -38,11 +37,10 @@ interface CreateQuestionDialogState {
   previousStep: () => void;
 
   // Step 1 actions
-  setSelectedUserId: (userId: string | null) => void;
+  setSelectedUserIds: (userIds: string[]) => void;
 
   // Step 2 actions
   setSelectedTagIds: (tagIds: string[]) => void;
-  setSelectedTimeblock: (timeblock: ExpandedTimeblock | null) => void;
 
   // Step 3 actions
   setQuestionTitle: (title: string) => void;
@@ -57,9 +55,8 @@ interface CreateQuestionDialogState {
 const initialState = {
   isOpen: false,
   step: 1 as const,
-  selectedUserId: null,
+  selectedUserIds: [],
   selectedTagIds: [],
-  selectedTimeblock: null,
   questionTitle: "",
   questionContent: "",
 };
@@ -86,15 +83,14 @@ export const useCreateQuestionDialogStore = create<CreateQuestionDialogState>(
       }
     },
 
-    setSelectedUserId: (userId) => set({ selectedUserId: userId }),
+    setSelectedUserIds: (userIds) => set({ selectedUserIds: userIds }),
     setSelectedTagIds: (tagIds) => set({ selectedTagIds: tagIds }),
-    setSelectedTimeblock: (timeblock) => set({ selectedTimeblock: timeblock }),
     setQuestionTitle: (title) => set({ questionTitle: title }),
     setQuestionContent: (content) => set({ questionContent: content }),
 
     canProceedFromStep1: () => {
-      const { selectedUserId } = get();
-      return selectedUserId !== null;
+      const { selectedUserIds } = get();
+      return selectedUserIds.length > 0;
     },
 
     canProceedFromStep2: () => {

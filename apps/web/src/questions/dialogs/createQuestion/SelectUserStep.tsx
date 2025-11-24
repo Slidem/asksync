@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { SelectedMembersDisplay } from "@/questions/components/SelectedMembersDisplay";
 import { UserSelector } from "@/questions/components/UserSelector";
 import { useCreateQuestionDialogStore } from "./createQuestionDialogStore";
 import { useMemberships } from "@/members/queries/queries";
@@ -7,15 +8,21 @@ import { useUser } from "@clerk/nextjs";
 export function SelectUserStep() {
   const memberships = useMemberships();
   const { user } = useUser();
-  const { selectedUserId, setSelectedUserId, canProceedFromStep1, nextStep } =
+  const { selectedUserIds, setSelectedUserIds, canProceedFromStep1, nextStep } =
     useCreateQuestionDialogStore();
 
   const handleUserToggle = (userId: string) => {
-    // Toggle: if already selected, unselect
-    setSelectedUserId(selectedUserId === userId ? null : userId);
+    // Toggle user in array
+    if (selectedUserIds.includes(userId)) {
+      setSelectedUserIds(selectedUserIds.filter((id) => id !== userId));
+    } else {
+      setSelectedUserIds([...selectedUserIds, userId]);
+    }
   };
 
-  const selectedUserIds = selectedUserId ? [selectedUserId] : [];
+  const handleChangeSelection = () => {
+    setSelectedUserIds([]);
+  };
 
   // Filter out current user
   const availableUsers =
@@ -28,22 +35,32 @@ export function SelectUserStep() {
         imageUrl: member.imageUrl,
       })) || [];
 
+  const selectedUsers = availableUsers.filter((u) =>
+    selectedUserIds.includes(u.id),
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">Who do you want to ask?</h3>
         <p className="text-sm text-muted-foreground">
-          Select a user to view their available timeblocks
+          Select people to ask your question
         </p>
       </div>
 
-      <UserSelector
-        selectedUserIds={selectedUserIds}
-        onUserToggle={handleUserToggle}
-        availableUsers={availableUsers}
-        placeholder="Search for a team member..."
-        maxSelections={1}
-      />
+      {selectedUsers.length > 0 ? (
+        <SelectedMembersDisplay
+          users={selectedUsers}
+          onChangeSelection={handleChangeSelection}
+        />
+      ) : (
+        <UserSelector
+          selectedUserIds={selectedUserIds}
+          onUserToggle={handleUserToggle}
+          availableUsers={availableUsers}
+          placeholder="Search for team members..."
+        />
+      )}
 
       <div className="flex justify-end pt-4 border-t">
         <Button onClick={nextStep} disabled={!canProceedFromStep1()}>
