@@ -86,6 +86,9 @@ export const createQuestion = mutation({
     tagIds: v.array(v.string()),
     assigneeIds: v.array(v.string()),
     participants: v.optional(v.array(v.string())),
+    selectedTimeblockId: v.optional(v.string()),
+    selectedTimeblockStart: v.optional(v.number()),
+    selectedTimeblockEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -154,6 +157,9 @@ export const createQuestion = mutation({
       acceptedAnswers: [],
       expectedAnswerTime,
       isOverdue: false,
+      selectedTimeblockId: args.selectedTimeblockId,
+      selectedTimeblockStart: args.selectedTimeblockStart,
+      selectedTimeblockEnd: args.selectedTimeblockEnd,
       unreadBy: Array.from(allParticipants).filter(
         (id) => id !== identity.subject,
       ),

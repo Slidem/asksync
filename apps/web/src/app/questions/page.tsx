@@ -29,13 +29,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
 import { QuestionCard } from "@/questions/components/QuestionCard";
 import { api } from "@convex/api";
 import { convertConvexQuestions } from "@/lib/convexTypes";
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { useTags } from "@/tags/hooks/queries";
+import { CreateQuestionDialog } from "@/questions/dialogs/createQuestion/CreateQuestionDialog";
+import { useCreateQuestionDialogStore } from "@/questions/dialogs/createQuestion/createQuestionDialogStore";
 
 type TabType = "created" | "assigned" | "participating";
 
@@ -47,6 +48,8 @@ export default function QuestionsPage() {
     sortBy: "expectedTime",
     tagIds: [],
   });
+
+  const { openDialog } = useCreateQuestionDialogStore();
 
   const rawQuestions = useQuery(api.questions.listQuestionsByUser, {
     filter: activeTab,
@@ -84,13 +87,13 @@ export default function QuestionsPage() {
             <MessageCircleQuestionMark className="h-6 w-6" />
             <h1 className="text-2xl font-bold">Questions</h1>
           </div>
-          <Link href="/questions/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ask Question
-            </Button>
-          </Link>
+          <Button onClick={openDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            Ask Question
+          </Button>
         </div>
+
+        <CreateQuestionDialog />
 
         {/* Tabs */}
         <Tabs

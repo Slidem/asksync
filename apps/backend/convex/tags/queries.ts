@@ -4,6 +4,7 @@ import {
   getPermittedResourcesForType,
 } from "../permissions/common";
 
+import { expandRecurringTimeblocks } from "../timeblocks/helpers";
 import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
 import { v } from "convex/values";
@@ -90,5 +91,124 @@ export const listTagsByOrg = query({
       }),
       totalVisibleTags: visibleTags.length,
     };
+  },
+});
+
+/**
+ * Get tags that have available timeblocks for a specific user within date range
+ */
+export const getTagsWithAvailableTimeblocks = query({
+  args: {
+    userId: v.string(),
+    startDate: v.number(),
+    endDate: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserWithGroups(ctx);
+    const { orgId, id: currentUserId, role } = user;
+
+    // Get all org tags
+    const orgTags = await ctx.db
+      .query("tags")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    if (orgTags.length === 0) {
+      return [];
+    }
+
+    // Get tags accessible through permissions
+    const accessibleTagIds = await getPermittedResourcesForType(
+      ctx,
+      "tags",
+      "view",
+    );
+
+    const visibleTags = orgTags.filter((tag) => {
+      if (role === "admin") return true;
+      if (tag.createdBy === currentUserId) return true;
+      return accessibleTagIds.includes(tag._id);
+    });
+
+    // Get user's timeblocks
+    const timeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator", (qb) =>
+        qb.eq("orgId", orgId).eq("createdBy", args.userId),
+      )
+      .collect();
+
+    // Expand recurring timeblocks
+    const expandedTimeblocks = expandRecurringTimeblocks(
+      timeblocks,
+      args.startDate,
+      args.endDate,
+    );
+
+    const filteredTimeblocks = expandedTimeblocks.filter(
+      (tb) => tb.startTime >= args.startDate && tb.startTime < args.endDate,
+    );
+
+    // Count timeblocks per tag and find fastest answer time
+    const tagStats = new Map<
+      string,
+      { count: number; fastestAnswerMinutes: number }
+    >();
+
+    const currentDateMinutes = Math.floor(Date.now() / 60000);
+
+    for (const timeblock of filteredTimeblocks) {
+      for (const tagId of timeblock.tagIds) {
+        const tag = visibleTags.find((t) => t._id === tagId);
+        if (!tag) continue;
+
+        const stats = tagStats.get(tagId) || {
+          count: 0,
+          fastestAnswerMinutes: Infinity,
+        };
+        stats.count++;
+
+        // Calculate answer time for this tag
+        if (tag.answerMode === "on-demand" && tag.responseTimeMinutes) {
+          stats.fastestAnswerMinutes = Math.min(
+            stats.fastestAnswerMinutes,
+            tag.responseTimeMinutes,
+          );
+        } else if (tag.answerMode === "scheduled") {
+          const responseTime =
+            Math.floor(timeblock.startTime / 60000) - currentDateMinutes;
+
+          stats.fastestAnswerMinutes = Math.min(
+            stats.fastestAnswerMinutes,
+            responseTime,
+          );
+        }
+
+        tagStats.set(tagId, stats);
+      }
+    }
+
+    // Filter tags that have timeblocks and add stats
+    const tagsWithTimeblocks = visibleTags
+      .filter((tag) => tagStats.has(tag._id))
+      .map((tag) => {
+        const stats = tagStats.get(tag._id)!;
+        return {
+          ...tag,
+          availableTimeblockCount: stats.count,
+          fastestAnswerMinutes:
+            stats.fastestAnswerMinutes === Infinity
+              ? 24 * 60
+              : stats.fastestAnswerMinutes,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return await decorateResourceWithGrants({
+      ctx,
+      currentUser: user,
+      resourceType: "tags",
+      resources: tagsWithTimeblocks,
+    });
   },
 });

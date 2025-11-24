@@ -20,6 +20,8 @@ type TagType = Doc<"tags"> & {
   permissions: PermissionGrant[];
   canEdit?: boolean;
   canManage?: boolean;
+  fastestAnswerMinutes?: number;
+  availableTimeblockCount?: number;
 };
 
 export function docToTag(doc: TagType): Tag {

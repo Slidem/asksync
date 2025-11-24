@@ -29,6 +29,8 @@ export interface Tag {
   color: string;
   answerMode: AnswerMode;
   responseTimeMinutes?: number;
+  fastestAnswerMinutes?: number;
+  availableTimeblockCount?: number;
   orgId: string;
   createdBy: string;
   createdAt: number;
