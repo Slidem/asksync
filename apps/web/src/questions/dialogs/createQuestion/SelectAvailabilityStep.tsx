@@ -1,5 +1,5 @@
+import { AlertTriangle, Check, Info } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, Info } from "lucide-react";
 
 import { AvailableTimeblocksList } from "@/questions/components/AvailableTimeblocksList";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,12 @@ export function SelectAvailabilityStep() {
 
   const selectedUsers = memberships?.filter((m) =>
     selectedUserIds.includes(m.id),
+  );
+
+  // Check if any selected tags are on-demand
+  const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
+  const hasOnDemandTag = selectedTags.some(
+    (tag) => tag.answerMode === "on-demand",
   );
 
   const handleTagToggle = (tagId: string) => {
@@ -144,32 +150,60 @@ export function SelectAvailabilityStep() {
       {/* Available timeblocks list (informational only) */}
       {selectedTagIds.length > 0 && !areAvailableTimeblocksLoading && (
         <div className="space-y-4">
-          <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-900/50">
-            <div className="flex gap-3">
-              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                  Your question will be answered in one of the following
-                  timeblocks
-                </div>
-                <div className="text-xs text-blue-700 dark:text-blue-300">
-                  {timeblocks && timeblocks.length > 0 ? (
-                    <span>
-                      {timeblocks.length} available{" "}
-                      {timeblocks.length === 1 ? "slot" : "slots"} match your
-                      selected tags
-                    </span>
-                  ) : (
-                    <span>No timeblocks available for the selected tags</span>
-                  )}
+          {hasOnDemandTag ? (
+            // Show attention message for on-demand tags
+            <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg p-4 border border-amber-200/50 dark:border-amber-900/50">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    You selected an on demand tag, which means user will receive
+                    the notification about the question immediately, and will
+                    answer within the configured timeframe.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            // Show reference message for scheduled tags
+            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-900/50">
+              <div className="flex gap-3">
+                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                    Your question will be answered in one of the following
+                    timeblocks
+                  </div>
+                  <div className="text-xs text-blue-700 dark:text-blue-300">
+                    {timeblocks && timeblocks.length > 0 ? (
+                      <span>
+                        {timeblocks.length} available{" "}
+                        {timeblocks.length === 1 ? "slot" : "slots"} match your
+                        selected tags
+                      </span>
+                    ) : (
+                      <span>No timeblocks available for the selected tags</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {timeblocks && timeblocks.length > 0 && (
-            <div className="max-h-[400px] overflow-y-auto">
+            <div
+              className={
+                hasOnDemandTag
+                  ? "max-h-[400px] overflow-y-auto opacity-50"
+                  : "max-h-[400px] overflow-y-auto"
+              }
+            >
               <AvailableTimeblocksList timeblocks={timeblocks} />
+              {hasOnDemandTag && (
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  These timeblocks don&apos;t apply to on-demand tags
+                </p>
+              )}
             </div>
           )}
         </div>

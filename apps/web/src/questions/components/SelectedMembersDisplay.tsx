@@ -22,7 +22,8 @@ export function SelectedMembersDisplay({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Asking a question to {users.length} {users.length === 1 ? "person" : "people"}
+          Asking a question to {users.length}{" "}
+          {users.length === 1 ? "person" : "people"}
         </p>
         <Button variant="ghost" size="sm" onClick={onChangeSelection}>
           Change selection

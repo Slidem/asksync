@@ -28,15 +28,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreateQuestionDialog } from "@/questions/dialogs/createQuestion/CreateQuestionDialog";
 import { Input } from "@/components/ui/input";
 import { QuestionCard } from "@/questions/components/QuestionCard";
 import { api } from "@convex/api";
 import { convertConvexQuestions } from "@/lib/convexTypes";
+import { useCreateQuestionDialogStore } from "@/questions/dialogs/createQuestion/createQuestionDialogStore";
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { useTags } from "@/tags/hooks/queries";
-import { CreateQuestionDialog } from "@/questions/dialogs/createQuestion/CreateQuestionDialog";
-import { useCreateQuestionDialogStore } from "@/questions/dialogs/createQuestion/createQuestionDialogStore";
 
 type TabType = "created" | "assigned" | "participating";
 
@@ -62,7 +62,7 @@ export default function QuestionsPage() {
   const { tags } = useTags({});
   const questions = convertConvexQuestions(rawQuestions || []);
 
-  const isLoading = questions === undefined;
+  const isLoading = rawQuestions === undefined;
   const questionCount = questions?.length || 0;
 
   const handleFilterChange = (
@@ -320,7 +320,7 @@ function QuestionsList({
 
   if (!questions || questions.length === 0) {
     return (
-      <Card>
+      <Card className="border-primary-20">
         <CardContent className="py-8">
           <div className="text-center">
             <MessageCircleQuestionMark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

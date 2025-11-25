@@ -52,7 +52,9 @@ export function AvailableTimeblocksList({
   return (
     <div className="space-y-2">
       {timeblocks.map((timeblock, index) => (
-        <Collapsible key={`${timeblock.timeblockId}-${timeblock.startTime}-${index}`}>
+        <Collapsible
+          key={`${timeblock.timeblockId}-${timeblock.startTime}-${index}`}
+        >
           <CollapsibleTrigger className="w-full group">
             <div className="bg-muted/30 hover:bg-muted/50 rounded-lg p-3 transition-colors">
               <div className="flex items-center justify-between gap-3">
@@ -78,7 +80,8 @@ export function AvailableTimeblocksList({
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
                 <span>
-                  Duration: {formatDuration(timeblock.startTime, timeblock.endTime)}
+                  Duration:{" "}
+                  {formatDuration(timeblock.startTime, timeblock.endTime)}
                 </span>
               </div>
 

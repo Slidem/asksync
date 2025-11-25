@@ -188,11 +188,23 @@ export const getTagsWithAvailableTimeblocks = query({
       }
     }
 
-    // Filter tags that have timeblocks and add stats
+    // Include all tags: on-demand tags and tags with timeblocks
     const tagsWithTimeblocks = visibleTags
-      .filter((tag) => tagStats.has(tag._id))
       .map((tag) => {
-        const stats = tagStats.get(tag._id)!;
+        const stats = tagStats.get(tag._id);
+
+        // On-demand tags don't need timeblocks
+        if (tag.answerMode === "on-demand") {
+          return {
+            ...tag,
+            availableTimeblockCount: 0,
+            fastestAnswerMinutes: tag.responseTimeMinutes || 24 * 60,
+          };
+        }
+
+        // Scheduled tags without timeblocks are filtered out
+        if (!stats) return null;
+
         return {
           ...tag,
           availableTimeblockCount: stats.count,
@@ -202,6 +214,7 @@ export const getTagsWithAvailableTimeblocks = query({
               : stats.fastestAnswerMinutes,
         };
       })
+      .filter((tag): tag is NonNullable<typeof tag> => tag !== null)
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return await decorateResourceWithGrants({

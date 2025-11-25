@@ -38,7 +38,7 @@ export function TagCard({
 
   return (
     <Card
-      className="group relative cursor-pointer hover:shadow-md transition-shadow py-4 px-2"
+      className="group relative cursor-pointer hover:shadow-lg transition-shadow py-4 px-2 border-primary/20"
       onClick={() => openDialog(tag)}
     >
       <CardHeader className="pb-4">

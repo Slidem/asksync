@@ -73,7 +73,7 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
 
   return (
     <Link href={`/questions/${question.id}`} className="block">
-      <Card className="hover:shadow-md transition-all duration-200 hover:border-primary/20 group">
+      <Card className="hover:shadow-md transition-all duration-200 border-primary/20 group">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
