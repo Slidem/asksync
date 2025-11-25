@@ -315,7 +315,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
         </div>
 
         {/* Question Header */}
-        <Card className="mb-6">
+        <Card className="mb-6 border-primary/20">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -450,7 +450,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
 
         {/* Add Manual Answer (for assignees) */}
         {isAssignee && question.status !== "resolved" && (
-          <Card className="mb-6">
+          <Card className="mb-6 border-primary/20">
             <CardHeader>
               <CardTitle className="text-lg">Add Answer</CardTitle>
               <CardDescription>
@@ -478,7 +478,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
         )}
 
         {/* Message Thread */}
-        <Card>
+        <Card className="border-primary/20">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

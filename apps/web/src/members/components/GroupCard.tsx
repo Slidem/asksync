@@ -56,7 +56,7 @@ export function GroupCard({ group, canManage }: GroupCardProps) {
   };
 
   return (
-    <Card className="group hover:shadow-md transition-all hover:border-primary/50">
+    <Card className="group hover:shadow-md transition-all border-primary/20 hover:border-primary/50">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3 flex-1 min-w-0">

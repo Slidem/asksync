@@ -34,7 +34,7 @@ export function MemberCard({
   const isAdmin = role === "org:admin";
 
   return (
-    <Card className="group hover:shadow-md transition-all hover:border-primary/50">
+    <Card className="group hover:shadow-md transition-all border-primary/20 hover:border-primary/50">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <Avatar className="h-14 w-14 ring-2 ring-muted">
