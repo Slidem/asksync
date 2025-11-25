@@ -67,9 +67,9 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
   const isAssignedToUser =
     currentUserId && question.assigneeIds.includes(currentUserId);
 
-  // Get first 3 participants for display
-  const displayParticipants = question.participants?.slice(0, 3) || [];
-  const hasMoreParticipants = (question.participants?.length || 0) > 3;
+  // Get first 3 participants for display (use participantIds)
+  const displayParticipantIds = question.participantIds.slice(0, 3);
+  const hasMoreParticipants = question.participantIds.length > 3;
 
   return (
     <Link href={`/questions/${question.id}`} className="block">
@@ -102,13 +102,13 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
 
             {/* Participants avatars */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {displayParticipants.map((participant) => (
-                <MemberAvatar key={participant.id} id={participant.id} />
+              {displayParticipantIds.map((participantId) => (
+                <MemberAvatar key={participantId} id={participantId} />
               ))}
               {hasMoreParticipants && (
                 <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
                   <span className="text-xs text-muted-foreground font-medium">
-                    +{(question.participants?.length || 0) - 3}
+                    +{question.participantIds.length - 3}
                   </span>
                 </div>
               )}
@@ -172,7 +172,7 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
                 {/* Participant count */}
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  <span>{question.participants?.length || 0}</span>
+                  <span>{question.participantIds.length}</span>
                 </div>
               </div>
 

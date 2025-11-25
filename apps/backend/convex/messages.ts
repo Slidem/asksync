@@ -69,6 +69,7 @@ export const sendMessage = mutation({
       await ctx.db.patch(question._id, {
         unreadBy: newUnreadBy,
         status: newStatus,
+        messageCount: (question.messageCount || 0) + 1,
         updatedAt: Date.now(),
       });
     }
@@ -196,6 +197,7 @@ export const deleteMessage = mutation({
         await ctx.db.patch(question._id, {
           acceptedAnswers: newAcceptedAnswers,
           status: newStatus,
+          messageCount: Math.max(0, (question.messageCount || 0) - 1),
           updatedAt: Date.now(),
         });
       }

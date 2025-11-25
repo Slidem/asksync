@@ -61,7 +61,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
   const [editingContent, setEditingContent] = useState("");
 
   // Queries
-  const rawQuestion = useQuery(api.questions.getQuestionById, {
+  const rawQuestion = useQuery(api.questions.queries.getQuestionById, {
     questionId: toQuestionId(questionId),
   });
   const question = rawQuestion ? convertConvexQuestion(rawQuestion) : null;
@@ -75,10 +75,12 @@ export function QuestionPage({ questionId }: { questionId: string }) {
   const sendMessage = useMutation(api.messages.sendMessage);
   const editMessage = useMutation(api.messages.editMessage);
   const deleteMessage = useMutation(api.messages.deleteMessage);
-  const markAsAccepted = useMutation(api.questions.markMessageAsAccepted);
-  const addManualAnswer = useMutation(api.questions.addManualAnswer);
-  const resolveQuestion = useMutation(api.questions.resolveQuestion);
-  const markAsRead = useMutation(api.questions.markQuestionAsRead);
+  const markAsAccepted = useMutation(
+    api.questions.mutations.markMessageAsAccepted,
+  );
+  const addManualAnswer = useMutation(api.questions.mutations.addManualAnswer);
+  const resolveQuestion = useMutation(api.questions.mutations.resolveQuestion);
+  const markAsRead = useMutation(api.questions.mutations.markQuestionAsRead);
 
   const isLoading = question === undefined;
   const isAssignee = user?.id && question?.assigneeIds.includes(user.id);

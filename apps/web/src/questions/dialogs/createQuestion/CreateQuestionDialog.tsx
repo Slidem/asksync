@@ -27,7 +27,7 @@ export function CreateQuestionDialog() {
     questionTitle,
     questionContent,
   } = useCreateQuestionDialogStore();
-  const createQuestion = useMutation(api.questions.createQuestion);
+  const createQuestion = useMutation(api.questions.mutations.createQuestion);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClose = () => {

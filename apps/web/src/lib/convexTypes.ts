@@ -51,7 +51,9 @@ export function docToTimeblock(doc: TimeblockType): Timeblock {
 }
 
 export function convertConvexQuestions(
-  data: FunctionReturnType<typeof api.questions.listQuestionsByUser>,
+  data: FunctionReturnType<
+    typeof api.questions.queries.listQuestionsByUser
+  >["questions"],
 ): Question[] {
   return data.map((doc) => {
     const { _id, _creationTime, tags, ...rest } = doc;
@@ -69,7 +71,7 @@ export function convertConvexQuestions(
 }
 
 export function convertConvexQuestion(
-  doc: FunctionReturnType<typeof api.questions.getQuestionById>,
+  doc: FunctionReturnType<typeof api.questions.queries.getQuestionById>,
 ): Omit<Question, "messageCount" | "hasUnread"> {
   const { _id, _creationTime, tags, ...rest } = doc;
 

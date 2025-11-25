@@ -89,6 +89,9 @@ export default defineSchema({
     // Read status tracking
     unreadBy: v.array(v.string()), // userIds who haven't seen latest updates
 
+    // Denormalized data
+    messageCount: v.optional(v.number()), // total messages in thread (for performance)
+
     // Relationships
     threadId: v.string(), // thread is created immediately with question
   })

@@ -15,7 +15,9 @@ export const MemberAvatar: React.FC<Props> = ({ id }) => {
     },
   });
 
-  const member = memberships?.data?.find((m) => m.id === id);
+  const member = memberships?.data?.find(
+    (m) => m.publicUserData?.userId === id,
+  );
   const { imageUrl, firstName, lastName } = member?.publicUserData || {};
   const fallBackInitials = `${firstName?.charAt(0) || ""} ${
     lastName?.charAt(0) || ""
