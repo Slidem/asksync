@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircleQuestionMark } from "lucide-react";
 import { Question } from "@asksync/shared";
 import { QuestionCard } from "./QuestionCard";
+import { useUser } from "@clerk/nextjs";
 
 interface QuestionsListProps {
   questions: Question[] | undefined;
@@ -15,6 +16,8 @@ export function QuestionsList({
   isLoading,
   emptyMessage,
 }: QuestionsListProps) {
+  const { user } = useUser();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -43,7 +46,11 @@ export function QuestionsList({
   return (
     <div className="space-y-4">
       {questions.map((question) => (
-        <QuestionCard key={question.id} question={question} />
+        <QuestionCard
+          key={question.id}
+          question={question}
+          currentUserId={user?.id}
+        />
       ))}
     </div>
   );

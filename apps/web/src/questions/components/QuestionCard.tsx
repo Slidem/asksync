@@ -7,12 +7,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Clock, MessageCircle, Users } from "lucide-react";
+import { Clock, MessageCircle, Settings, Users } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { Question } from "@asksync/shared";
+import { useDeleteQuestion } from "@/questions/hooks/mutations";
+import { useRouter } from "next/navigation";
 
 interface QuestionCardProps {
   question: Question;
@@ -20,6 +27,19 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
+  const { deleteQuestion } = useDeleteQuestion();
+  const router = useRouter();
+  const isCreator = currentUserId === question.createdBy;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const deleted = await deleteQuestion(question);
+    if (deleted) {
+      router.refresh();
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -66,11 +86,6 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
   const timeInfo = getTimeUntilAnswer(question.expectedAnswerTime);
   const isAssignedToUser =
     currentUserId && question.assigneeIds.includes(currentUserId);
-
-  // Get first 3 participants for display (use participantIds)
-  const displayParticipantIds = question.participantIds.slice(0, 3);
-  const hasMoreParticipants = question.participantIds.length > 3;
-
   return (
     <Link href={`/questions/${question.id}`} className="block">
       <Card className="hover:shadow-md transition-all duration-200 border-primary/20 group">
@@ -100,17 +115,28 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
               </CardDescription>
             </div>
 
-            {/* Participants avatars */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {displayParticipantIds.map((participantId) => (
-                <MemberAvatar key={participantId} id={participantId} />
-              ))}
-              {hasMoreParticipants && (
-                <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    +{question.participantIds.length - 3}
-                  </span>
-                </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Management menu for creators */}
+              {isCreator && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <button className="h-8 w-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent rounded-md">
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                      <span className="sr-only">Question options</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>

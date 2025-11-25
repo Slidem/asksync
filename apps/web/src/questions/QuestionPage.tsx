@@ -6,9 +6,9 @@ import {
   Clock,
   Edit3,
   MessageCircle,
-  MoreVertical,
   Save,
   Send,
+  Settings,
   Trash2,
   Users,
   X,
@@ -25,6 +25,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -45,6 +46,8 @@ import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@convex/api";
 import { toast } from "sonner";
+import { useDeleteQuestion } from "@/questions/hooks/mutations";
+import { useRouter } from "next/navigation";
 
 export function QuestionPage({ questionId }: { questionId: string }) {
   const { user } = useUser();
@@ -53,6 +56,8 @@ export function QuestionPage({ questionId }: { questionId: string }) {
       infinite: true,
     },
   });
+  const router = useRouter();
+  const { deleteQuestion } = useDeleteQuestion();
   const [newMessage, setNewMessage] = useState("");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [manualAnswer, setManualAnswer] = useState("");
@@ -85,6 +90,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
   const isLoading = question === undefined;
   const isAssignee = user?.id && question?.assigneeIds.includes(user.id);
   const isParticipant = user?.id && question?.participantIds?.includes(user.id);
+  const isCreator = user?.id === question?.createdBy;
 
   // Helper function to get user display name
   const getUserDisplayName = (userId: string) => {
@@ -236,6 +242,18 @@ export function QuestionPage({ questionId }: { questionId: string }) {
     }
   };
 
+  const handleDeleteQuestion = async () => {
+    if (!question) return;
+    const deleted = await deleteQuestion({
+      ...question,
+      messageCount: 0,
+      hasUnread: false,
+    });
+    if (deleted) {
+      router.push("/questions");
+    }
+  };
+
   const startEditingMessage = (messageId: string, content: string) => {
     setEditingMessageId(messageId);
     setEditingContent(content);
@@ -347,18 +365,34 @@ export function QuestionPage({ questionId }: { questionId: string }) {
                 </CardDescription>
               </div>
 
-              {isAssignee && question.status !== "resolved" && (
+              {(isAssignee || isCreator) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="sm">
+                      <Settings className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleResolveQuestion}>
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Mark as Resolved
-                    </DropdownMenuItem>
+                    {isAssignee && question.status !== "resolved" && (
+                      <DropdownMenuItem onClick={handleResolveQuestion}>
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Mark as Resolved
+                      </DropdownMenuItem>
+                    )}
+                    {isAssignee &&
+                      isCreator &&
+                      question.status !== "resolved" && (
+                        <DropdownMenuSeparator />
+                      )}
+                    {isCreator && (
+                      <DropdownMenuItem
+                        onClick={handleDeleteQuestion}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
