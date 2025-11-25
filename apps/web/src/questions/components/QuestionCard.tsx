@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Question } from "@asksync/shared";
+import { getTimeUntilAnswer } from "@/questions/hooks/utils";
 import { useDeleteQuestion } from "@/questions/hooks/mutations";
 import { useRouter } from "next/navigation";
 
@@ -55,32 +56,6 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }
-  };
-
-  const getTimeUntilAnswer = (expectedTime: number) => {
-    const now = Date.now();
-    const timeDiff = expectedTime - now;
-
-    if (timeDiff < 0) {
-      const overdue = Math.abs(timeDiff);
-      const hours = Math.floor(overdue / (1000 * 60 * 60));
-      const minutes = Math.floor((overdue % (1000 * 60 * 60)) / (1000 * 60));
-
-      if (hours > 24) {
-        const days = Math.floor(hours / 24);
-        return { text: `${days}d overdue`, isOverdue: true };
-      }
-      return { text: `${hours}h ${minutes}m overdue`, isOverdue: true };
-    }
-
-    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (hours > 24) {
-      const days = Math.floor(hours / 24);
-      return { text: `${days}d remaining`, isOverdue: false };
-    }
-    return { text: `${hours}h ${minutes}m remaining`, isOverdue: false };
   };
 
   const timeInfo = getTimeUntilAnswer(question.expectedAnswerTime);
@@ -164,22 +139,21 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
               </div>
             )}
 
-            {/* Bottom metadata */}
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-4 text-muted-foreground">
-                {/* Time until answer */}
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span
-                    className={
-                      timeInfo.isOverdue ? "text-destructive font-medium" : ""
-                    }
-                  >
-                    {timeInfo.text}
-                  </span>
-                </div>
+                {question.status !== "resolved" && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span
+                      className={
+                        timeInfo.isOverdue ? "text-destructive font-medium" : ""
+                      }
+                    >
+                      {timeInfo.text}
+                    </span>
+                  </div>
+                )}
 
-                {/* Message count */}
                 <div className="flex items-center gap-1">
                   <MessageCircle className="h-4 w-4" />
                   <span>
@@ -195,7 +169,6 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
                   </span>
                 </div>
 
-                {/* Participant count */}
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   <span>{question.participantIds.length}</span>

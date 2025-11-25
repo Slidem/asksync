@@ -224,8 +224,7 @@ export const markMessageAsAccepted = mutation({
     }
 
     // Determine new status
-    const hasAnyAnswers =
-      newAcceptedAnswers.length > 0 || question.manualAnswer !== undefined;
+    const hasAnyAnswers = newAcceptedAnswers.length > 0;
 
     const newStatus = getStatusForQuestion(
       question.assigneeIds,
@@ -240,55 +239,6 @@ export const markMessageAsAccepted = mutation({
         hasAnyAnswers && !question.answeredAt
           ? Date.now()
           : question.answeredAt,
-      updatedAt: Date.now(),
-    });
-
-    return args.questionId;
-  },
-});
-
-// Add manual answer to question
-export const addManualAnswer = mutation({
-  args: {
-    questionId: v.id("questions"),
-    answer: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
-
-    const question = await ctx.db.get(args.questionId);
-    if (!question || question.orgId !== orgId) {
-      throw new ConvexError("Question not found");
-    }
-
-    // Check if user is an assignee
-    if (!question.assigneeIds.includes(identity.subject)) {
-      throw new ConvexError("Only assignees can add manual answers");
-    }
-
-    const hasAnyAnswers =
-      question.acceptedAnswers.length > 0 || args.answer.trim() !== "";
-
-    const newStatus = getStatusForQuestion(
-      question.assigneeIds,
-      hasAnyAnswers,
-      question.status === "resolved",
-    );
-
-    await ctx.db.patch(args.questionId, {
-      manualAnswer: args.answer,
-      manualAnswerBy: identity.subject,
-      manualAnswerAt: Date.now(),
-      status: newStatus,
-      answeredAt: !question.answeredAt ? Date.now() : question.answeredAt,
       updatedAt: Date.now(),
     });
 
