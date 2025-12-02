@@ -11,6 +11,7 @@ import { toTagId } from "@/lib/convexTypes";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { useSyncPermissions } from "@/components/permissions";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 
 export const useCreateTag = () => {
   const [isCreating, setIsCreating] = React.useState(false);
@@ -64,18 +65,20 @@ export const useUpdateTag = () => {
 export const useDeleteTag = () => {
   const deleteTagMutation = useMutation(api.tags.mutations.deleteTag);
   const deleteTag = async (tag: Tag) => {
-    if (!confirm(`Are you sure you want to delete the tag "${tag.name}"?`)) {
-      return;
-    }
-
-    try {
-      await deleteTagMutation({ id: toTagId(tag.id) });
-      toast.success("Tag deleted successfully");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete tag",
-      );
-    }
+    confirmDialog.show({
+      title: "Delete tag",
+      description: `Are you sure you want to delete the tag "${tag.name}"?`,
+      onConfirm: async () => {
+        try {
+          await deleteTagMutation({ id: toTagId(tag.id) });
+          toast.success("Tag deleted successfully");
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Failed to delete tag",
+          );
+        }
+      },
+    });
   };
   return { deleteTag };
 };

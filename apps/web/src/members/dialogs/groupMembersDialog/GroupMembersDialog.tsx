@@ -18,6 +18,7 @@ import { Users } from "lucide-react";
 import { api } from "@convex/api";
 import { toGroupId } from "@/lib/convexTypes";
 import { useOrganization } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 interface GroupMembersDialogProps {
   groupId: string;
@@ -88,7 +89,7 @@ export function GroupMembersDialog({
       await addMember({ groupId: toGroupId(groupId), userId });
     } catch (error) {
       console.error("Failed to add member:", error);
-      alert("Failed to add member. Please try again.");
+      toast.error("Failed to add member. Please try again.");
     }
   };
 
@@ -97,7 +98,7 @@ export function GroupMembersDialog({
       await removeMember({ groupId: toGroupId(groupId), userId });
     } catch (error) {
       console.error("Failed to remove member:", error);
-      alert("Failed to remove member. Please try again.");
+      toast.error("Failed to remove member. Please try again.");
     }
   };
 

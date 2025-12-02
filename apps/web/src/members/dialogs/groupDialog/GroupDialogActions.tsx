@@ -4,6 +4,7 @@ import { toGroupId } from "@/lib/convexTypes";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 import { useMutation } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
+import { toast } from "sonner";
 
 export function GroupDialogActions() {
   const {
@@ -59,7 +60,7 @@ export function GroupDialogActions() {
         `Failed to ${isEditing ? "update" : "create"} group:`,
         error,
       );
-      alert(
+      toast.error(
         `Failed to ${isEditing ? "update" : "create"} group. Please try again.`,
       );
       setIsSubmitting(false);

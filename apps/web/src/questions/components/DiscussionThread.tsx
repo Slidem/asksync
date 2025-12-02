@@ -11,6 +11,7 @@ import { api } from "@convex/api";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { useState } from "react";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 
 interface Message {
   id: string;
@@ -81,16 +82,20 @@ export function DiscussionThread({
     }
   };
 
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm("Are you sure you want to delete this message?")) return;
-
-    try {
-      await deleteMessage({ messageId: toMessageId(messageId) });
-      toast.success("Message deleted!");
-    } catch (error) {
-      console.error("Error deleting message:", error);
-      toast.error("Failed to delete message");
-    }
+  const handleDeleteMessage = (messageId: string) => {
+    confirmDialog.show({
+      title: "Delete message",
+      description: "Are you sure you want to delete this message?",
+      onConfirm: async () => {
+        try {
+          await deleteMessage({ messageId: toMessageId(messageId) });
+          toast.success("Message deleted!");
+        } catch (error) {
+          console.error("Error deleting message:", error);
+          toast.error("Failed to delete message");
+        }
+      },
+    });
   };
 
   const handleMarkAsAnswer = async (messageId: string) => {

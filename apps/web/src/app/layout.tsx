@@ -9,6 +9,8 @@ import {
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexProvider } from "@/auth/components/ConvexProvider";
 import { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -46,6 +48,8 @@ export default function RootLayout({
         <ClerkProvider>
           <ConvexProvider>{children}</ConvexProvider>
         </ClerkProvider>
+        <Toaster />
+        <ConfirmDialog />
       </body>
     </html>
   );

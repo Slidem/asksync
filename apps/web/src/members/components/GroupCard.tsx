@@ -23,6 +23,8 @@ import { toGroupId } from "@/lib/convexTypes";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 import { useMutation } from "convex/react";
 import { useState } from "react";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
+import { toast } from "sonner";
 
 interface GroupCardProps {
   group: GroupWithMemberCount;
@@ -38,21 +40,19 @@ export function GroupCard({ group, canManage }: GroupCardProps) {
     openEdit(group.id, group.name, group.description, group.color);
   };
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${group.name}"? This will remove all members and permissions.`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await deleteGroup({ groupId: toGroupId(group.id) });
-    } catch (error) {
-      console.error("Failed to delete group:", error);
-      alert("Failed to delete group. Please try again.");
-    }
+  const handleDelete = () => {
+    confirmDialog.show({
+      title: "Delete group",
+      description: `Are you sure you want to delete "${group.name}"? This will remove all members and permissions.`,
+      onConfirm: async () => {
+        try {
+          await deleteGroup({ groupId: toGroupId(group.id) });
+        } catch (error) {
+          console.error("Failed to delete group:", error);
+          toast.error("Failed to delete group. Please try again.");
+        }
+      },
+    });
   };
 
   return (
