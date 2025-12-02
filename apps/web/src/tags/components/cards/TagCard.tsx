@@ -1,13 +1,21 @@
 "use client";
 
 import {
+  Calendar,
+  Clock,
+  Edit3,
+  Eye,
+  MessageSquare,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
+import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Clock, Edit3, Eye, MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@asksync/shared";
+import { TagUsageDialog } from "@/tags/components/dialog/TagUsageDialog";
 import { formatResponseTime } from "@/lib/time";
 import { useDeleteTag } from "@/tags/hooks/mutations";
 
@@ -36,111 +45,147 @@ export function TagCard({
   showActions = true,
   isOwner = false,
 }: TagCardProps) {
-  const { deleteTag } = useDeleteTag();
+  const { deleteTag, usageDialogState, closeUsageDialog } = useDeleteTag();
   const { openDialog: openEditDialog } = useEditTagDialog();
   const { openDialog: openViewDialog } = useViewTagDialog();
 
   return (
-    <Card
-      className="group relative cursor-pointer hover:shadow-lg transition-shadow py-4 px-2 border-primary/20"
-      onClick={() => openViewDialog(tag)}
-    >
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: tag.color }}
-            />
-            <CardTitle className="text-xl">{tag.name}</CardTitle>
+    <>
+      <Card
+        className="group relative cursor-pointer hover:shadow-lg transition-shadow py-4 px-2 border-primary/20"
+        onClick={() => openViewDialog(tag)}
+      >
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: tag.color }}
+              />
+              <CardTitle className="text-xl">{tag.name}</CardTitle>
+            </div>
+            {showActions && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {(tag.canEdit || tag.canManage) && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditDialog(tag);
+                      }}
+                    >
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                  )}
+                  {tag.canManage && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTag(tag);
+                      }}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
+                  {!tag.canEdit && !tag.canManage && (
+                    <DropdownMenuItem disabled>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View only
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          {showActions && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {(tag.canEdit || tag.canManage) && (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEditDialog(tag);
-                    }}
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {tag.canManage && (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteTag(tag);
-                    }}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-                {!tag.canEdit && !tag.canManage && (
-                  <DropdownMenuItem disabled>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View only
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {tag.description && (
+            <CardDescription>{tag.description}</CardDescription>
           )}
-        </div>
-        {tag.description && (
-          <CardDescription>{tag.description}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-3">
-            <Badge variant="secondary" className="text-sm px-3 py-1">
-              {tag.answerMode === "on-demand" ? "On-demand" : "Scheduled"}
-            </Badge>
-
-            {tag.answerMode === "on-demand" && tag.responseTimeMinutes && (
-              <Badge variant="outline" className="text-sm px-3 py-1">
-                <Clock className="h-4 w-4 mr-2" />
-                {formatResponseTime(tag.responseTimeMinutes)}
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="secondary" className="text-sm px-3 py-1">
+                {tag.answerMode === "on-demand" ? "On-demand" : "Scheduled"}
               </Badge>
-            )}
 
-            {!isOwner && (
-              <Badge
-                variant="outline"
-                className="text-sm px-3 py-1 text-muted-foreground"
-              >
-                {tag.canEdit && tag.canManage ? (
-                  "Full access"
-                ) : tag.canEdit ? (
-                  <>
-                    <Edit3 className="h-3 w-3 mr-1" />
-                    Can edit
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-3 w-3 mr-1" />
-                    View only
-                  </>
-                )}
-              </Badge>
-            )}
+              {tag.answerMode === "on-demand" && tag.responseTimeMinutes && (
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  <Clock className="h-4 w-4 mr-2" />
+                  {formatResponseTime(tag.responseTimeMinutes)}
+                </Badge>
+              )}
+
+              {(tag.questionCount !== undefined ||
+                tag.timeblockCount !== undefined) && (
+                <div className="flex items-center gap-2">
+                  {tag.questionCount !== undefined && tag.questionCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="text-sm px-3 py-1 text-muted-foreground"
+                    >
+                      <MessageSquare className="h-3 w-3 mr-1.5" />
+                      {tag.questionCount}
+                    </Badge>
+                  )}
+                  {tag.timeblockCount !== undefined &&
+                    tag.timeblockCount > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="text-sm px-3 py-1 text-muted-foreground"
+                      >
+                        <Calendar className="h-3 w-3 mr-1.5" />
+                        {tag.timeblockCount}
+                      </Badge>
+                    )}
+                </div>
+              )}
+
+              {!isOwner && (
+                <Badge
+                  variant="outline"
+                  className="text-sm px-3 py-1 text-muted-foreground"
+                >
+                  {tag.canEdit && tag.canManage ? (
+                    "Full access"
+                  ) : tag.canEdit ? (
+                    <>
+                      <Edit3 className="h-3 w-3 mr-1" />
+                      Can edit
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3 w-3 mr-1" />
+                      View only
+                    </>
+                  )}
+                </Badge>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {usageDialogState.usage && (
+        <TagUsageDialog
+          open={usageDialogState.open}
+          onOpenChange={closeUsageDialog}
+          tagName={usageDialogState.tagName}
+          usage={usageDialogState.usage}
+        />
+      )}
+    </>
   );
 }

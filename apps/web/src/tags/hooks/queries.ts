@@ -19,15 +19,18 @@ interface UseTagsOptions {
     sortBy: TagSortBy;
     sortOrder: SortOrder;
   };
+  includeUsageStats?: boolean;
 }
 
 export const useTags = ({
   filter = {},
   sorting = DEFAULT_SORTING,
+  includeUsageStats = false,
 }: UseTagsOptions) => {
   const result = useQuery(api.tags.queries.listTagsByOrg, {
     sortOrder: sorting.sortOrder,
     sortBy: sorting.sortBy,
+    includeUsageStats,
   }) || {
     tags: [],
     totalVisibleTags: 0,

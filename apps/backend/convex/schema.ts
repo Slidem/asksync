@@ -49,7 +49,6 @@ export default defineSchema({
   })
     .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_time", ["orgId", "startTime"])
-    .index("by_tag_ids", ["tagIds"])
     .index("by_external_id", ["externalId"]),
 
   // Questions - the core inquiry entities
@@ -106,7 +105,6 @@ export default defineSchema({
     // Basic properties
     questionId: v.string(), // the original question
     orgId: v.string(),
-
     // Participants
     participants: v.array(v.string()), // userIds in the conversation
     status: v.union(
@@ -114,7 +112,6 @@ export default defineSchema({
       v.literal("resolved"),
       v.literal("archived"),
     ),
-
     // Metadata
     updatedAt: v.number(),
     lastMessageAt: v.optional(v.number()),

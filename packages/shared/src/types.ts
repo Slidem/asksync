@@ -31,6 +31,8 @@ export interface Tag {
   responseTimeMinutes?: number;
   fastestAnswerMinutes?: number;
   availableTimeblockCount?: number;
+  questionCount?: number;
+  timeblockCount?: number;
   orgId: string;
   createdBy: string;
   createdAt: number;

@@ -22,6 +22,7 @@ export const listTagsByOrg = query({
       ),
     ),
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+    includeUsageStats: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getUserWithGroups(ctx);
@@ -82,14 +83,106 @@ export const listTagsByOrg = query({
       );
     }
 
+    // Optionally compute usage stats
+    let tagsWithStats = tags;
+    if (args.includeUsageStats) {
+      // Get all questions and timeblocks once
+      const allQuestions = await ctx.db
+        .query("questions")
+        .withIndex("by_org", (q) => q.eq("orgId", orgId))
+        .collect();
+
+      const allTimeblocks = await ctx.db
+        .query("timeblocks")
+        .withIndex("by_org_and_creator", (q) => q.eq("orgId", orgId))
+        .collect();
+
+      // Compute counts for each tag
+      tagsWithStats = tags.map((tag) => {
+        const questionCount = allQuestions.filter((q) =>
+          q.tagIds.includes(tag._id),
+        ).length;
+        const timeblockCount = allTimeblocks.filter((tb) =>
+          tb.tagIds.includes(tag._id),
+        ).length;
+
+        return {
+          ...tag,
+          questionCount,
+          timeblockCount,
+        };
+      });
+    }
+
     return {
       tags: await decorateResourceWithGrants({
         ctx,
         currentUser: user,
         resourceType: "tags",
-        resources: tags,
+        resources: tagsWithStats,
       }),
       totalVisibleTags: visibleTags.length,
+    };
+  },
+});
+
+/**
+ * Get usage stats for a tag (questions and timeblocks using it)
+ */
+export const getTagUsage = query({
+  args: {
+    tagId: v.id("tags"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserWithGroups(ctx);
+    const { orgId } = user;
+
+    // Get the tag to verify it exists and belongs to org
+    const tag = await ctx.db.get(args.tagId);
+    if (!tag || tag.orgId !== orgId) {
+      throw new Error("Tag not found");
+    }
+
+    // Get questions using this tag
+    const allQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    const questionsWithTag = allQuestions
+      .filter((q) => q.tagIds.includes(args.tagId))
+      .slice(0, 5);
+
+    // Get timeblocks using this tag
+    const allTimeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    const timeblocksWithTag = allTimeblocks
+      .filter((tb) => tb.tagIds.includes(args.tagId))
+      .slice(0, 5);
+
+    const totalQuestions = allQuestions.filter((q) =>
+      q.tagIds.includes(args.tagId),
+    ).length;
+    const totalTimeblocks = allTimeblocks.filter((tb) =>
+      tb.tagIds.includes(args.tagId),
+    ).length;
+
+    return {
+      questions: questionsWithTag.map((q) => ({
+        _id: q._id,
+        title: q.title,
+      })),
+      timeblocks: timeblocksWithTag.map((tb) => ({
+        _id: tb._id,
+        title: tb.title,
+        startTime: tb.startTime,
+        endTime: tb.endTime,
+      })),
+      totalQuestions,
+      totalTimeblocks,
     };
   },
 });

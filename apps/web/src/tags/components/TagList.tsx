@@ -30,6 +30,7 @@ export function TagList() {
       sortBy,
       sortOrder: sortBy === TagSortBy.NAME ? SortOrder.ASC : SortOrder.DESC,
     },
+    includeUsageStats: true,
   });
 
   return (

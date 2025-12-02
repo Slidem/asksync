@@ -170,8 +170,31 @@ export const deleteTag = mutation({
       throw new Error("You don't have permission to delete this tag");
     }
 
-    // TODO: Check if tag is being used by questions or timeblocks
-    // For now, we'll allow deletion (later we can add cascade delete or prevent deletion)
+    // Check if tag is being used by questions or timeblocks
+    const allQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    const questionsUsingTag = allQuestions.filter((q) =>
+      q.tagIds.includes(args.id),
+    );
+
+    const allTimeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    const timeblocksUsingTag = allTimeblocks.filter((tb) =>
+      tb.tagIds.includes(args.id),
+    );
+
+    if (questionsUsingTag.length > 0 || timeblocksUsingTag.length > 0) {
+      throw new Error(
+        `Cannot delete tag: used in ${questionsUsingTag.length} questions and ${timeblocksUsingTag.length} timeblocks`,
+      );
+    }
+
     // Delete the tag
     await ctx.db.delete(args.id);
 

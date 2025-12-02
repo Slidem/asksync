@@ -4,14 +4,26 @@ import {
   Tag,
   UpdateTagForm,
 } from "@asksync/shared";
+import { useConvex, useMutation } from "convex/react";
 
 import React from "react";
 import { api } from "@convex/api";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import { toTagId } from "@/lib/convexTypes";
 import { toast } from "sonner";
-import { useMutation } from "convex/react";
 import { useSyncPermissions } from "@/components/permissions";
-import { confirmDialog } from "@/components/shared/ConfirmDialog";
+
+interface TagUsageData {
+  questions: Array<{ _id: string; title: string }>;
+  timeblocks: Array<{
+    _id: string;
+    title: string;
+    startTime: number;
+    endTime: number;
+  }>;
+  totalQuestions: number;
+  totalTimeblocks: number;
+}
 
 export const useCreateTag = () => {
   const [isCreating, setIsCreating] = React.useState(false);
@@ -64,21 +76,72 @@ export const useUpdateTag = () => {
 
 export const useDeleteTag = () => {
   const deleteTagMutation = useMutation(api.tags.mutations.deleteTag);
+  const convex = useConvex();
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [usageDialogState, setUsageDialogState] = React.useState<{
+    open: boolean;
+    tagName: string;
+    usage: TagUsageData | null;
+  }>({
+    open: false,
+    tagName: "",
+    usage: null,
+  });
+
   const deleteTag = async (tag: Tag) => {
-    confirmDialog.show({
-      title: "Delete tag",
-      description: `Are you sure you want to delete the tag "${tag.name}"?`,
-      onConfirm: async () => {
-        try {
-          await deleteTagMutation({ id: toTagId(tag.id) });
-          toast.success("Tag deleted successfully");
-        } catch (error) {
-          toast.error(
-            error instanceof Error ? error.message : "Failed to delete tag",
-          );
-        }
-      },
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      // Check usage first
+      const usage = await convex.query(api.tags.queries.getTagUsage, {
+        tagId: toTagId(tag.id),
+      });
+
+      if (usage.totalQuestions > 0 || usage.totalTimeblocks > 0) {
+        // Show usage dialog
+        setUsageDialogState({
+          open: true,
+          tagName: tag.name,
+          usage,
+        });
+      } else {
+        // Tag not in use, show regular confirm dialog
+        confirmDialog.show({
+          title: "Delete tag",
+          description: `Are you sure you want to delete the tag "${tag.name}"?`,
+          onConfirm: async () => {
+            try {
+              await deleteTagMutation({ id: toTagId(tag.id) });
+              toast.success("Tag deleted successfully");
+            } catch (error) {
+              toast.error(
+                error instanceof Error ? error.message : "Failed to delete tag",
+              );
+            }
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error checking tag usage:", error);
+      toast.error("Failed to check tag usage");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const closeUsageDialog = () => {
+    setUsageDialogState({
+      open: false,
+      tagName: "",
+      usage: null,
     });
   };
-  return { deleteTag };
+
+  return {
+    deleteTag,
+    isDeleting,
+    usageDialogState,
+    closeUsageDialog,
+  };
 };
