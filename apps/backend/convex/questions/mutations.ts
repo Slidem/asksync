@@ -1,13 +1,13 @@
 /* eslint-disable import/order */
 import { ConvexError, v } from "convex/values";
-import { mutation } from "../_generated/server";
-
-import { Id } from "../_generated/dataModel";
 import {
   calculateExpectedAnswerTime,
   getStatusForQuestion,
   validateTagPermissions,
 } from "./helpers";
+
+import { Id } from "../_generated/dataModel";
+import { mutation } from "../_generated/server";
 
 // Create a new question with thread
 export const createQuestion = mutation({
@@ -54,6 +54,7 @@ export const createQuestion = mutation({
     const expectedAnswerTime = await calculateExpectedAnswerTime(
       ctx,
       args.tagIds,
+      args.assigneeIds,
     );
 
     // Build participants list (creator + assignees + additional participants)

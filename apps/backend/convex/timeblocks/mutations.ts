@@ -11,6 +11,7 @@ import { PatchValue } from "../common/types";
 import { getUser } from "../auth/user";
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internal } from "../_generated/api";
 
 // Create a new timeblock
 export const createTimeblock = mutation({
@@ -66,6 +67,16 @@ export const createTimeblock = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Schedule recalculation for affected questions
+    await ctx.scheduler.runAfter(
+      0,
+      internal.questions.recalculation.recalculateQuestionsWithTags,
+      {
+        tagIds: args.tagIds,
+        assigneeId: userId,
+      },
+    );
 
     return timeblockId;
   },
@@ -125,6 +136,31 @@ export const updateTimeblock = mutation({
     addOptionalValue(updateData, "color", args.color);
 
     await ctx.db.patch(args.id, updateData);
+
+    // Check if any fields that affect calculation were changed
+    const affectsCalculation =
+      args.tagIds !== undefined ||
+      args.startTime !== undefined ||
+      args.endTime !== undefined ||
+      args.recurrenceRule !== undefined;
+
+    if (affectsCalculation) {
+      // Get union of old and new tag IDs
+      const oldTagIds = existingTimeblock.tagIds;
+      const newTagIds = args.tagIds ?? oldTagIds;
+      const allTagIds = Array.from(new Set([...oldTagIds, ...newTagIds]));
+
+      // Schedule recalculation for affected questions
+      await ctx.scheduler.runAfter(
+        0,
+        internal.questions.recalculation.recalculateQuestionsWithTags,
+        {
+          tagIds: allTagIds,
+          assigneeId: existingTimeblock.createdBy,
+        },
+      );
+    }
+
     return args.id;
   },
 });
@@ -137,7 +173,7 @@ export const deleteTimeblock = mutation({
     const { orgId, id: userId } = await getUser(ctx);
 
     // validate existence and permissions
-    await getExistingTimeblock({
+    const timeblock = await getExistingTimeblock({
       ctx,
       args,
       orgId,
@@ -146,6 +182,16 @@ export const deleteTimeblock = mutation({
     });
 
     await ctx.db.delete(args.id);
+
+    // Schedule recalculation for affected questions
+    await ctx.scheduler.runAfter(
+      0,
+      internal.questions.recalculation.recalculateQuestionsWithTags,
+      {
+        tagIds: timeblock.tagIds,
+        assigneeId: timeblock.createdBy,
+      },
+    );
 
     return args.id;
   },
@@ -175,6 +221,16 @@ export const addTimeblockException = mutation({
       exceptionDates: Array.from(currentExceptions),
       updatedAt: Date.now(),
     });
+
+    // Schedule recalculation for affected questions
+    await ctx.scheduler.runAfter(
+      0,
+      internal.questions.recalculation.recalculateQuestionsWithTags,
+      {
+        tagIds: timeblock.tagIds,
+        assigneeId: timeblock.createdBy,
+      },
+    );
 
     return timeblock._id;
   },

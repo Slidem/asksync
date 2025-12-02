@@ -1,11 +1,14 @@
 import { Id } from "../_generated/dataModel";
 import { hasPermission } from "../permissions/common";
+import { expandRecurringTimeblocks } from "../timeblocks/helpers";
 
 // Helper function to calculate expected answer time from tags
 export async function calculateExpectedAnswerTime(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any,
   tagIds: string[],
+  assigneeIds: string[],
+  currentTime: number = Date.now(),
 ): Promise<number> {
   const tags = await Promise.all(
     tagIds.map((tagId) => ctx.db.get(tagId as Id<"tags">)),
@@ -17,13 +20,29 @@ export async function calculateExpectedAnswerTime(
     if (!tag) continue;
 
     if (tag.answerMode === "on-demand" && tag.responseTimeMinutes) {
+      // On-demand: immediate response based on configured time
       shortestResponseTime = Math.min(
         shortestResponseTime,
         tag.responseTimeMinutes,
       );
     } else if (tag.answerMode === "scheduled") {
-      // For scheduled tags, default to 24 hours
-      shortestResponseTime = Math.min(shortestResponseTime, 24 * 60);
+      // Scheduled: find next available timeblock from any assignee
+      const minutesUntilNextTimeblock = await findNextAvailableTimeblock(
+        ctx,
+        tag._id,
+        assigneeIds,
+        currentTime,
+      );
+
+      if (minutesUntilNextTimeblock !== null) {
+        shortestResponseTime = Math.min(
+          shortestResponseTime,
+          minutesUntilNextTimeblock,
+        );
+      } else {
+        // No timeblocks found, default to 24 hours
+        shortestResponseTime = Math.min(shortestResponseTime, 24 * 60);
+      }
     }
   }
 
@@ -32,7 +51,66 @@ export async function calculateExpectedAnswerTime(
     shortestResponseTime = 24 * 60;
   }
 
-  return Date.now() + shortestResponseTime * 60 * 1000;
+  return currentTime + shortestResponseTime * 60 * 1000;
+}
+
+// Helper to find next available timeblock for a tag across all assignees
+async function findNextAvailableTimeblock(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctx: any,
+  tagId: string,
+  assigneeIds: string[],
+  currentTime: number,
+): Promise<number | null> {
+  const lookAheadDays = 30;
+  const endDate = currentTime + lookAheadDays * 24 * 60 * 60 * 1000;
+
+  let earliestTimeblock: number | null = null;
+
+  // Check timeblocks for each assignee
+  for (const assigneeId of assigneeIds) {
+    // Query timeblocks created by this assignee
+    const timeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((q: any) => q.eq(q.field("createdBy"), assigneeId))
+      .collect();
+
+    // Filter timeblocks that handle this tag
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const relevantTimeblocks = timeblocks.filter((tb: any) =>
+      tb.tagIds.includes(tagId),
+    );
+
+    if (relevantTimeblocks.length === 0) continue;
+
+    // Expand recurring timeblocks
+    const expandedTimeblocks = expandRecurringTimeblocks(
+      relevantTimeblocks,
+      currentTime,
+      endDate,
+    );
+
+    // Find earliest timeblock after current time
+    const nextTimeblock = expandedTimeblocks
+      .filter((tb) => tb.startTime > currentTime)
+      .sort((a, b) => a.startTime - b.startTime)[0];
+
+    if (nextTimeblock) {
+      const minutesUntilTimeblock =
+        (nextTimeblock.startTime - currentTime) / (60 * 1000);
+
+      if (
+        earliestTimeblock === null ||
+        minutesUntilTimeblock < earliestTimeblock
+      ) {
+        earliestTimeblock = minutesUntilTimeblock;
+      }
+    }
+  }
+
+  return earliestTimeblock;
 }
 
 // Helper function to validate user has permissions for tags
