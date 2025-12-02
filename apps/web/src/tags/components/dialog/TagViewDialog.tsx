@@ -12,8 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TagFormData, tagFormSchema } from "@/tags/model";
+import {
+  UnderlineTabs,
+  UnderlineTabsContent,
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/ui/UnderlineTabs";
 
 import { AskQuestionFromTag } from "@/questions/components/AskQuestionFromTag";
 import { Button } from "@/components/ui/button";
@@ -99,13 +104,15 @@ export const TagViewDialog: React.FC<TagViewDialogProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="edit" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="edit">Edit Tag</TabsTrigger>
-              <TabsTrigger value="ask">Ask Question</TabsTrigger>
-            </TabsList>
+          <UnderlineTabs defaultValue="edit" className="w-full">
+            <UnderlineTabsList className="grid w-full grid-cols-2">
+              <UnderlineTabsTrigger value="edit">Edit Tag</UnderlineTabsTrigger>
+              <UnderlineTabsTrigger value="ask">
+                Ask Question
+              </UnderlineTabsTrigger>
+            </UnderlineTabsList>
 
-            <TabsContent value="edit" className="mt-6">
+            <UnderlineTabsContent value="edit" className="mt-6">
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(handleSubmit)}
@@ -142,12 +149,12 @@ export const TagViewDialog: React.FC<TagViewDialogProps> = ({
                   </div>
                 </form>
               </Form>
-            </TabsContent>
+            </UnderlineTabsContent>
 
-            <TabsContent value="ask" className="mt-6">
+            <UnderlineTabsContent value="ask" className="mt-6">
               <AskQuestionFromTag tag={tag} />
-            </TabsContent>
-          </Tabs>
+            </UnderlineTabsContent>
+          </UnderlineTabs>
         </DialogContent>
       </Dialog>
     );

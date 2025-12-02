@@ -8,7 +8,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Globe, Users } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  UnderlineTabs,
+  UnderlineTabsContent,
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/ui/UnderlineTabs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,19 +114,19 @@ export function AddPermissionDialog({
           <DialogDescription>Grant access to users or groups</DialogDescription>
         </DialogHeader>
 
-        <Tabs
+        <UnderlineTabs
           value={selectedTab}
           onValueChange={(v) => setSelectedTab(v as "user" | "group" | "all")}
         >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="user">Users</TabsTrigger>
-            <TabsTrigger value="group">Groups</TabsTrigger>
-            <TabsTrigger value="all" disabled={hasEveryonePermission}>
+          <UnderlineTabsList className="grid w-full grid-cols-3">
+            <UnderlineTabsTrigger value="user">Users</UnderlineTabsTrigger>
+            <UnderlineTabsTrigger value="group">Groups</UnderlineTabsTrigger>
+            <UnderlineTabsTrigger value="all" disabled={hasEveryonePermission}>
               Everyone
-            </TabsTrigger>
-          </TabsList>
+            </UnderlineTabsTrigger>
+          </UnderlineTabsList>
 
-          <TabsContent value="user" className="space-y-4">
+          <UnderlineTabsContent value="user" className="space-y-4">
             <Input
               placeholder="Search users..."
               value={searchQuery}
@@ -158,9 +163,9 @@ export function AddPermissionDialog({
                 ))
               )}
             </div>
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="group" className="space-y-4">
+          <UnderlineTabsContent value="group" className="space-y-4">
             <Input
               placeholder="Search groups..."
               value={searchQuery}
@@ -198,9 +203,9 @@ export function AddPermissionDialog({
                 ))
               )}
             </div>
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="all" className="space-y-4">
+          <UnderlineTabsContent value="all" className="space-y-4">
             <div className="flex items-center gap-3 p-4 rounded-md border bg-muted/30">
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <Globe className="h-5 w-5 text-primary" />
@@ -217,8 +222,8 @@ export function AddPermissionDialog({
               <span className="text-sm font-medium">Permission level:</span>
               <PermissionSelector value={permission} onChange={setPermission} />
             </div>
-          </TabsContent>
-        </Tabs>
+          </UnderlineTabsContent>
+        </UnderlineTabs>
 
         {selectedId && selectedTab !== "all" && (
           <div className="flex items-center gap-2">

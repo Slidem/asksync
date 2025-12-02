@@ -1,7 +1,12 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  UnderlineTabs,
+  UnderlineTabsContent,
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/ui/UnderlineTabs";
 
 import { EventDateTimeTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDateTimeTab";
 import { EventDetailsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDetailsTab";
@@ -58,48 +63,52 @@ export const EventDialog: React.FC = () => {
 
         {isExternalEvent && <EventExternalInfo />}
 
-        <Tabs
+        <UnderlineTabs
           value={TAB_VALUES[activeTab]}
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="details" className={cn("font-semibold")}>
+          <UnderlineTabsList className="grid w-full grid-cols-4">
+            <UnderlineTabsTrigger
+              value="details"
+              className={cn("font-semibold")}
+            >
               Details
-            </TabsTrigger>
-            <TabsTrigger
+            </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger
               value="datetime"
-              className={cn(
-                "font-semibold",
-                tabsWithErrors.includes(1) && "text-red-600",
-              )}
+              className={cn("font-semibold")}
+              hasError={tabsWithErrors.includes(1)}
             >
               Date & Time
-            </TabsTrigger>
-            <TabsTrigger value="tags" className={cn("font-semibold")}>
+            </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger value="tags" className={cn("font-semibold")}>
               Tags
-            </TabsTrigger>
-            <TabsTrigger value="permissions" className={cn("font-semibold")}>
+            </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger
+              value="permissions"
+              className={cn("font-semibold")}
+            >
               Permissions
-            </TabsTrigger>
-          </TabsList>
+            </UnderlineTabsTrigger>
+          </UnderlineTabsList>
 
-          <TabsContent value="details" className="mt-4">
+          <UnderlineTabsContent value="details" className="mt-4">
             <EventDetailsTab />
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="datetime" className="mt-4">
+          <UnderlineTabsContent value="datetime" className="mt-4">
             <EventDateTimeTab />
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="tags" className="mt-4">
+          <UnderlineTabsContent value="tags" className="mt-4">
             <EventTagsTab />
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="permissions" className="mt-4">
+          <UnderlineTabsContent value="permissions" className="mt-4">
             <EventPermissionsTab />
-          </TabsContent>
-        </Tabs>
+          </UnderlineTabsContent>
+        </UnderlineTabs>
 
         <EventDialogFooter />
       </DialogContent>

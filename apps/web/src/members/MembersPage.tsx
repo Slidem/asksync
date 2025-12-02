@@ -1,6 +1,11 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  UnderlineTabs,
+  UnderlineTabsContent,
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/ui/UnderlineTabs";
 
 import { GroupDialog } from "./dialogs/groupDialog/GroupDialog";
 import { GroupManager } from "./components/GroupManager";
@@ -24,29 +29,33 @@ export function MembersPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="members" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="members" className="gap-2">
-            <Users className="h-4 w-4" />
+      <UnderlineTabs defaultValue="members" className="w-full">
+        <UnderlineTabsList className="grid w-full max-w-md grid-cols-2">
+          <UnderlineTabsTrigger
+            value="members"
+            className="gap-2"
+            icon={<Users className="h-4 w-4" />}
+            badge={memberCount}
+          >
             Members
-            <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs">
-              {memberCount}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="groups" className="gap-2">
-            <UsersRound className="h-4 w-4" />
+          </UnderlineTabsTrigger>
+          <UnderlineTabsTrigger
+            value="groups"
+            className="gap-2"
+            icon={<UsersRound className="h-4 w-4" />}
+          >
             Groups
-          </TabsTrigger>
-        </TabsList>
+          </UnderlineTabsTrigger>
+        </UnderlineTabsList>
 
-        <TabsContent value="members" className="mt-6">
+        <UnderlineTabsContent value="members" className="mt-6">
           <MembersList />
-        </TabsContent>
+        </UnderlineTabsContent>
 
-        <TabsContent value="groups" className="mt-6">
+        <UnderlineTabsContent value="groups" className="mt-6">
           <GroupManager canManage={canManage} />
-        </TabsContent>
-      </Tabs>
+        </UnderlineTabsContent>
+      </UnderlineTabs>
 
       <GroupDialog />
     </div>
