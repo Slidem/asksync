@@ -14,13 +14,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  useEditTagDialog,
+  useViewTagDialog,
+} from "@/tags/components/dialog/TagDialogContext";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@asksync/shared";
 import { formatResponseTime } from "@/lib/time";
 import { useDeleteTag } from "@/tags/hooks/mutations";
-import { useEditTagDialog } from "@/tags/components/dialog/TagDialogContext";
 
 interface TagCardProps {
   tag: Tag;
@@ -34,12 +37,13 @@ export function TagCard({
   isOwner = false,
 }: TagCardProps) {
   const { deleteTag } = useDeleteTag();
-  const { openDialog } = useEditTagDialog();
+  const { openDialog: openEditDialog } = useEditTagDialog();
+  const { openDialog: openViewDialog } = useViewTagDialog();
 
   return (
     <Card
       className="group relative cursor-pointer hover:shadow-lg transition-shadow py-4 px-2 border-primary/20"
-      onClick={() => openDialog(tag)}
+      onClick={() => openViewDialog(tag)}
     >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
@@ -67,7 +71,7 @@ export function TagCard({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      openDialog(tag);
+                      openEditDialog(tag);
                     }}
                   >
                     <Edit3 className="h-4 w-4 mr-2" />

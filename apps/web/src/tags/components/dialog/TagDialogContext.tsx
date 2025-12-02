@@ -4,12 +4,13 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 
 import { CreateTagDialog } from "./CreateTagDialog";
 import { Tag } from "@asksync/shared";
+import { TagViewDialog } from "./TagViewDialog";
 import { UpdateTagDialog } from "./UpdateTagDialog";
 
 /**
  * Dialog modes for tag management
  */
-type DialogMode = "create" | "edit" | "closed";
+type DialogMode = "create" | "edit" | "view" | "closed";
 
 /**
  * Context value interface for tag dialog management
@@ -23,6 +24,7 @@ interface TagDialogContextValue {
   // Actions
   openCreateDialog: () => void;
   openEditDialog: (tag: Tag) => void;
+  openViewDialog: (tag: Tag) => void;
   closeDialog: () => void;
 
   // Utility
@@ -78,6 +80,11 @@ export const TagDialogProvider: React.FC<TagDialogProviderProps> = ({
     setMode("edit");
   }, []);
 
+  const openViewDialog = useCallback((tag: Tag) => {
+    setEditingTag(tag);
+    setMode("view");
+  }, []);
+
   const closeDialog = useCallback(() => {
     setMode("closed");
     setEditingTag(null);
@@ -109,12 +116,22 @@ export const TagDialogProvider: React.FC<TagDialogProviderProps> = ({
     [closeDialog, editingTag, onTagUpdated],
   );
 
+  const handleViewDialogChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        closeDialog();
+      }
+    },
+    [closeDialog],
+  );
+
   const value: TagDialogContextValue = {
     mode,
     editingTag,
     isOpen: mode !== "closed",
     openCreateDialog,
     openEditDialog,
+    openViewDialog,
     closeDialog,
     setEditingTag,
   };
@@ -133,6 +150,12 @@ export const TagDialogProvider: React.FC<TagDialogProviderProps> = ({
       <UpdateTagDialog
         tag={mode === "edit" ? editingTag : null}
         onOpenChange={handleEditDialogChange}
+      />
+
+      {/* View Dialog */}
+      <TagViewDialog
+        tag={mode === "view" ? editingTag : null}
+        onOpenChange={handleViewDialogChange}
       />
     </TagDialogContext.Provider>
   );
@@ -176,6 +199,19 @@ export const useEditTagDialog = () => {
 };
 
 /**
+ * Hook specifically for opening the view dialog
+ */
+export const useViewTagDialog = () => {
+  const { openViewDialog, closeDialog, mode, editingTag } = useTagDialog();
+  return {
+    openDialog: openViewDialog,
+    closeDialog,
+    isOpen: mode === "view",
+    viewingTag: editingTag,
+  };
+};
+
+/**
  * Hook for checking if any tag dialog is open
  */
 export const useIsTagDialogOpen = () => {
@@ -192,6 +228,7 @@ export const useTagDialogControl = () => {
     editingTag,
     openCreateDialog,
     openEditDialog,
+    openViewDialog,
     closeDialog,
     setEditingTag,
   } = useTagDialog();
@@ -207,6 +244,7 @@ export const useTagDialogControl = () => {
     // Actions
     create: openCreateDialog,
     edit: openEditDialog,
+    view: openViewDialog,
     close: closeDialog,
 
     // Advanced control
