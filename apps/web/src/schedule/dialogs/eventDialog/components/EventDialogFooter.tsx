@@ -2,6 +2,12 @@
 
 import React, { useCallback } from "react";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   useCreateEvent,
   useDeleteEvent,
   useUpdateEvent,
@@ -22,6 +28,7 @@ export const EventDialogFooter = React.memo(() => {
     validateAndGetEvent,
     close,
     previousRecurrenceRule,
+    error,
   } = useEventDialogStore(
     useShallow((state) => ({
       eventId: state.eventMetadata.eventId,
@@ -30,8 +37,11 @@ export const EventDialogFooter = React.memo(() => {
       validateAndGetEvent: state.validateAndGetEvent,
       close: state.close,
       previousRecurrenceRule: state.eventToUpdate?.recurrenceRule,
+      error: state.formFields.error,
     })),
   );
+
+  const tabsWithErrors = error ? [1] : [];
 
   const previousStartDate = useEventDialogStore(
     (state) => state.eventToUpdate?.start,
@@ -113,6 +123,24 @@ export const EventDialogFooter = React.memo(() => {
     validateAndGetEvent,
   ]);
 
+  const hasErrors = tabsWithErrors.length > 0;
+  const tabNames = ["Details", "Date & Time", "Tags", "Permissions"];
+
+  const getTooltipMessage = () => {
+    if (!hasErrors || !error) return null;
+    const errorTabIndex = tabsWithErrors[0];
+    if (errorTabIndex !== undefined) {
+      return `Please fix errors in ${tabNames[errorTabIndex]}: ${error}`;
+    }
+    return null;
+  };
+
+  const saveButton = (
+    <Button onClick={handleSave} disabled={hasErrors}>
+      {canOnlyEditTags ? "Update Tags" : "Save"}
+    </Button>
+  );
+
   return (
     <DialogFooter className="flex-row sm:justify-between">
       {eventId && canDeleteEvent && (
@@ -129,9 +157,18 @@ export const EventDialogFooter = React.memo(() => {
         <Button variant="outline" onClick={close}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>
-          {canOnlyEditTags ? "Update Tags" : "Save"}
-        </Button>
+        {hasErrors ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{saveButton}</TooltipTrigger>
+              <TooltipContent>
+                <p>{getTooltipMessage()}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          saveButton
+        )}
       </div>
     </DialogFooter>
   );

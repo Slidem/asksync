@@ -1,36 +1,36 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { EventAllDayToggle } from "@/schedule/dialogs/eventDialog/components/EventAllDayToggle";
-import { EventColorPicker } from "@/schedule/dialogs/eventDialog/components/EventColorPicker";
-import { EventDateTimeFields } from "@/schedule/dialogs/eventDialog/components/EventDateTimeFields";
-import { EventDescriptionField } from "@/schedule/dialogs/eventDialog/components/EventDescriptionField";
+import { EventDateTimeTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDateTimeTab";
+import { EventDetailsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDetailsTab";
 import { EventDialogFooter } from "@/schedule/dialogs/eventDialog/components/EventDialogFooter";
 import { EventDialogHeader } from "@/schedule/dialogs/eventDialog/components/EventDialogHeader";
 import { EventExternalInfo } from "@/schedule/dialogs/eventDialog/components/EventExternalInfo";
-import { EventLocationField } from "@/schedule/dialogs/eventDialog/components/EventLocationField";
-import { EventRecurrenceFields } from "@/schedule/dialogs/eventDialog/components/EventRecurrenceFields";
-import { EventTagSelector } from "@/schedule/dialogs/eventDialog/components/EventTagSelector";
-import { EventTitleField } from "@/schedule/dialogs/eventDialog/components/EventTitleField";
-import { ResourcePermissionsManager } from "@/components/permissions";
-import { SectionDivider } from "@/schedule/dialogs/eventDialog/components/SectionDivider";
+import { EventPermissionsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventPermissionsTab";
+import { EventTagsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventTagsTab";
+import { cn } from "@/lib/utils";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
+const TAB_VALUES = ["details", "datetime", "tags", "permissions"] as const;
+
 export const EventDialog: React.FC = () => {
-  const { isOpen, close, error, permissions, setPermissions, eventId } =
+  const { isOpen, close, isExternalEvent, activeTab, setActiveTab, error } =
     useEventDialogStore(
       useShallow((state) => ({
         isOpen: state.isOpen,
         close: state.close,
+        isExternalEvent: state.isExternalEvent,
+        activeTab: state.activeTab,
+        setActiveTab: state.setActiveTab,
         error: state.formFields.error,
-        permissions: state.formFields.permissions,
-        setPermissions: state.setPermissions,
-        eventId: state.eventMetadata.eventId,
       })),
     );
+
+  const tabsWithErrors = error ? [1] : [];
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -41,38 +41,65 @@ export const EventDialog: React.FC = () => {
     [close],
   );
 
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const index = TAB_VALUES.indexOf(value as (typeof TAB_VALUES)[number]);
+      if (index !== -1) {
+        setActiveTab(index);
+      }
+    },
+    [setActiveTab],
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <EventDialogHeader />
 
-        {error && (
-          <div className="bg-destructive/15 text-destructive rounded-md px-3 py-2 text-sm">
-            {error}
-          </div>
-        )}
+        {isExternalEvent && <EventExternalInfo />}
 
-        <div className="grid gap-4 py-4">
-          <EventTitleField />
-          <EventDescriptionField />
-          <EventLocationField />
-          <SectionDivider />
-          <EventDateTimeFields />
-          <EventAllDayToggle />
-          <EventRecurrenceFields />
-          <SectionDivider />
-          <EventTagSelector />
-          <SectionDivider />
-          <EventExternalInfo />
-          <EventColorPicker />
-          <SectionDivider />
-          <ResourcePermissionsManager
-            grants={permissions}
-            canEdit={true}
-            isCreating={!eventId}
-            onChange={setPermissions}
-          />
-        </div>
+        <Tabs
+          value={TAB_VALUES[activeTab]}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="details" className={cn("font-semibold")}>
+              Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="datetime"
+              className={cn(
+                "font-semibold",
+                tabsWithErrors.includes(1) && "text-red-600",
+              )}
+            >
+              Date & Time
+            </TabsTrigger>
+            <TabsTrigger value="tags" className={cn("font-semibold")}>
+              Tags
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className={cn("font-semibold")}>
+              Permissions
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="mt-4">
+            <EventDetailsTab />
+          </TabsContent>
+
+          <TabsContent value="datetime" className="mt-4">
+            <EventDateTimeTab />
+          </TabsContent>
+
+          <TabsContent value="tags" className="mt-4">
+            <EventTagsTab />
+          </TabsContent>
+
+          <TabsContent value="permissions" className="mt-4">
+            <EventPermissionsTab />
+          </TabsContent>
+        </Tabs>
 
         <EventDialogFooter />
       </DialogContent>

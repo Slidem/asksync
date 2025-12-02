@@ -42,6 +42,7 @@ interface EventMetadata {
 
 export interface EventDialogState {
   isOpen: boolean;
+  activeTab: number;
   formFields: FormFields;
   eventMetadata: EventMetadata;
   eventToUpdate: CalendarEvent | null;
@@ -51,6 +52,7 @@ export interface EventDialogState {
 
   open: (event: CalendarEvent | null) => void;
   close: () => void;
+  setActiveTab: (tab: number) => void;
   setFormFields: (fields: Partial<FormFields>) => void;
   setEventMetadata: (metadata: Partial<EventMetadata>) => void;
   toggleTagId: (tagId: string) => void;
@@ -103,6 +105,7 @@ const getDefaultEventMetadata = (): EventMetadata => ({
 
 export const useEventDialogStore = create<EventDialogState>((set, get) => ({
   isOpen: false,
+  activeTab: 0,
   formFields: getDefaultFormFieldsState(),
   eventMetadata: getDefaultEventMetadata(),
   eventToUpdate: null,
@@ -120,6 +123,8 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
     const state = get();
     return state.eventMetadata.canDelete !== false && !state.isExternalEvent;
   },
+
+  setActiveTab: (tab) => set({ activeTab: tab }),
 
   setFormFields: (fields) =>
     set((state) => {
@@ -209,6 +214,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
 
   reset: () =>
     set({
+      activeTab: 0,
       formFields: getDefaultFormFieldsState(),
       eventMetadata: getDefaultEventMetadata(),
       eventToUpdate: null,
@@ -241,7 +247,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         endHours > END_HOUR
       ) {
         const error = `Selected time must be between ${START_HOUR}:00 and ${END_HOUR}:00`;
-        set({ formFields: { ...formFields, error } });
+        set({ formFields: { ...formFields, error }, activeTab: 1 });
         return { event: null, permissions: [], initialPermissions: [], error };
       }
       start.setHours(startHours, startMinutes, 0);
@@ -250,7 +256,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
 
     if (end < start) {
       const error = "End date cannot be before start date";
-      set({ formFields: { ...formFields, error } });
+      set({ formFields: { ...formFields, error }, activeTab: 1 });
       return { event: null, permissions: [], initialPermissions: [], error };
     }
 
