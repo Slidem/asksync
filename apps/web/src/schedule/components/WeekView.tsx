@@ -15,6 +15,7 @@ import {
   useOpenCreateEventDialog,
   useSelectEventInDialog,
 } from "@/schedule/dialogs/eventDialog/eventDialogService";
+import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 import { CurrentTimeIndicator } from "@/schedule/components/CurrentTimeIndicator";
 import { EventItem } from "@/schedule/components/EventItem";
@@ -35,6 +36,7 @@ import { useMultiDayEventPositioning } from "../hooks/eventsPositioning";
  */
 export function WeekView() {
   const openSelectEventInDialog = useSelectEventInDialog();
+  const openAskQuestionDialog = useOpenAskQuestionDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();
   const currentDate = useCalendarViewStore((state) => state.currentDate);
   const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
@@ -60,7 +62,10 @@ export function WeekView() {
 
   const processedDayEvents = useMultiDayEventPositioning(timeEventsByDay, days);
 
-  const handleEventClick = createEventClickHandler(openSelectEventInDialog);
+  // Use different click handlers based on whether viewing another user's calendar
+  const handleEventClick = createEventClickHandler(
+    isReadOnly ? openAskQuestionDialog : openSelectEventInDialog,
+  );
 
   const containerRef = useRef<HTMLDivElement>(null);
 

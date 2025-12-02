@@ -33,6 +33,7 @@ import {
   useOpenCreateEventDialog,
   useSelectEventInDialog,
 } from "@/schedule/dialogs/eventDialog/eventDialogService";
+import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
@@ -46,7 +47,7 @@ import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurre
 
 export function MonthView() {
   const openSelectEventInDialog = useSelectEventInDialog();
-
+  const openAskQuestionDialog = useOpenAskQuestionDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();
 
   const currentDate = useCalendarViewStore((state) => state.currentDate);
@@ -116,7 +117,10 @@ export function MonthView() {
     return map;
   }, [days, events]);
 
-  const handleEventClick = createEventClickHandler(openSelectEventInDialog);
+  // Use different click handlers based on whether viewing another user's calendar
+  const handleEventClick = createEventClickHandler(
+    isReadOnly ? openAskQuestionDialog : openSelectEventInDialog,
+  );
 
   const [isMounted, setIsMounted] = useState(false);
 

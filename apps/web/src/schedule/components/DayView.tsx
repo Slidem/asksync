@@ -6,6 +6,7 @@ import {
   useOpenCreateEventDialog,
   useSelectEventInDialog,
 } from "@/schedule/dialogs/eventDialog/eventDialogService";
+import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 import { CurrentTimeIndicator } from "@/schedule/components/CurrentTimeIndicator";
 import { EventItem } from "@/schedule/components/EventItem";
@@ -27,6 +28,7 @@ import { useHourGrid } from "@/schedule/hooks/timeUtils";
  */
 export function DayView() {
   const openSelectEventInDialog = useSelectEventInDialog();
+  const openAskQuestionDialog = useOpenAskQuestionDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();
   const currentDate = useCalendarViewStore((state) => state.currentDate);
   const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
@@ -42,8 +44,10 @@ export function DayView() {
   );
   const positionedEvents = useDayEventsPositioning(timeEvents, currentDate);
 
-  // Create event handler
-  const handleEventClick = createEventClickHandler(openSelectEventInDialog);
+  // Use different click handlers based on whether viewing another user's calendar
+  const handleEventClick = createEventClickHandler(
+    isReadOnly ? openAskQuestionDialog : openSelectEventInDialog,
+  );
 
   // Container ref for ghost event positioning
   const containerRef = useRef<HTMLDivElement>(null);

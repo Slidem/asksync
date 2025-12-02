@@ -7,6 +7,7 @@ import {
 } from "@/schedule/constants";
 
 import { AgendaView } from "@/schedule/components/AgendaView";
+import { AskQuestionDialog } from "@/schedule/dialogs/askQuestion/AskQuestionDialog";
 import { CalendarDndProvider } from "@/schedule/components/CalendarDndContext";
 import { CalendarUserSelector } from "@/schedule/components/CalendarUserSelector";
 import { DayView } from "@/schedule/components/DayView";
@@ -39,6 +40,7 @@ export function EventCalendar() {
           {view === "agenda" && <AgendaView />}
         </div>
       </CalendarDndProvider>
+      <AskQuestionDialog />
     </div>
   );
 }
