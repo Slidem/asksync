@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Clock, MessageCircle, Settings, Users } from "lucide-react";
+import { Clock, Crown, MessageCircle, Settings, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,7 @@ import { Question } from "@asksync/shared";
 import { getTimeUntilAnswer } from "@/questions/hooks/utils";
 import { useDeleteQuestion } from "@/questions/hooks/mutations";
 import { useRouter } from "next/navigation";
+import { MemberAvatar } from "@/members/components/MemberAvatar";
 
 interface QuestionCardProps {
   question: Question;
@@ -74,6 +75,15 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
                 >
                   {question.status.replace("_", " ")}
                 </Badge>
+                {isCreator && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs px-2 py-0.5 gap-1 bg-primary/10 text-primary border-primary/20"
+                  >
+                    <Crown className="h-3 w-3" />
+                    Owner
+                  </Badge>
+                )}
                 {isAssignedToUser && (
                   <Badge variant="default" className="text-xs">
                     Assigned to you
@@ -88,6 +98,13 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
               <CardDescription className="mt-2 line-clamp-2 text-sm">
                 {question.content}
               </CardDescription>
+
+              {!isCreator && question.createdBy && (
+                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                  <span>Created by</span>
+                  <MemberAvatar id={question.createdBy} showTooltip={true} />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -119,6 +136,26 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
 
         <CardContent className="pt-0">
           <div className="space-y-3">
+            {/* Assignees */}
+            {!isAssignedToUser &&
+              question.assigneeIds &&
+              question.assigneeIds.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Assigned to:
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {question.assigneeIds.map((assigneeId) => (
+                      <MemberAvatar
+                        key={assigneeId}
+                        id={assigneeId}
+                        showTooltip={true}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
             {/* Tags */}
             {question.tags && question.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
