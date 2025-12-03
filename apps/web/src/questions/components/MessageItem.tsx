@@ -5,7 +5,8 @@ import { Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommentMenu } from "./CommentMenu";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
-import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
+import { TiptapViewer } from "@/components/editor/TiptapViewer";
 import { formatMessageTime } from "@/questions/hooks/utils";
 import { useMemberships } from "@/members/queries/queries";
 import { useState } from "react";
@@ -24,7 +25,7 @@ interface MessageItemProps {
   message: Message;
   isAssignee: boolean;
   isResolved: boolean;
-  onEdit: (messageId: string, content: string) => Promise<void>;
+  onEdit: (messageId: string, content: string, contentPlaintext: string) => Promise<void>;
   onDelete: (messageId: string) => void;
   onMarkAsAnswer: (messageId: string) => void;
 }
@@ -41,6 +42,7 @@ export function MessageItem({
   const memberships = useMemberships();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const [editContentPlaintext, setEditContentPlaintext] = useState("");
   const [showTimestamp, setShowTimestamp] = useState(false);
 
   const isOwnMessage = user?.id === message.createdBy;
@@ -53,7 +55,7 @@ export function MessageItem({
 
   const handleSaveEdit = async () => {
     if (!editContent.trim()) return;
-    await onEdit(message.id, editContent.trim());
+    await onEdit(message.id, editContent.trim(), editContentPlaintext.trim());
     setIsEditing(false);
   };
 
@@ -90,22 +92,15 @@ export function MessageItem({
         <div>
           {isEditing ? (
             <div className="space-y-2 min-w-[300px]">
-              <Textarea
+              <TiptapEditor
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    handleSaveEdit();
-                  }
-                  if (e.key === "Escape") {
-                    e.preventDefault();
-                    handleCancelEdit();
-                  }
+                onChange={(html, plaintext) => {
+                  setEditContent(html);
+                  setEditContentPlaintext(plaintext);
                 }}
-                className="text-sm resize-none"
-                rows={3}
-                placeholder="Edit message... (Ctrl+Enter to save, Esc to cancel)"
+                placeholder="Edit message... (Ctrl+Enter to save)"
+                minHeight={80}
+                onSubmit={handleSaveEdit}
               />
               <div className="flex items-center gap-2">
                 <Button size="sm" onClick={handleSaveEdit}>
@@ -129,9 +124,7 @@ export function MessageItem({
                       : "border border-border"
                 }`}
               >
-                <p className="text-sm leading-relaxed break-words">
-                  {message.content}
-                </p>
+                <TiptapViewer content={message.content} />
               </div>
 
               <div

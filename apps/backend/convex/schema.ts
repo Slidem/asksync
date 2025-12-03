@@ -56,6 +56,7 @@ export default defineSchema({
     // Content
     title: v.string(),
     content: v.string(),
+    contentPlaintext: v.optional(v.string()),
 
     // Assignment and participation
     createdBy: v.string(),
@@ -76,6 +77,7 @@ export default defineSchema({
     // Answer management
     acceptedAnswers: v.array(v.string()), // messageIds that are marked as accepted answers
     manualAnswer: v.optional(v.string()), // direct answer text (alternative to message selection)
+    manualAnswerPlaintext: v.optional(v.string()),
     manualAnswerBy: v.optional(v.string()), // userId who added manual answer
     manualAnswerAt: v.optional(v.number()), // timestamp of manual answer
 
@@ -125,6 +127,7 @@ export default defineSchema({
   messages: defineTable({
     // Content
     content: v.string(),
+    contentPlaintext: v.optional(v.string()),
     messageType: v.union(v.literal("text"), v.literal("system")),
     attachments: v.array(
       v.object({

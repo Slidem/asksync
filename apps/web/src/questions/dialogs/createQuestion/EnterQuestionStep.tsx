@@ -1,11 +1,10 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { SortOrder, TagSortBy } from "@asksync/shared";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { SortOrder, TagSortBy } from "@asksync/shared";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { useCreateQuestionDialogStore } from "./createQuestionDialogStore";
 import { useMemberships } from "@/members/queries/queries";
 import { useTags } from "@/tags/hooks/queries";
@@ -123,12 +122,11 @@ export function EnterQuestionStep({
 
         <div className="space-y-2">
           <Label htmlFor="content">Content</Label>
-          <Textarea
-            id="content"
-            placeholder="Enter question details (optional)..."
+          <TiptapEditor
             value={questionContent}
-            onChange={(e) => setQuestionContent(e.target.value)}
-            rows={6}
+            onChange={(html, plaintext) => setQuestionContent(html, plaintext)}
+            placeholder="Enter question details (optional)..."
+            minHeight={120}
           />
         </div>
       </div>

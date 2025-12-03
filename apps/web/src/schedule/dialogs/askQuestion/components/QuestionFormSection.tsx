@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { useAskQuestionDialogStore } from "../askQuestionDialogStore";
 import { useState } from "react";
 import { ChevronDown, ChevronRight, MessageSquarePlus } from "lucide-react";
@@ -88,14 +88,11 @@ export const QuestionFormSection = ({
           {/* Question Content */}
           <div className="space-y-2">
             <Label htmlFor="question-content">Question Details *</Label>
-            <Textarea
-              id="question-content"
-              placeholder="Provide more details about your question..."
+            <TiptapEditor
               value={questionContent}
-              onChange={(e) => setQuestionContent(e.target.value)}
-              required
-              disabled={isSubmitting}
-              rows={4}
+              onChange={(html, plaintext) => setQuestionContent(html, plaintext)}
+              placeholder="Provide more details about your question..."
+              minHeight={100}
             />
           </div>
 

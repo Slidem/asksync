@@ -31,6 +31,7 @@ export const AskQuestionDialog: React.FC = () => {
     tagIds,
     questionTitle,
     questionContent,
+    questionContentPlaintext,
     createdQuestionId,
     setCreatedQuestionId,
   } = useAskQuestionDialogStore();
@@ -62,6 +63,7 @@ export const AskQuestionDialog: React.FC = () => {
       const questionId = await createQuestionMutation({
         title: questionTitle,
         content: questionContent,
+        contentPlaintext: questionContentPlaintext,
         tagIds,
         assigneeIds: [assigneeUserId],
         participants: [],

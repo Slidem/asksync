@@ -6,6 +6,7 @@ export const sendMessage = mutation({
   args: {
     threadId: v.id("threads"),
     content: v.string(),
+    contentPlaintext: v.optional(v.string()),
     messageType: v.optional(v.union(v.literal("text"), v.literal("system"))),
   },
   handler: async (ctx, args) => {
@@ -32,6 +33,7 @@ export const sendMessage = mutation({
     // Create message
     const messageId = await ctx.db.insert("messages", {
       content: args.content,
+      contentPlaintext: args.contentPlaintext,
       messageType: args.messageType || "text",
       attachments: [],
       threadId: args.threadId,
@@ -117,6 +119,7 @@ export const editMessage = mutation({
   args: {
     messageId: v.id("messages"),
     content: v.string(),
+    contentPlaintext: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -141,6 +144,7 @@ export const editMessage = mutation({
 
     await ctx.db.patch(args.messageId, {
       content: args.content,
+      contentPlaintext: args.contentPlaintext,
       editedAt: Date.now(),
     });
 

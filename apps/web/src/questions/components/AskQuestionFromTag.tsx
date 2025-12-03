@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectedMembersDisplay } from "./SelectedMembersDisplay";
 import { Tag } from "@asksync/shared";
-import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { UserSelector } from "./UserSelector";
 import { api } from "@convex/api";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ export function AskQuestionFromTag({ tag }: AskQuestionFromTagProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [questionTitle, setQuestionTitle] = useState("");
   const [questionContent, setQuestionContent] = useState("");
+  const [questionContentPlaintext, setQuestionContentPlaintext] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdQuestionId, setCreatedQuestionId] = useState<string | null>(
     null,
@@ -88,6 +89,7 @@ export function AskQuestionFromTag({ tag }: AskQuestionFromTagProps) {
       const questionId = await createQuestion({
         title: questionTitle,
         content: questionContent,
+        contentPlaintext: questionContentPlaintext,
         tagIds: [tag.id],
         assigneeIds: selectedUserIds,
         participants: [],
@@ -237,13 +239,14 @@ export function AskQuestionFromTag({ tag }: AskQuestionFromTagProps) {
           <Label htmlFor="content" className="text-sm font-medium mb-2 block">
             Details (optional)
           </Label>
-          <Textarea
-            id="content"
-            placeholder="Add more context to your question..."
+          <TiptapEditor
             value={questionContent}
-            onChange={(e) => setQuestionContent(e.target.value)}
-            disabled={isSubmitting}
-            rows={4}
+            onChange={(html, plaintext) => {
+              setQuestionContent(html);
+              setQuestionContentPlaintext(plaintext);
+            }}
+            placeholder="Add more context to your question..."
+            minHeight={100}
           />
         </div>
       </div>

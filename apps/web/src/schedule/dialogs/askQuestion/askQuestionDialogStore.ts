@@ -7,6 +7,7 @@ interface AskQuestionDialogState {
   tagIds: string[];
   questionTitle: string;
   questionContent: string;
+  questionContentPlaintext: string;
   createdQuestionId: string | null;
 }
 
@@ -18,7 +19,7 @@ interface AskQuestionDialogActions {
   }) => void;
   closeDialog: () => void;
   setQuestionTitle: (title: string) => void;
-  setQuestionContent: (content: string) => void;
+  setQuestionContent: (content: string, plaintext: string) => void;
   setCreatedQuestionId: (id: string) => void;
   reset: () => void;
 }
@@ -30,6 +31,7 @@ const initialState: AskQuestionDialogState = {
   tagIds: [],
   questionTitle: "",
   questionContent: "",
+  questionContentPlaintext: "",
   createdQuestionId: null,
 };
 
@@ -60,7 +62,8 @@ export const useAskQuestionDialogStore = create<
 
   setQuestionTitle: (title) => set({ questionTitle: title }),
 
-  setQuestionContent: (content) => set({ questionContent: content }),
+  setQuestionContent: (content, plaintext) =>
+    set({ questionContent: content, questionContentPlaintext: plaintext }),
 
   setCreatedQuestionId: (id) => set({ createdQuestionId: id }),
 

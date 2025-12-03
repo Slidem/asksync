@@ -26,6 +26,7 @@ export function CreateQuestionDialog() {
     selectedTagIds,
     questionTitle,
     questionContent,
+    questionContentPlaintext,
   } = useCreateQuestionDialogStore();
   const createQuestion = useMutation(api.questions.mutations.createQuestion);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,6 +61,7 @@ export function CreateQuestionDialog() {
       const questionId = await createQuestion({
         title: questionTitle,
         content: questionContent,
+        contentPlaintext: questionContentPlaintext,
         tagIds: selectedTagIds,
         assigneeIds: selectedUserIds,
         participants: [],

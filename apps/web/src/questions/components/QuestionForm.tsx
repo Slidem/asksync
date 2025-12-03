@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagSelector } from "./TagSelector";
-import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { UserSelector } from "./UserSelector";
 import { useCallback } from "react";
 
@@ -103,18 +103,17 @@ export function QuestionForm({
 
           <div className="space-y-2">
             <Label htmlFor="content">Description *</Label>
-            <Textarea
-              id="content"
-              placeholder="Provide more details about your question..."
+            <TiptapEditor
               value={formData.content}
-              onChange={(e) =>
+              onChange={(html, plaintext) =>
                 onFormDataChange((prev) => ({
                   ...prev,
-                  content: e.target.value,
+                  content: html,
+                  contentPlaintext: plaintext,
                 }))
               }
-              rows={4}
-              className="text-base"
+              placeholder="Provide more details about your question..."
+              minHeight={120}
             />
           </div>
         </CardContent>

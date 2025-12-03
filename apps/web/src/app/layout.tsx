@@ -1,4 +1,5 @@
 import "./globals.css";
+import "@/components/editor/editor.css";
 
 import {
   Montserrat,

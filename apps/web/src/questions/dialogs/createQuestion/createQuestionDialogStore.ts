@@ -27,6 +27,7 @@ interface CreateQuestionDialogState {
   // Step 3: Question details
   questionTitle: string;
   questionContent: string;
+  questionContentPlaintext: string;
 
   // Actions
   openDialog: () => void;
@@ -44,7 +45,7 @@ interface CreateQuestionDialogState {
 
   // Step 3 actions
   setQuestionTitle: (title: string) => void;
-  setQuestionContent: (content: string) => void;
+  setQuestionContent: (content: string, plaintext: string) => void;
 
   // Validation
   canProceedFromStep1: () => boolean;
@@ -59,6 +60,7 @@ const initialState = {
   selectedTagIds: [],
   questionTitle: "",
   questionContent: "",
+  questionContentPlaintext: "",
 };
 
 export const useCreateQuestionDialogStore = create<CreateQuestionDialogState>(
@@ -86,7 +88,8 @@ export const useCreateQuestionDialogStore = create<CreateQuestionDialogState>(
     setSelectedUserIds: (userIds) => set({ selectedUserIds: userIds }),
     setSelectedTagIds: (tagIds) => set({ selectedTagIds: tagIds }),
     setQuestionTitle: (title) => set({ questionTitle: title }),
-    setQuestionContent: (content) => set({ questionContent: content }),
+    setQuestionContent: (content, plaintext) =>
+      set({ questionContent: content, questionContentPlaintext: plaintext }),
 
     canProceedFromStep1: () => {
       const { selectedUserIds } = get();

@@ -14,6 +14,7 @@ export const createQuestion = mutation({
   args: {
     title: v.string(),
     content: v.string(),
+    contentPlaintext: v.optional(v.string()),
     tagIds: v.array(v.string()),
     assigneeIds: v.array(v.string()),
     participants: v.optional(v.array(v.string())),
@@ -77,6 +78,7 @@ export const createQuestion = mutation({
     const questionId = await ctx.db.insert("questions", {
       title: args.title,
       content: args.content,
+      contentPlaintext: args.contentPlaintext,
       createdBy: identity.subject,
       participantIds: Array.from(allParticipants),
       assigneeIds: args.assigneeIds,

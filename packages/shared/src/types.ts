@@ -67,6 +67,7 @@ export interface Question {
   id: string;
   title: string;
   content: string;
+  contentPlaintext?: string;
   createdBy: string;
   participantIds: string[];
   participants?: { id: string; isAssignee: boolean; isCreator: boolean }[];
@@ -76,6 +77,7 @@ export interface Question {
   status: QuestionStatus;
   acceptedAnswers: string[];
   manualAnswer?: string;
+  manualAnswerPlaintext?: string;
   manualAnswerBy?: string;
   manualAnswerAt?: number;
   createdAt: number;
@@ -111,6 +113,7 @@ export interface MessageAttachment {
 export interface Message {
   id: string;
   content: string;
+  contentPlaintext?: string;
   messageType: MessageType;
   attachments: MessageAttachment[];
   threadId: string;
@@ -169,6 +172,7 @@ export interface UpdateTagForm {
 export interface CreateQuestionForm {
   title: string;
   content: string;
+  contentPlaintext?: string;
   tagIds: string[];
   assigneeIds: string[];
   participants?: string[];

@@ -5,7 +5,7 @@ import { toMessageId, toQuestionId, toThreadId } from "@/lib/convexTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { MessageItem } from "./MessageItem";
 import { api } from "@convex/api";
 import { toast } from "sonner";
@@ -40,6 +40,7 @@ export function DiscussionThread({
   isResolved,
 }: DiscussionThreadProps) {
   const [newMessage, setNewMessage] = useState("");
+  const [newMessagePlaintext, setNewMessagePlaintext] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const sendMessage = useMutation(api.messages.sendMessage);
@@ -49,8 +50,8 @@ export function DiscussionThread({
     api.questions.mutations.markMessageAsAccepted,
   );
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!newMessage.trim()) return;
 
     setIsSending(true);
@@ -58,8 +59,10 @@ export function DiscussionThread({
       await sendMessage({
         threadId: toThreadId(threadId),
         content: newMessage.trim(),
+        contentPlaintext: newMessagePlaintext.trim(),
       });
       setNewMessage("");
+      setNewMessagePlaintext("");
       toast.success("Message sent!");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -69,11 +72,12 @@ export function DiscussionThread({
     }
   };
 
-  const handleEditMessage = async (messageId: string, content: string) => {
+  const handleEditMessage = async (messageId: string, content: string, contentPlaintext: string) => {
     try {
       await editMessage({
         messageId: toMessageId(messageId),
         content,
+        contentPlaintext,
       });
       toast.success("Message updated!");
     } catch (error) {
@@ -151,27 +155,27 @@ export function DiscussionThread({
       {/* Message Input */}
       {isParticipant && !isResolved && (
         <div className="pt-4">
-          <form onSubmit={handleSendMessage} className="flex gap-2">
-            <Input
-              placeholder="Type your message... (Enter to send)"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage(e);
-                }
-              }}
-              className="flex-1"
-            />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <TiptapEditor
+                value={newMessage}
+                onChange={(html, plaintext) => {
+                  setNewMessage(html);
+                  setNewMessagePlaintext(plaintext);
+                }}
+                placeholder="Type your message... (Ctrl+Enter to send)"
+                minHeight={40}
+                onSubmit={handleSendMessage}
+              />
+            </div>
             <Button
-              type="submit"
+              onClick={() => handleSendMessage()}
               disabled={!newMessage.trim() || isSending}
               size="sm"
             >
               {isSending ? "Sending..." : <Send className="h-4 w-4" />}
             </Button>
-          </form>
+          </div>
         </div>
       )}
     </div>

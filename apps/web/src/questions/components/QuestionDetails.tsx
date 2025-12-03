@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ParticipantsDisplay } from "./ParticipantsDisplay";
+import { TiptapViewer } from "@/components/editor/TiptapViewer";
 import { getTimeUntilAnswer } from "@/questions/hooks/utils";
 
 interface Tag {
@@ -76,9 +77,9 @@ export function QuestionDetails({
           </div>
 
           <h1 className="text-2xl font-bold mb-3">{title}</h1>
-          <p className="text-base leading-relaxed text-muted-foreground">
-            {content}
-          </p>
+          <div className="text-base leading-relaxed text-muted-foreground">
+            <TiptapViewer content={content} />
+          </div>
         </div>
 
         {(isAssignee || isCreator) && (
