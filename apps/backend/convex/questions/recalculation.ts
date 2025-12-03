@@ -126,7 +126,7 @@ export const recalculateAllPendingQuestions = internalMutation({
     }
 
     // Schedule next batch if there are more questions
-    if (result.continueCursor) {
+    if (!result.isDone && result.continueCursor) {
       await ctx.scheduler.runAfter(
         0,
         internal.questions.recalculation.recalculateAllPendingQuestions,
