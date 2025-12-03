@@ -14,40 +14,59 @@ const DEFAULT_SORTING = {
 interface UseTagsOptions {
   filter?: {
     searchTerm?: string;
+    ownerIds?: string[];
   };
   sorting?: {
     sortBy: TagSortBy;
     sortOrder: SortOrder;
   };
   includeUsageStats?: boolean;
+  filterBy?: "my-tags" | "others-tags" | "all";
 }
 
 export const useTags = ({
   filter = {},
   sorting = DEFAULT_SORTING,
   includeUsageStats = false,
+  filterBy = "all",
 }: UseTagsOptions) => {
   const result = useQuery(api.tags.queries.listTagsByOrg, {
     sortOrder: sorting.sortOrder,
     sortBy: sorting.sortBy,
     includeUsageStats,
+    filterBy,
   }) || {
     tags: [],
     totalVisibleTags: 0,
+    myTagsCount: 0,
+    othersTagsCount: 0,
+    allTagsCount: 0,
   };
 
   let filteredTagsBySearchTerm = result.tags.map(docToTag);
 
   if (filter.searchTerm) {
     const searchTerm = filter.searchTerm.toLowerCase();
+    filteredTagsBySearchTerm = filteredTagsBySearchTerm.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(searchTerm) ||
+        tag.description?.toLowerCase().includes(searchTerm),
+    );
+  }
+
+  // Owner filter (additive - shows tags from ANY selected owner)
+  if (filter.ownerIds && filter.ownerIds.length > 0) {
     filteredTagsBySearchTerm = filteredTagsBySearchTerm.filter((tag) =>
-      tag.name.toLowerCase().includes(searchTerm),
+      filter.ownerIds!.includes(tag.createdBy),
     );
   }
 
   return {
     tags: filteredTagsBySearchTerm,
     totalVisibleTags: result.totalVisibleTags,
+    myTagsCount: result.myTagsCount,
+    othersTagsCount: result.othersTagsCount,
+    allTagsCount: result.allTagsCount,
   };
 };
 

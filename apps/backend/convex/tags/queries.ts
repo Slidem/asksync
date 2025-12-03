@@ -23,6 +23,9 @@ export const listTagsByOrg = query({
     ),
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
     includeUsageStats: v.optional(v.boolean()),
+    filterBy: v.optional(
+      v.union(v.literal("my-tags"), v.literal("others-tags"), v.literal("all")),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await getUserWithGroups(ctx);
@@ -38,6 +41,9 @@ export const listTagsByOrg = query({
       return {
         tags: [],
         totalVisibleTags: 0,
+        myTagsCount: 0,
+        othersTagsCount: 0,
+        allTagsCount: 0,
       };
     }
 
@@ -55,7 +61,18 @@ export const listTagsByOrg = query({
       return accessibleTagIds.includes(tag._id);
     });
 
+    // Calculate counts for each category
+    const myTags = visibleTags.filter((tag) => tag.createdBy === userId);
+    const othersTags = visibleTags.filter((tag) => tag.createdBy !== userId);
+
+    // Apply filterBy parameter
     let tags = visibleTags;
+    const filterBy = args.filterBy || "all";
+    if (filterBy === "my-tags") {
+      tags = myTags;
+    } else if (filterBy === "others-tags") {
+      tags = othersTags;
+    }
     // normally we should use proper indexes for sorting, but because the tag list should be relatively small (probably no more than a few hundred tags),
     // we can just sort in memory for simplicity
 
@@ -122,6 +139,9 @@ export const listTagsByOrg = query({
         resources: tagsWithStats,
       }),
       totalVisibleTags: visibleTags.length,
+      myTagsCount: myTags.length,
+      othersTagsCount: othersTags.length,
+      allTagsCount: visibleTags.length,
     };
   },
 });

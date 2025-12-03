@@ -3,6 +3,7 @@
 import {
   Calendar,
   Clock,
+  Crown,
   Edit3,
   Eye,
   MessageSquare,
@@ -29,6 +30,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { Tag } from "@asksync/shared";
 import { TagUsageDialog } from "@/tags/components/dialog/TagUsageDialog";
 import { formatResponseTime } from "@/lib/time";
@@ -63,6 +65,15 @@ export function TagCard({
                 style={{ backgroundColor: tag.color }}
               />
               <CardTitle className="text-xl">{tag.name}</CardTitle>
+              {isOwner && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs px-2 py-0.5 gap-1 bg-primary/10 text-primary border-primary/20"
+                >
+                  <Crown className="h-3 w-3" />
+                  Owner
+                </Badge>
+              )}
             </div>
             {showActions && (
               <DropdownMenu>
@@ -115,6 +126,12 @@ export function TagCard({
           )}
         </CardHeader>
         <CardContent className="pt-0">
+          {!isOwner && tag.createdBy && (
+            <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
+              <span>Owned by</span>
+              <MemberAvatar id={tag.createdBy} showTooltip={true} />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="flex flex-wrap gap-3">
               <Badge variant="secondary" className="text-sm px-3 py-1">
