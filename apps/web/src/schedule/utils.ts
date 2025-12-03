@@ -172,6 +172,8 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
     canDelete: !isExternal,
     canEditTags: true,
     permissions: timeblock.permissions || [],
+    checklistsVisible: timeblock.checklistsVisible ?? false,
+    taskCount: timeblock.taskCount,
   };
 }
 
@@ -187,6 +189,7 @@ export function calendarEventToCreateTimeblock(event: CalendarEvent) {
     recurrenceRule: event.recurrenceRule,
     tagIds: event.tagIds || [],
     color: event.color, // Include the selected color
+    checklistsVisible: event.checklistsVisible ?? false,
   };
 }
 
@@ -204,6 +207,7 @@ export function calendarEventToUpdateTimeblock(event: CalendarEvent) {
     source: string;
     externalId?: string;
     color?: string;
+    checklistsVisible?: boolean;
   }> = {};
 
   // For external events, only update tags
@@ -223,6 +227,7 @@ export function calendarEventToUpdateTimeblock(event: CalendarEvent) {
   updateData.recurrenceRule = event.recurrenceRule;
   updateData.tagIds = event.tagIds || [];
   updateData.color = event.color; // Include the selected color
+  updateData.checklistsVisible = event.checklistsVisible;
 
   return updateData;
 }

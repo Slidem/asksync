@@ -33,12 +33,22 @@ export const listTimeblocks = query({
 
     const filteredTimeblocks = await filterPermittedResources(timeBlocks, ctx);
 
-    return decorateResourceWithGrants({
+    const decorated = await decorateResourceWithGrants({
       ctx,
       currentUser: user,
       resourceType: "timeblocks",
       resources: filteredTimeblocks,
     });
+
+    // Add task counts to each timeblock
+    const withTaskCounts = await Promise.all(
+      decorated.map(async (tb) => {
+        const taskCount = await getTaskCount(ctx, tb._id, tb, authedUserId);
+        return { ...tb, taskCount };
+      }),
+    );
+
+    return withTaskCounts;
   },
 });
 
@@ -92,4 +102,30 @@ async function filterPermittedResources(
   );
 
   return timeblocks.filter((tb) => accessibleTimeblockIds.includes(tb._id));
+}
+
+async function getTaskCount(
+  ctx: BaseQueryCtx,
+  timeblockId: string,
+  timeblock: Doc<"timeblocks">,
+  userId: string,
+): Promise<{ total: number; completed: number } | null> {
+  const isOwner = timeblock.createdBy === userId;
+
+  // If not owner and checklists not visible, return null
+  if (!isOwner && !timeblock.checklistsVisible) {
+    return null;
+  }
+
+  const tasks = await ctx.db
+    .query("tasks")
+    .withIndex("by_timeblock", (q) => q.eq("timeblockId", timeblockId as any))
+    .collect();
+
+  const completed = tasks.filter((t) => t.completed).length;
+
+  return {
+    total: tasks.length,
+    completed,
+  };
 }

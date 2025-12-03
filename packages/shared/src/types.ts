@@ -58,9 +58,11 @@ export interface Timeblock {
   externalId?: string; // ID from external calendar
   color?: string;
   exceptionDates?: number[]; // UTC midnight timestamps of excluded dates
+  checklistsVisible?: boolean; // whether non-owners can see checklists
   createdAt: number;
   updatedAt: number;
   permissions: PermissionGrant[];
+  taskCount?: { total: number; completed: number } | null;
 }
 
 export interface Question {

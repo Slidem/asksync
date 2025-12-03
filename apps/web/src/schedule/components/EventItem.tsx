@@ -7,6 +7,7 @@ import { differenceInMinutes, format, getMinutes, isPast } from "date-fns";
 import { type CalendarEvent } from "@/schedule/types";
 import { cn } from "@/lib/utils";
 import { getBorderRadiusClasses, getEventColorClasses } from "@/schedule/utils";
+import { CheckSquare } from "lucide-react";
 
 // Using date-fns format with custom formatting:
 // 'h' - hours (1-12)
@@ -15,6 +16,18 @@ import { getBorderRadiusClasses, getEventColorClasses } from "@/schedule/utils";
 const formatTimeWithOptionalMinutes = (date: Date) => {
   return format(date, getMinutes(date) === 0 ? "ha" : "h:mma").toLowerCase();
 };
+
+// Task count badge component
+function TaskBadge({ taskCount }: { taskCount: { total: number; completed: number } }) {
+  if (taskCount.total === 0) return null;
+
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[10px] opacity-70">
+      <CheckSquare className="h-3 w-3" />
+      {taskCount.completed}/{taskCount.total}
+    </span>
+  );
+}
 
 interface EventWrapperProps {
   event: CalendarEvent;
@@ -164,13 +177,16 @@ export function EventItem({
         onTouchStart={onTouchStart}
       >
         {children || (
-          <span className="truncate">
-            {!event.allDay && (
-              <span className="truncate font-normal opacity-70 sm:text-[11px]">
-                {formatTimeWithOptionalMinutes(displayStart)}{" "}
-              </span>
-            )}
-            {event.title}
+          <span className="truncate flex items-center gap-1">
+            <span className="truncate">
+              {!event.allDay && (
+                <span className="truncate font-normal opacity-70 sm:text-[11px]">
+                  {formatTimeWithOptionalMinutes(displayStart)}{" "}
+                </span>
+              )}
+              {event.title}
+            </span>
+            {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
           </span>
         )}
       </EventWrapper>
@@ -198,17 +214,23 @@ export function EventItem({
         onTouchStart={onTouchStart}
       >
         {durationMinutes < 45 ? (
-          <div className="truncate">
-            {event.title}{" "}
-            {showTime && (
-              <span className="opacity-70">
-                {formatTimeWithOptionalMinutes(displayStart)}
-              </span>
-            )}
+          <div className="truncate flex items-center gap-1">
+            <span className="truncate">
+              {event.title}{" "}
+              {showTime && (
+                <span className="opacity-70">
+                  {formatTimeWithOptionalMinutes(displayStart)}
+                </span>
+              )}
+            </span>
+            {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
           </div>
         ) : (
           <>
-            <div className="truncate font-medium">{event.title}</div>
+            <div className="truncate font-medium flex items-center gap-1">
+              <span className="truncate">{event.title}</span>
+              {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+            </div>
             {showTime && (
               <div className="truncate font-normal opacity-70 sm:text-[11px]">
                 {eventTime}
@@ -234,7 +256,10 @@ export function EventItem({
       {...dndListeners}
       {...dndAttributes}
     >
-      <div className="text-sm font-medium">{event.title}</div>
+      <div className="text-sm font-medium flex items-center gap-2">
+        <span>{event.title}</span>
+        {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+      </div>
       <div className="text-xs opacity-70">
         {event.allDay ? (
           <span>All day</span>

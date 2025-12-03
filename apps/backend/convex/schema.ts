@@ -45,11 +45,27 @@ export default defineSchema({
     externalId: v.optional(v.string()),
     color: v.optional(v.string()),
     exceptionDates: v.optional(v.array(v.number())), // UTC midnight timestamps of excluded dates
+    checklistsVisible: v.optional(v.boolean()), // whether non-owners can see checklists
     updatedAt: v.number(),
   })
     .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_time", ["orgId", "startTime"])
     .index("by_external_id", ["externalId"]),
+
+  // Tasks - checklist items for timeblocks
+  tasks: defineTable({
+    timeblockId: v.id("timeblocks"),
+    title: v.string(),
+    completed: v.boolean(),
+    order: v.number(), // for sorting
+    currentlyWorkingOn: v.boolean(), // flag for active task
+    orgId: v.string(),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_timeblock", ["timeblockId"])
+    .index("by_org", ["orgId"]),
 
   // Questions - the core inquiry entities
   questions: defineTable({

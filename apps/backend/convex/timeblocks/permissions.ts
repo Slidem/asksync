@@ -34,7 +34,7 @@ export async function getExistingTimeblock({
   args: { id: Id<"timeblocks"> };
   orgId: string;
   userId: string;
-  requiredPermission?: "edit" | "manage";
+  requiredPermission?: "edit" | "manage" | null;
 }) {
   const existingTimeblock = await ctx.db.get(args.id);
 

@@ -26,6 +26,7 @@ interface FormFields {
   selectedTagIds: string[];
   recurrenceRule: RecurrenceRule | null;
   permissions: PermissionGrant[];
+  checklistsVisible: boolean;
   error: string | null;
 }
 
@@ -89,6 +90,7 @@ const getDefaultFormFieldsState = (): FormFields => ({
   color: "sky" as EventColor,
   selectedTagIds: [],
   permissions: [],
+  checklistsVisible: false,
   error: null,
 });
 
@@ -185,6 +187,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         selectedTagIds: event.tagIds || [],
         recurrenceRule: event.recurrenceRule || null,
         permissions: event.permissions || [],
+        checklistsVisible: event.checklistsVisible ?? false,
       };
 
       const eventMetadata: EventMetadata = {
@@ -283,6 +286,7 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       canDelete: eventMetadata.canDelete,
       canEditTags: eventMetadata.canEditTags,
       permissions: formFields.permissions,
+      checklistsVisible: formFields.checklistsVisible,
     };
 
     set({ formFields: { ...formFields, error: null } });

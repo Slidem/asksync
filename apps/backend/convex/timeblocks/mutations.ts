@@ -32,6 +32,7 @@ export const createTimeblock = mutation({
     ),
     tagIds: v.array(v.string()),
     color: v.optional(v.string()),
+    checklistsVisible: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { orgId, id: userId } = await getUser(ctx);
@@ -51,6 +52,7 @@ export const createTimeblock = mutation({
       recurrenceRule: args.recurrenceRule,
       tagIds: args.tagIds,
       color: args.color,
+      checklistsVisible: args.checklistsVisible ?? false,
       source: "asksync",
       updatedAt: Date.now(),
     });
@@ -102,6 +104,7 @@ export const updateTimeblock = mutation({
     ),
     tagIds: v.optional(v.array(v.string())),
     color: v.optional(v.string()),
+    checklistsVisible: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { orgId, id: userId } = await getUser(ctx);
@@ -134,6 +137,7 @@ export const updateTimeblock = mutation({
     addOptionalValue(updateData, "recurrenceRule", args.recurrenceRule);
     addOptionalValue(updateData, "tagIds", args.tagIds);
     addOptionalValue(updateData, "color", args.color);
+    addOptionalValue(updateData, "checklistsVisible", args.checklistsVisible);
 
     await ctx.db.patch(args.id, updateData);
 

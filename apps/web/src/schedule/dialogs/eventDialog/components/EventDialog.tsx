@@ -8,6 +8,7 @@ import {
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
 
+import { EventChecklistsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventChecklistsTab";
 import { EventDateTimeTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDateTimeTab";
 import { EventDetailsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDetailsTab";
 import { EventDialogFooter } from "@/schedule/dialogs/eventDialog/components/EventDialogFooter";
@@ -20,7 +21,13 @@ import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 
-const TAB_VALUES = ["details", "datetime", "tags", "permissions"] as const;
+const TAB_VALUES = [
+  "details",
+  "datetime",
+  "tags",
+  "checklists",
+  "permissions",
+] as const;
 
 export const EventDialog: React.FC = () => {
   const { isOpen, close, isExternalEvent, activeTab, setActiveTab, error } =
@@ -68,7 +75,7 @@ export const EventDialog: React.FC = () => {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <UnderlineTabsList className="grid w-full grid-cols-4">
+          <UnderlineTabsList className="grid w-full grid-cols-5">
             <UnderlineTabsTrigger
               value="details"
               className={cn("font-semibold")}
@@ -84,6 +91,12 @@ export const EventDialog: React.FC = () => {
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger value="tags" className={cn("font-semibold")}>
               Tags
+            </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger
+              value="checklists"
+              className={cn("font-semibold")}
+            >
+              Checklists
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="permissions"
@@ -103,6 +116,10 @@ export const EventDialog: React.FC = () => {
 
           <UnderlineTabsContent value="tags" className="mt-4">
             <EventTagsTab />
+          </UnderlineTabsContent>
+
+          <UnderlineTabsContent value="checklists" className="mt-4">
+            <EventChecklistsTab />
           </UnderlineTabsContent>
 
           <UnderlineTabsContent value="permissions" className="mt-4">

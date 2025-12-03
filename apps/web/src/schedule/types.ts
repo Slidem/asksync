@@ -29,6 +29,8 @@ export interface CalendarEvent {
   canDelete?: boolean;
   canEditTags?: boolean;
   permissions: PermissionGrant[];
+  checklistsVisible?: boolean;
+  taskCount?: { total: number; completed: number } | null;
 }
 
 export type EventColor =
