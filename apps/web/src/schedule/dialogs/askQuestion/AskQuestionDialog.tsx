@@ -1,5 +1,7 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Check, ExternalLink, Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,17 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useAskQuestionDialogStore } from "./askQuestionDialogStore";
-import { TimeblockInfoDisplay } from "./components/TimeblockInfoDisplay";
-import { QuestionFormSection } from "./components/QuestionFormSection";
 import { useCallback, useState } from "react";
-import { api } from "@convex/api";
 import { useMutation, useQuery } from "convex/react";
+
+import { Button } from "@/components/ui/button";
+import { QuestionFormSection } from "./components/QuestionFormSection";
+import { TimeblockInfoDisplay } from "./components/TimeblockInfoDisplay";
+import { api } from "@convex/api";
 import { toast } from "sonner";
+import { useAskQuestionDialogStore } from "./askQuestionDialogStore";
 import { useRouter } from "next/navigation";
-import { Check, ExternalLink, Info } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const AskQuestionDialog: React.FC = () => {
   const router = useRouter();
@@ -84,6 +85,7 @@ export const AskQuestionDialog: React.FC = () => {
     questionTitle,
     questionContent,
     createQuestionMutation,
+    questionContentPlaintext,
     setCreatedQuestionId,
   ]);
 

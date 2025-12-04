@@ -18,7 +18,11 @@ const formatTimeWithOptionalMinutes = (date: Date) => {
 };
 
 // Task count badge component
-function TaskBadge({ taskCount }: { taskCount: { total: number; completed: number } }) {
+function TaskBadge({
+  taskCount,
+}: {
+  taskCount: { total: number; completed: number };
+}) {
   if (taskCount.total === 0) return null;
 
   return (

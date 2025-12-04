@@ -12,13 +12,20 @@ export const list = query({
 
     const userId = identity.subject;
     const orgId = identity.orgId as string | undefined;
-    if (!orgId) throw new Error("No organization context");
+    if (!orgId) {
+      throw new Error("No organization context");
+    }
 
     // Get the timeblock
     const timeblock = await ctx.db.get(args.timeblockId);
-    if (!timeblock) throw new Error("Timeblock not found");
-    if (timeblock.orgId !== orgId)
+
+    if (!timeblock) {
+      throw new Error("Timeblock not found");
+    }
+
+    if (timeblock.orgId !== orgId) {
       throw new Error("Timeblock not in organization");
+    }
 
     const isOwner = timeblock.createdBy === userId;
 
@@ -51,60 +58,6 @@ export const list = query({
     return {
       tasks: sortedTasks,
       isOwner,
-      canView: true,
-    };
-  },
-});
-
-export const stats = query({
-  args: {
-    timeblockId: v.id("timeblocks"),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
-    const orgId = identity.orgId as string | undefined;
-    if (!orgId) throw new Error("No organization context");
-
-    // Get the timeblock
-    const timeblock = await ctx.db.get(args.timeblockId);
-    if (!timeblock) throw new Error("Timeblock not found");
-    if (timeblock.orgId !== orgId)
-      throw new Error("Timeblock not in organization");
-
-    const isOwner = timeblock.createdBy === userId;
-
-    // Check if user can view the timeblock
-    const canView =
-      isOwner ||
-      (await hasPermission(ctx, "timeblocks", args.timeblockId, "view"));
-
-    if (!canView) {
-      throw new Error("You don't have permission to view this timeblock");
-    }
-
-    // If not owner and checklists not visible, return zero stats
-    if (!isOwner && !timeblock.checklistsVisible) {
-      return {
-        total: 0,
-        completed: 0,
-        canView: false,
-      };
-    }
-
-    // Get task counts
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_timeblock", (q) => q.eq("timeblockId", args.timeblockId))
-      .collect();
-
-    const completed = tasks.filter((t) => t.completed).length;
-
-    return {
-      total: tasks.length,
-      completed,
       canView: true,
     };
   },

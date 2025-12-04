@@ -1,19 +1,19 @@
+import { Doc, Id } from "../_generated/dataModel";
 /* eslint-disable import/order */
 import {
   decorateResourceWithGrants,
   getPermittedResourcesForType,
 } from "../permissions/common";
-
-import { QueryCtx as BaseQueryCtx } from "../_generated/server";
-import { Doc } from "../_generated/dataModel";
-import { getUserWithGroups } from "../auth/user";
-import { query } from "../_generated/server";
-import { v } from "convex/values";
 import {
   expandRecurringTimeblocks,
   filterByAnyTag,
   sortByStartTime,
 } from "./helpers";
+
+import { QueryCtx as BaseQueryCtx } from "../_generated/server";
+import { getUserWithGroups } from "../auth/user";
+import { query } from "../_generated/server";
+import { v } from "convex/values";
 
 export const listTimeblocks = query({
   args: {
@@ -119,7 +119,9 @@ async function getTaskCount(
 
   const tasks = await ctx.db
     .query("tasks")
-    .withIndex("by_timeblock", (q) => q.eq("timeblockId", timeblockId as any))
+    .withIndex("by_timeblock", (q) =>
+      q.eq("timeblockId", timeblockId as Id<"timeblocks">),
+    )
     .collect();
 
   const completed = tasks.filter((t) => t.completed).length;

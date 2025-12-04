@@ -1,18 +1,19 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+
+import { Button } from "@/components/ui/button";
+import { ChecklistItem } from "../ChecklistItem";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@convex/api";
 import { toTimeblockId } from "@/lib/convexTypes";
-import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
-import { useMutation, useQuery } from "convex/react";
-import { useShallow } from "zustand/react/shallow";
-import { ChecklistItem } from "../ChecklistItem";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
+import { useShallow } from "zustand/react/shallow";
+import { useState } from "react";
 
 export const EventChecklistsTab = () => {
   const { eventId, checklistsVisible, setFormFields } = useEventDialogStore(
@@ -35,10 +36,6 @@ export const EventChecklistsTab = () => {
   const createTaskMutation = useMutation(api.tasks.mutations.create);
   const updateTaskMutation = useMutation(api.tasks.mutations.update);
   const deleteTaskMutation = useMutation(api.tasks.mutations.remove);
-  const reorderTasksMutation = useMutation(api.tasks.mutations.reorder);
-
-  const isOwner = tasksData?.isOwner ?? false;
-  const canView = tasksData?.canView ?? false;
   const tasks = tasksData?.tasks ?? [];
 
   const handleAddTask = async () => {
@@ -108,38 +105,6 @@ export const EventChecklistsTab = () => {
     return (
       <div className="text-sm text-muted-foreground">
         Save the timeblock first to add checklists
-      </div>
-    );
-  }
-
-  // Non-owner view
-  if (!isOwner) {
-    if (!canView || tasks.length === 0) {
-      return (
-        <div className="text-sm text-muted-foreground">
-          Checklists are private to the owner
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <div className="text-sm text-muted-foreground">
-          Read-only view of owner's checklist
-        </div>
-        <div className="space-y-2">
-          {tasks.map((task) => (
-            <ChecklistItem
-              key={task._id}
-              task={task}
-              isOwner={false}
-              onToggleComplete={() => {}}
-              onUpdateTitle={() => {}}
-              onToggleWorkingOn={() => {}}
-              onDelete={() => {}}
-            />
-          ))}
-        </div>
       </div>
     );
   }

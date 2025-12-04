@@ -1,14 +1,43 @@
-import { AlignLeft, Calendar, Clock, MapPin } from "lucide-react";
+import {
+  AlignLeft,
+  Calendar,
+  CheckSquare,
+  ChevronDown,
+  Clock,
+  MapPin,
+} from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import { CalendarEvent } from "@/schedule/types";
+import { ReadOnlyTaskItem } from "./ReadOnlyTaskItem";
 import { TagDetailsDisplay } from "./TagDetailsDisplay";
+import { api } from "@convex/api";
 import { format } from "date-fns";
+import { toTimeblockId } from "@/lib/convexTypes";
+import { useQuery } from "convex/react";
+import { useState } from "react";
 
 interface TimeblockInfoDisplayProps {
   event: CalendarEvent;
 }
 
 export const TimeblockInfoDisplay = ({ event }: TimeblockInfoDisplayProps) => {
+  const [isTasksOpen, setIsTasksOpen] = useState(true);
+
+  // Query tasks for this timeblock
+  const tasksData = useQuery(
+    api.tasks.queries.list,
+    event.id ? { timeblockId: toTimeblockId(event.id) } : "skip",
+  );
+
+  const canViewTasks = tasksData?.canView ?? false;
+  const tasks = tasksData?.tasks ?? [];
+  const completedCount = tasks.filter((t) => t.completed).length;
+
   const formatDate = (date: Date) => {
     return format(date, "MMM d, yyyy");
   };
@@ -25,21 +54,21 @@ export const TimeblockInfoDisplay = ({ event }: TimeblockInfoDisplayProps) => {
 
       <div className="space-y-3">
         {/* Date and Time */}
-        <div className="flex items-start gap-3 text-sm">
-          <Calendar className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-          <div>
+        <div className="flex items-start gap-3 text-sm w-full">
+          <div className="flex gap-2">
+            <Calendar className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
             <div>{formatDate(event.start)}</div>
-            {event.allDay ? (
-              <div className="text-muted-foreground">All day</div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>
-                  {formatTime(event.start)} - {formatTime(event.end)}
-                </span>
-              </div>
-            )}
           </div>
+          {event.allDay ? (
+            <div className="text-muted-foreground">All day</div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>
+                {formatTime(event.start)} - {formatTime(event.end)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Location */}
@@ -65,6 +94,34 @@ export const TimeblockInfoDisplay = ({ event }: TimeblockInfoDisplayProps) => {
       {event.tagIds && event.tagIds.length > 0 && (
         <div className="pt-2 border-t">
           <TagDetailsDisplay tagIds={event.tagIds} />
+        </div>
+      )}
+
+      {/* Tasks/Checklists */}
+      {canViewTasks && tasks.length > 0 && (
+        <div className="pt-2 border-t">
+          <Collapsible open={isTasksOpen} onOpenChange={setIsTasksOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 hover:opacity-70 transition-opacity">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <CheckSquare className="w-4 h-4 text-muted-foreground" />
+                <span>
+                  Tasks ({completedCount}/{tasks.length} completed)
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-muted-foreground transition-transform ${
+                  isTasksOpen ? "rotate-180" : ""
+                }`}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2">
+              <div className="space-y-1">
+                {tasks.map((task) => (
+                  <ReadOnlyTaskItem key={task._id} task={task} />
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       )}
     </div>
