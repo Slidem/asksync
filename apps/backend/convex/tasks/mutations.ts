@@ -201,3 +201,136 @@ export const reorder = mutation({
     }
   },
 });
+
+export const batchCreate = mutation({
+  args: {
+    timeblockId: v.id("timeblocks"),
+    tasks: v.array(
+      v.object({
+        title: v.string(),
+        completed: v.boolean(),
+        order: v.number(),
+        currentlyWorkingOn: v.boolean(),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const userId = identity.subject;
+    const orgId = identity.orgId as string | undefined;
+    if (!orgId) throw new Error("No organization context");
+
+    // Verify user is timeblock owner
+    const timeblock = await getExistingTimeblock({
+      ctx,
+      args: { id: args.timeblockId },
+      orgId,
+      userId,
+      requiredPermission: null,
+    });
+
+    if (timeblock.createdBy !== userId) {
+      throw new Error("Only timeblock owner can add tasks");
+    }
+
+    // Check task limit
+    const existingTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_timeblock", (q) => q.eq("timeblockId", args.timeblockId))
+      .collect();
+
+    if (existingTasks.length + args.tasks.length > MAX_TASKS_PER_TIMEBLOCK) {
+      throw new Error(`Maximum ${MAX_TASKS_PER_TIMEBLOCK} tasks per timeblock`);
+    }
+
+    // Create all tasks
+    const taskIds = [];
+    for (const task of args.tasks) {
+      const taskId = await ctx.db.insert("tasks", {
+        timeblockId: args.timeblockId,
+        title: task.title,
+        completed: task.completed,
+        order: task.order,
+        currentlyWorkingOn: task.currentlyWorkingOn,
+        orgId,
+        createdBy: userId,
+        createdAt: Date.now(),
+        completedAt: task.completed ? Date.now() : undefined,
+      });
+      taskIds.push(taskId);
+    }
+
+    return taskIds;
+  },
+});
+
+export const syncTimeblockTasks = mutation({
+  args: {
+    timeblockId: v.id("timeblocks"),
+    tasks: v.array(
+      v.object({
+        title: v.string(),
+        completed: v.boolean(),
+        order: v.number(),
+        currentlyWorkingOn: v.boolean(),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const userId = identity.subject;
+    const orgId = identity.orgId as string | undefined;
+    if (!orgId) throw new Error("No organization context");
+
+    // Verify user is timeblock owner
+    const timeblock = await getExistingTimeblock({
+      ctx,
+      args: { id: args.timeblockId },
+      orgId,
+      userId,
+      requiredPermission: null,
+    });
+
+    if (timeblock.createdBy !== userId) {
+      throw new Error("Only timeblock owner can modify tasks");
+    }
+
+    // Check task limit
+    if (args.tasks.length > MAX_TASKS_PER_TIMEBLOCK) {
+      throw new Error(`Maximum ${MAX_TASKS_PER_TIMEBLOCK} tasks per timeblock`);
+    }
+
+    // Delete all existing tasks for this timeblock
+    const existingTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_timeblock", (q) => q.eq("timeblockId", args.timeblockId))
+      .collect();
+
+    for (const task of existingTasks) {
+      await ctx.db.delete(task._id);
+    }
+
+    // Create all new tasks
+    const taskIds = [];
+    for (const task of args.tasks) {
+      const taskId = await ctx.db.insert("tasks", {
+        timeblockId: args.timeblockId,
+        title: task.title,
+        completed: task.completed,
+        order: task.order,
+        currentlyWorkingOn: task.currentlyWorkingOn,
+        orgId,
+        createdBy: userId,
+        createdAt: Date.now(),
+        completedAt: task.completed ? Date.now() : undefined,
+      });
+      taskIds.push(taskId);
+    }
+
+    return taskIds;
+  },
+});

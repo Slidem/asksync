@@ -90,6 +90,7 @@ export const useCreateEvent = () => {
   const createTimeblockMutation = useMutation(
     api.timeblocks.mutations.createTimeblock,
   );
+  const batchCreateTasksMutation = useMutation(api.tasks.mutations.batchCreate);
 
   const validateAndGetEvent = useEventDialogStore(
     (state) => state.validateAndGetEvent,
@@ -97,6 +98,10 @@ export const useCreateEvent = () => {
 
   const permissions = useEventDialogStore(
     (state) => state.formFields.permissions,
+  );
+
+  const draftTasks = useEventDialogStore(
+    (state) => state.formFields.draftTasks,
   );
 
   const syncPermissions = useSyncPermissions();
@@ -119,6 +124,19 @@ export const useCreateEvent = () => {
 
       await syncPermissions("timeblocks", timeblockId, [], permissions || []);
 
+      // Create tasks if any
+      if (draftTasks.length > 0) {
+        await batchCreateTasksMutation({
+          timeblockId: toTimeblockId(timeblockId),
+          tasks: draftTasks.map((task) => ({
+            title: task.title,
+            completed: task.completed,
+            order: task.order,
+            currentlyWorkingOn: task.currentlyWorkingOn,
+          })),
+        });
+      }
+
       toast.success("Timeblock created successfully");
       close();
     } catch (error) {
@@ -133,9 +151,16 @@ export const useUpdateEvent = () => {
   const updateTimeblockMutation = useMutation(
     api.timeblocks.mutations.updateTimeblock,
   );
+  const syncTimeblockTasksMutation = useMutation(
+    api.tasks.mutations.syncTimeblockTasks,
+  );
+
   const syncPermissions = useSyncPermissions();
   const validateAndGetEvent = useEventDialogStore(
     (state) => state.validateAndGetEvent,
+  );
+  const draftTasks = useEventDialogStore(
+    (state) => state.formFields.draftTasks,
   );
   const close = useEventDialogStore((state) => state.close);
 
@@ -173,6 +198,17 @@ export const useUpdateEvent = () => {
           updatedPermissions,
         );
       }
+
+      // Sync tasks (PUT-style: replace all)
+      await syncTimeblockTasksMutation({
+        timeblockId: toTimeblockId(updatedEvent.id),
+        tasks: draftTasks.map((task) => ({
+          title: task.title,
+          completed: task.completed,
+          order: task.order,
+          currentlyWorkingOn: task.currentlyWorkingOn,
+        })),
+      });
 
       toast.success("Timeblock updated successfully");
       close();

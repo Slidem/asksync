@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ChecklistItem } from "../ChecklistItem";
@@ -10,104 +10,78 @@ import { Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@convex/api";
 import { toTimeblockId } from "@/lib/convexTypes";
-import { toast } from "sonner";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
+import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
-import { useState } from "react";
 
 export const EventChecklistsTab = () => {
-  const { eventId, checklistsVisible, setFormFields } = useEventDialogStore(
+  const {
+    eventId,
+    checklistsVisible,
+    draftTasks,
+    setFormFields,
+    addDraftTask,
+    updateDraftTask,
+    removeDraftTask,
+  } = useEventDialogStore(
     useShallow((state) => ({
       eventId: state.eventMetadata.eventId,
       checklistsVisible: state.formFields.checklistsVisible,
+      draftTasks: state.formFields.draftTasks,
       setFormFields: state.setFormFields,
+      addDraftTask: state.addDraftTask,
+      updateDraftTask: state.updateDraftTask,
+      removeDraftTask: state.removeDraftTask,
     })),
   );
 
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
-  // Query tasks
+  // Load existing tasks when editing
   const tasksData = useQuery(
     api.tasks.queries.list,
     eventId ? { timeblockId: toTimeblockId(eventId) } : "skip",
   );
 
-  // Mutations
-  const createTaskMutation = useMutation(api.tasks.mutations.create);
-  const updateTaskMutation = useMutation(api.tasks.mutations.update);
-  const deleteTaskMutation = useMutation(api.tasks.mutations.remove);
-  const tasks = tasksData?.tasks ?? [];
-
-  const handleAddTask = async () => {
-    if (!eventId || !newTaskTitle.trim()) return;
-
-    try {
-      await createTaskMutation({
-        timeblockId: toTimeblockId(eventId),
-        title: newTaskTitle.trim(),
+  // Initialize draftTasks from backend when editing
+  useEffect(() => {
+    if (tasksData?.tasks && eventId && draftTasks.length === 0) {
+      setFormFields({
+        draftTasks: tasksData.tasks.map((task) => ({
+          id: task._id,
+          title: task.title,
+          completed: task.completed,
+          order: task.order,
+          currentlyWorkingOn: task.currentlyWorkingOn,
+        })),
       });
-      setNewTaskTitle("");
-      toast.success("Task added");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to add task",
-      );
     }
+  }, [tasksData, eventId, draftTasks.length, setFormFields]);
+
+  const handleAddTask = () => {
+    if (!newTaskTitle.trim()) return;
+    addDraftTask(newTaskTitle.trim());
+    setNewTaskTitle("");
   };
 
-  const handleToggleComplete = async (taskId: string, completed: boolean) => {
-    try {
-      await updateTaskMutation({
-        id: taskId as any,
-        completed: !completed,
-      });
-    } catch (error) {
-      toast.error("Failed to update task");
-    }
+  const handleToggleComplete = (taskId: string, completed: boolean) => {
+    updateDraftTask(taskId, { completed: !completed });
   };
 
-  const handleUpdateTitle = async (taskId: string, title: string) => {
-    try {
-      await updateTaskMutation({
-        id: taskId as any,
-        title,
-      });
-    } catch (error) {
-      toast.error("Failed to update task");
-    }
+  const handleUpdateTitle = (taskId: string, title: string) => {
+    updateDraftTask(taskId, { title });
   };
 
-  const handleToggleWorkingOn = async (
+  const handleToggleWorkingOn = (
     taskId: string,
     currentlyWorkingOn: boolean,
   ) => {
-    try {
-      await updateTaskMutation({
-        id: taskId as any,
-        currentlyWorkingOn: !currentlyWorkingOn,
-      });
-    } catch (error) {
-      toast.error("Failed to update task");
-    }
+    updateDraftTask(taskId, { currentlyWorkingOn: !currentlyWorkingOn });
   };
 
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteTaskMutation({ id: taskId as any });
-      toast.success("Task deleted");
-    } catch (error) {
-      toast.error("Failed to delete task");
-    }
+  const handleDelete = (taskId: string) => {
+    removeDraftTask(taskId);
   };
-
-  // Only show for existing events
-  if (!eventId) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        Save the timeblock first to add checklists
-      </div>
-    );
-  }
 
   // Owner view
   return (
@@ -143,33 +117,33 @@ export const EventChecklistsTab = () => {
               handleAddTask();
             }
           }}
-          disabled={tasks.length >= 20}
+          disabled={draftTasks.length >= 20}
         />
         <Button
           onClick={handleAddTask}
-          disabled={!newTaskTitle.trim() || tasks.length >= 20}
+          disabled={!newTaskTitle.trim() || draftTasks.length >= 20}
           size="icon"
         >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
 
-      {tasks.length >= 20 && (
+      {draftTasks.length >= 20 && (
         <p className="text-sm text-muted-foreground">
           Maximum 20 tasks per timeblock
         </p>
       )}
 
       {/* Task list */}
-      {tasks.length === 0 ? (
+      {draftTasks.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           No tasks yet. Add one above to get started.
         </div>
       ) : (
         <div className="space-y-2">
-          {tasks.map((task) => (
+          {draftTasks.map((task) => (
             <ChecklistItem
-              key={task._id}
+              key={task.id}
               task={task}
               isOwner={true}
               onToggleComplete={handleToggleComplete}
@@ -182,9 +156,10 @@ export const EventChecklistsTab = () => {
       )}
 
       {/* Stats */}
-      {tasks.length > 0 && (
+      {draftTasks.length > 0 && (
         <div className="text-sm text-muted-foreground">
-          {tasks.filter((t) => t.completed).length} of {tasks.length} completed
+          {draftTasks.filter((t) => t.completed).length} of {draftTasks.length}{" "}
+          completed
         </div>
       )}
     </div>

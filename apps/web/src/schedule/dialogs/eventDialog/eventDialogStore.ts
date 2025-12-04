@@ -13,6 +13,14 @@ import {
 
 import { create } from "zustand";
 
+export interface DraftTask {
+  id: string; // Temp ID (UUID) or real ID from backend
+  title: string;
+  completed: boolean;
+  order: number;
+  currentlyWorkingOn: boolean;
+}
+
 interface FormFields {
   title: string;
   description: string;
@@ -27,6 +35,7 @@ interface FormFields {
   recurrenceRule: RecurrenceRule | null;
   permissions: PermissionGrant[];
   checklistsVisible: boolean;
+  draftTasks: DraftTask[];
   error: string | null;
 }
 
@@ -58,6 +67,10 @@ export interface EventDialogState {
   setEventMetadata: (metadata: Partial<EventMetadata>) => void;
   toggleTagId: (tagId: string) => void;
   setPermissions: (permissions: PermissionGrant[]) => void;
+  addDraftTask: (title: string) => void;
+  updateDraftTask: (id: string, updates: Partial<DraftTask>) => void;
+  removeDraftTask: (id: string) => void;
+  reorderDraftTasks: (tasks: DraftTask[]) => void;
   loadEvent: (event: CalendarEvent | null) => void;
   reset: () => void;
   validateAndGetEvent: () =>
@@ -91,6 +104,7 @@ const getDefaultFormFieldsState = (): FormFields => ({
   selectedTagIds: [],
   permissions: [],
   checklistsVisible: false,
+  draftTasks: [],
   error: null,
 });
 
@@ -160,6 +174,54 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
     set((state) => ({
       formFields: { ...state.formFields, permissions },
     })),
+
+  addDraftTask: (title) =>
+    set((state) => {
+      const newTask: DraftTask = {
+        id: crypto.randomUUID(),
+        title,
+        completed: false,
+        order: state.formFields.draftTasks.length,
+        currentlyWorkingOn: false,
+      };
+      return {
+        formFields: {
+          ...state.formFields,
+          draftTasks: [...state.formFields.draftTasks, newTask],
+        },
+      };
+    }),
+
+  updateDraftTask: (id, updates) =>
+    set((state) => {
+      const draftTasks = state.formFields.draftTasks.map((task) =>
+        task.id === id ? { ...task, ...updates } : task,
+      );
+      return {
+        formFields: { ...state.formFields, draftTasks },
+      };
+    }),
+
+  removeDraftTask: (id) =>
+    set((state) => {
+      const draftTasks = state.formFields.draftTasks
+        .filter((task) => task.id !== id)
+        .map((task, index) => ({ ...task, order: index }));
+      return {
+        formFields: { ...state.formFields, draftTasks },
+      };
+    }),
+
+  reorderDraftTasks: (tasks) =>
+    set((state) => {
+      const updatedTasks = tasks.map((task, index) => ({
+        ...task,
+        order: index,
+      }));
+      return {
+        formFields: { ...state.formFields, draftTasks: updatedTasks },
+      };
+    }),
 
   loadEvent: (event) =>
     set(() => {
