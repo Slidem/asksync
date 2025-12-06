@@ -22,6 +22,7 @@ import { getTimeUntilAnswer } from "@/questions/hooks/utils";
 import { useDeleteQuestion } from "@/questions/hooks/mutations";
 import { useRouter } from "next/navigation";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
+import { TiptapViewer } from "@/components/editor/TiptapViewer";
 
 interface QuestionCardProps {
   question: Question;
@@ -95,8 +96,8 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
                 {question.title}
               </CardTitle>
 
-              <CardDescription className="mt-2 line-clamp-2 text-sm">
-                {question.content}
+              <CardDescription className="mt-2 text-sm max-h-[3rem] overflow-hidden [&_.tiptap]:text-sm">
+                <TiptapViewer content={question.content} />
               </CardDescription>
 
               {!isCreator && question.createdBy && (

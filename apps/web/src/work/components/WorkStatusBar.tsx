@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Clock, Flame } from "lucide-react";
+import { CheckCircle, Clock, Flame, MessageCircle } from "lucide-react";
 
 import { formatDuration } from "../utils/formatting";
 import { memo } from "react";
@@ -43,6 +43,13 @@ export const WorkStatusBar = memo(function WorkStatusBar() {
             icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
             value={todaysStats?.totalTasks || 0}
             label="tasks"
+          />
+
+          {/* Questions answered */}
+          <StatItem
+            icon={<MessageCircle className="h-4 w-4 text-muted-foreground" />}
+            value={todaysStats?.totalQuestions || 0}
+            label="questions"
           />
 
           {/* Current streak */}

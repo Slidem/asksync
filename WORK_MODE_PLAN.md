@@ -130,34 +130,44 @@ apps/web/src/hooks/
 
 ---
 
-### Phase 4: Question Integration 💬
+### Phase 4: Question Integration 💬 ✅ COMPLETED
 
 **Goal:** Show and manage assigned questions during work sessions
 
 #### Backend Tasks
 
-- [ ] Create query to filter questions by timeblock tags and assignment
-- [ ] Add mutation to mark question as "working on"
-- [ ] Track question interactions in sessions
+- [x] Create query to filter questions by timeblock tags and assignment
+- [x] Add mutation to mark question as "working on"
+- [x] Track question interactions in sessions
 
 #### Frontend Tasks
 
-- [ ] Build `QuestionQueuePanel` component
-- [ ] Implement question filtering logic
-- [ ] Add quick answer/resolve actions
-- [ ] Create urgency indicators
-- [ ] Integrate with FocusPanelDrawer
+- [x] Build `QuestionsPanel` component with tabs integration
+- [x] Implement question filtering logic
+- [x] Add view thread action with modal overlay
+- [x] Create urgency indicators (overdue, time remaining)
+- [x] Integrate with CurrentFocusPanel using tabs
+- [x] Add question count to WorkStatusBar
 
-#### Files to Create
+#### Files Created
 
 ```
-apps/web/src/work/components/
-├── QuestionQueuePanel.tsx
-├── QuestionCard.tsx
-└── QuestionActions.tsx
+apps/backend/convex/workSessions/queries/
+└── questions.ts (NEW - filter questions by timeblock)
+
+apps/web/src/work/components/focusPanel/
+├── QuestionsPanel.tsx (NEW)
+├── QuestionItem.tsx (NEW)
+└── QuestionThreadModal.tsx (NEW)
 
 apps/web/src/work/hooks/
-└── useTimeblockQuestions.ts
+└── useTimeblockQuestions.ts (NEW)
+
+apps/web/src/work/components/focusPanel/
+└── CurrentFocusPanel.tsx (MODIFIED - added tabs for Tasks/Questions)
+
+apps/web/src/work/components/
+└── WorkStatusBar.tsx (MODIFIED - added question count)
 ```
 
 ---
@@ -555,8 +565,9 @@ apps/web/src/work/hooks/
 - Phase 1: ✅ COMPLETED (Core Timer Infrastructure)
 - Phase 2: ✅ COMPLETED (Timeblock & Task Integration)
 - Phase 3: ✅ COMPLETED (UI Enhancements & Polish)
-- Last Updated: 2024-12-05
-- Next Step: Begin Phase 4 (Question Integration)
+- Phase 4: ✅ COMPLETED (Question Integration)
+- Last Updated: 2024-12-06
+- Next Step: Phase 5 (Focus Mode Presets & Settings) or Phase 6 (Multi-Device Sync)
 
 ## Completed Features
 
@@ -579,3 +590,9 @@ apps/web/src/work/hooks/
 - ✅ Mobile-responsive drawer (bottom sheet)
 - ✅ Improved control button styling
 - ✅ Centered timer layout with full height
+- ✅ Question integration with tabs (Tasks | Questions)
+- ✅ Question filtering by timeblock tags
+- ✅ Urgency indicators for questions
+- ✅ Thread modal overlay for viewing/answering questions
+- ✅ Question count in status bar
+- ✅ Session tracking for answered questions

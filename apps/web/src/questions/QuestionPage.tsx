@@ -18,7 +18,13 @@ import { useQuestionDetails } from "./hooks/useQuestionDetails";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
-export function QuestionPage({ questionId }: { questionId: string }) {
+export function QuestionPage({
+  questionId,
+  mode = "full",
+}: {
+  questionId: string;
+  mode?: "full" | "compact";
+}) {
   const { user } = useUser();
   const router = useRouter();
   const { question, isLoading, isAssignee, isParticipant, isCreator } =
@@ -68,10 +74,17 @@ export function QuestionPage({ questionId }: { questionId: string }) {
     }
   };
 
+  const containerClass =
+    mode === "compact" ? "bg-background" : "min-h-screen bg-background";
+  const innerClass =
+    mode === "compact"
+      ? "mx-auto max-w-3xl"
+      : "container mx-auto max-w-3xl p-6";
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto max-w-3xl p-6">
+      <div className={containerClass}>
+        <div className={innerClass}>
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3"></div>
             <div className="h-4 bg-gray-200 rounded w-2/3"></div>
@@ -84,8 +97,8 @@ export function QuestionPage({ questionId }: { questionId: string }) {
 
   if (!question) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto max-w-3xl p-6">
+      <div className={containerClass}>
+        <div className={innerClass}>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-destructive mb-2">
               Question Not Found
@@ -104,9 +117,9 @@ export function QuestionPage({ questionId }: { questionId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto max-w-3xl p-6">
-        <QuestionPageHeader />
+    <div className={containerClass}>
+      <div className={innerClass}>
+        {mode === "full" && <QuestionPageHeader />}
 
         <Card className="p-6 border-primary/20">
           <QuestionDetails
@@ -121,6 +134,7 @@ export function QuestionPage({ questionId }: { questionId: string }) {
             isCreator={isCreator}
             onResolve={handleResolveQuestion}
             onDelete={handleDeleteQuestion}
+            mode={mode}
           />
         </Card>
 

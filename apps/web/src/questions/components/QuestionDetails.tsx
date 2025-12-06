@@ -39,6 +39,7 @@ interface QuestionDetailsProps {
   isCreator: boolean;
   onResolve: () => void;
   onDelete: () => void;
+  mode?: "full" | "compact";
 }
 
 export function QuestionDetails({
@@ -53,6 +54,7 @@ export function QuestionDetails({
   isCreator,
   onResolve,
   onDelete,
+  mode = "full",
 }: QuestionDetailsProps) {
   const timeInfo = getTimeUntilAnswer(expectedAnswerTime);
 
@@ -82,34 +84,43 @@ export function QuestionDetails({
           </div>
         </div>
 
-        {(isAssignee || isCreator) && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {isAssignee && status !== "resolved" && (
-                <DropdownMenuItem onClick={onResolve}>
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Mark as Resolved
-                </DropdownMenuItem>
-              )}
-              {isAssignee && isCreator && status !== "resolved" && (
-                <DropdownMenuSeparator />
-              )}
-              {isCreator && (
-                <DropdownMenuItem
-                  onClick={onDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {mode === "compact" ? (
+          isAssignee && status !== "resolved" && (
+            <Button variant="default" size="sm" onClick={onResolve}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Resolve
+            </Button>
+          )
+        ) : (
+          (isAssignee || isCreator) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {isAssignee && status !== "resolved" && (
+                  <DropdownMenuItem onClick={onResolve}>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Mark as Resolved
+                  </DropdownMenuItem>
+                )}
+                {isAssignee && isCreator && status !== "resolved" && (
+                  <DropdownMenuSeparator />
+                )}
+                {isCreator && (
+                  <DropdownMenuItem
+                    onClick={onDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
         )}
       </div>
 

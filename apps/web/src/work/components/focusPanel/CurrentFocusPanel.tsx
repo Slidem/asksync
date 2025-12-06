@@ -1,25 +1,36 @@
 "use client";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { memo, useCallback, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "./EmptyState";
 import { Id } from "@/../../backend/convex/_generated/dataModel";
 import { LoadingState } from "./LoadingState";
+import { QuestionThreadModal } from "./QuestionThreadModal";
+import { QuestionsPanel } from "./QuestionsPanel";
 import { Target } from "lucide-react";
 import { TasksList } from "./TasksList";
 import { TimeblockInfo } from "./TimeblockInfo";
 import { api } from "@/../../backend/convex/_generated/api";
 import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
 import { useMutation } from "convex/react";
+import { useTimeblockQuestions } from "@/work/hooks/useTimeblockQuestions";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
   const { timeblockData, isLoading } = useCurrentTimeblock();
+  const { questions } = useTimeblockQuestions(timeblockData?.timeblock._id);
   const activeSessionId = useWorkModeStore((state) => state.activeSessionId);
   const currentTaskId = useWorkModeStore((state) => state.currentTaskId);
+  const currentQuestionId = useWorkModeStore(
+    (state) => state.currentQuestionId,
+  );
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
+    null,
+  );
 
   const updateProgress = useMutation(
     api.workSessions.mutations.progress.updateSessionProgress,
@@ -129,6 +140,26 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
     [deleteTask, currentTaskId],
   );
 
+  const handleQuestionWorkingOn = useCallback(
+    async (questionId: string) => {
+      if (!activeSessionId) return;
+
+      await updateProgress({
+        sessionId: activeSessionId,
+        questionId: questionId as Id<"questions">,
+      });
+
+      useWorkModeStore.setState({
+        currentQuestionId: questionId as Id<"questions">,
+      });
+    },
+    [activeSessionId, updateProgress],
+  );
+
+  const handleViewThread = useCallback((questionId: string) => {
+    setSelectedQuestionId(questionId);
+  }, []);
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -165,23 +196,66 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
       </div>
 
       <div className="flex-1 p-6 flex flex-col overflow-hidden">
-        <TasksList
-          tasks={tasks}
-          incompleteTasks={incompleteTasks}
-          completedTasks={completedTasks}
-          currentTaskId={currentTaskId}
-          isAddingTask={isAddingTask}
-          newTaskTitle={newTaskTitle}
-          activeSessionId={activeSessionId}
-          onTaskComplete={handleTaskComplete}
-          onTaskWorkingOn={handleTaskWorkingOn}
-          onUpdateTask={(taskId, title) => updateTask({ id: taskId, title })}
-          onDeleteTask={handleDeleteTask}
-          onAddTask={handleAddTask}
-          onNewTaskTitleChange={setNewTaskTitle}
-          onToggleAddingTask={setIsAddingTask}
-        />
+        <Tabs defaultValue="tasks" className="flex-1 flex flex-col">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="tasks">
+              Tasks
+              {tasks.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                  {tasks.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="questions">
+              Questions
+              {questions.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                  {questions.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="tasks" className="flex-1 flex flex-col mt-0">
+            <TasksList
+              tasks={tasks}
+              incompleteTasks={incompleteTasks}
+              completedTasks={completedTasks}
+              currentTaskId={currentTaskId}
+              isAddingTask={isAddingTask}
+              newTaskTitle={newTaskTitle}
+              activeSessionId={activeSessionId}
+              onTaskComplete={handleTaskComplete}
+              onTaskWorkingOn={handleTaskWorkingOn}
+              onUpdateTask={(taskId, title) =>
+                updateTask({ id: taskId, title })
+              }
+              onDeleteTask={handleDeleteTask}
+              onAddTask={handleAddTask}
+              onNewTaskTitleChange={setNewTaskTitle}
+              onToggleAddingTask={setIsAddingTask}
+            />
+          </TabsContent>
+
+          <TabsContent value="questions" className="flex-1 flex flex-col mt-0">
+            <QuestionsPanel
+              questions={questions}
+              currentQuestionId={currentQuestionId}
+              activeSessionId={activeSessionId}
+              onViewThread={handleViewThread}
+              onWorkingOn={handleQuestionWorkingOn}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
+
+      <QuestionThreadModal
+        questionId={selectedQuestionId as Id<"questions"> | null}
+        open={!!selectedQuestionId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedQuestionId(null);
+        }}
+      />
     </div>
   );
 });
