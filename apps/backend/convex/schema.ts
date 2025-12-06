@@ -209,6 +209,151 @@ export default defineSchema({
     .index("by_user_and_org", ["userId", "orgId"])
     .index("by_org", ["orgId"]),
 
+  // Work Sessions - Pomodoro work sessions tracking
+  workSessions: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+
+    // Session type and context
+    sessionType: v.union(
+      v.literal("work"),
+      v.literal("shortBreak"),
+      v.literal("longBreak"),
+    ),
+    timeblockId: v.optional(v.id("timeblocks")),
+    taskId: v.optional(v.id("tasks")),
+    questionId: v.optional(v.id("questions")),
+
+    // Timing (all in milliseconds)
+    startedAt: v.number(),
+    endedAt: v.optional(v.number()),
+    pausedDuration: v.number(), // total pause time
+    targetDuration: v.number(), // planned duration
+    actualDuration: v.number(), // elapsed active time
+
+    // Configuration
+    focusMode: v.union(
+      v.literal("deep"),
+      v.literal("normal"),
+      v.literal("quick"),
+      v.literal("review"),
+      v.literal("custom"),
+    ),
+    customDuration: v.optional(v.number()),
+
+    // Progress tracking
+    tasksCompleted: v.array(v.id("tasks")),
+    questionsAnswered: v.array(v.id("questions")),
+
+    // Status
+    status: v.union(
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("completed"),
+      v.literal("skipped"),
+    ),
+    deviceId: v.string(),
+
+    // Timestamps
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"])
+    .index("by_status", ["status"])
+    .index("by_user_and_status", ["userId", "status"])
+    .index("by_timeblock", ["timeblockId"]),
+
+  // Pomodoro Settings - user preferences for work mode
+  pomodoroSettings: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+
+    // Default durations (in minutes)
+    defaultWorkDuration: v.number(),
+    defaultShortBreak: v.number(),
+    defaultLongBreak: v.number(),
+    sessionsBeforeLongBreak: v.number(),
+
+    // Focus mode presets (durations in minutes)
+    presets: v.object({
+      deep: v.object({
+        work: v.number(),
+        shortBreak: v.number(),
+        longBreak: v.number(),
+      }),
+      normal: v.object({
+        work: v.number(),
+        shortBreak: v.number(),
+        longBreak: v.number(),
+      }),
+      quick: v.object({
+        work: v.number(),
+        shortBreak: v.number(),
+        longBreak: v.number(),
+      }),
+      review: v.object({
+        work: v.number(),
+        shortBreak: v.number(),
+        longBreak: v.number(),
+      }),
+    }),
+
+    // User preferences
+    autoStartBreaks: v.boolean(),
+    autoStartWork: v.boolean(),
+    soundEnabled: v.boolean(),
+    notificationsEnabled: v.boolean(),
+    currentFocusMode: v.union(
+      v.literal("deep"),
+      v.literal("normal"),
+      v.literal("quick"),
+      v.literal("review"),
+      v.literal("custom"),
+    ),
+
+    // Timestamps
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"]),
+
+  // User Work Status - real-time work status for team visibility
+  userWorkStatus: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+
+    // Current status
+    status: v.union(
+      v.literal("working"),
+      v.literal("break"),
+      v.literal("offline"),
+    ),
+    currentTaskId: v.optional(v.id("tasks")),
+    currentQuestionId: v.optional(v.id("questions")),
+    currentTimeblockId: v.optional(v.id("timeblocks")),
+
+    // Session info
+    sessionStartedAt: v.optional(v.number()),
+    expectedEndAt: v.optional(v.number()),
+    focusMode: v.string(),
+    sessionType: v.union(
+      v.literal("work"),
+      v.literal("shortBreak"),
+      v.literal("longBreak"),
+    ),
+
+    // Privacy
+    shareDetails: v.boolean(), // whether to show task/question details
+
+    // Timestamps
+    lastUpdated: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"])
+    .index("by_status", ["status"]),
+
   // User Groups - groups for organizing members and permissions
   userGroups: defineTable({
     name: v.string(),

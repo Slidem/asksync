@@ -9,6 +9,7 @@ import {
   TagIcon,
   Users,
   Zap,
+  Timer,
 } from "lucide-react";
 import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
 import {
@@ -25,6 +26,11 @@ const items = [
     title: "Dashboard",
     url: "/",
     icon: SquareTerminal,
+  },
+  {
+    title: "Work Mode",
+    url: "/work",
+    icon: Timer,
   },
   {
     title: "Schedule",
