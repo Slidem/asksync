@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { getExistingTimeblock } from "../timeblocks/permissions";
+import { clearOtherWorkingTasks } from "./helpers";
 
 const MAX_TASKS_PER_TIMEBLOCK = 20;
 
@@ -109,19 +110,7 @@ export const update = mutation({
 
       // If setting this task as "currently working on", clear all others
       if (args.currentlyWorkingOn) {
-        const otherTasks = await ctx.db
-          .query("tasks")
-          .withIndex("by_timeblock", (q) =>
-            q.eq("timeblockId", task.timeblockId),
-          )
-          .filter((q) => q.neq(q.field("_id"), args.id))
-          .collect();
-
-        for (const otherTask of otherTasks) {
-          if (otherTask.currentlyWorkingOn) {
-            await ctx.db.patch(otherTask._id, { currentlyWorkingOn: false });
-          }
-        }
+        await clearOtherWorkingTasks(ctx, task.timeblockId, args.id);
       }
     }
 

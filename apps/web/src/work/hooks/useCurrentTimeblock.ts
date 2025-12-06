@@ -5,7 +5,9 @@ import { useQuery } from "convex/react";
  * Hook to get the current active timeblock with tasks
  */
 export function useCurrentTimeblock() {
-  const timeblockData = useQuery(api.workSessions.queries.getCurrentTimeblock);
+  const timeblockData = useQuery(
+    api.workSessions.queries.timeblock.getCurrentTimeblock,
+  );
 
   return {
     timeblockData,

@@ -25,10 +25,16 @@ export function useSessionControls() {
   } = useWorkModeStore();
 
   // Mutations
-  const startSession = useMutation(api.workSessions.mutations.startSession);
-  const pauseSession = useMutation(api.workSessions.mutations.pauseSession);
-  const resumeSession = useMutation(api.workSessions.mutations.resumeSession);
-  const endSession = useMutation(api.workSessions.mutations.endSession);
+  const startSession = useMutation(
+    api.workSessions.mutations.session.startSession,
+  );
+  const pauseSession = useMutation(
+    api.workSessions.mutations.session.pauseSession,
+  );
+  const resumeSession = useMutation(
+    api.workSessions.mutations.session.resumeSession,
+  );
+  const endSession = useMutation(api.workSessions.mutations.session.endSession);
 
   const handleStart = useCallback(async () => {
     const sessionId = await startSession({

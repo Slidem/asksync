@@ -2,9 +2,9 @@
 import { Doc } from "../_generated/dataModel";
 import { getUser } from "../auth/user";
 import { hasPermission } from "../permissions/common";
+import { internal } from "../_generated/api";
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
 
 export const createTag = mutation({
   args: {
@@ -132,7 +132,7 @@ export const updateTag = mutation({
       args.answerMode !== undefined || args.responseTimeMinutes !== undefined;
 
     if (affectsCalculation) {
-      // Synchronous recalculation for tag changes (critical path)
+      // // Synchronous recalculation for tag changes (critical path)
       await ctx.scheduler.runAfter(
         0,
         internal.questions.recalculation.recalculateQuestionsWithTag,
@@ -198,7 +198,7 @@ export const deleteTag = mutation({
     // Delete the tag
     await ctx.db.delete(args.id);
 
-    // Recalculate questions that had this tag (they'll fall back to defaults)
+    // // Recalculate questions that had this tag (they'll fall back to defaults)
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTag,

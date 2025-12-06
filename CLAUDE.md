@@ -9,6 +9,25 @@
 - Don't implement things we are not using (use the YAGNI principle)
 - Don't design for backwards compatibility, as this project is in MVP state
 
+## Development Notes
+
+- **DON'T USER RELATIVE IMPORTS EXCEPT CONVEX** Use absolute imports (`@/`) for better maintainability
+- Keep components focused and testable
+- Follow the established patterns for consistency
+- **Organization data model**: All user data is scoped to organizations for proper multi-tenancy
+- **TypeScript configuration**: Uses `"moduleResolution": "bundler"` (not the deprecated "node10")
+- **Development workflow**: Use utility scripts for quick database cleanup during development
+- **Responsive design**: UI components adapt between mobile and desktop with appropriate sizing
+- **Theme customization**: Custom sidebar theme colors defined in `globals.css` with `--sidebar-primary`
+- **Navigation consistency**: All routes use Next.js Link with proper active state management
+- **Avoid useEffect** unless for actual side effects (API calls, DOM manipulation)
+- **Don't use useEffect** for state synchronization or derived state
+- **Prefer derived state** and proper state management
+- **Use custom hooks** for complex logic extraction
+- **NEVER add shadcn components manually** - always request installation
+- **Always use shadcn/ui** components when building UI elements
+- **DON'T USE BARREL EXPORTS**
+
 ## Project Overview
 
 AskSync is an asynchronous Q&A and notification management platform that helps users control when and how they engage with questions and notifications. Built as a fullstack monorepo with Next.js (SSG), Convex backend, and shared packages using pnpm workspaces.
@@ -151,21 +170,3 @@ asksync/
 - **Import rules**: Enforce absolute imports over relative
 - **Prettier integration**: Resolves conflicts between ESLint and Prettier
 - **TypeScript support**: Full type checking and rules
-
-## Development Notes
-
-- Use absolute imports (`@/`) for better maintainability
-- Keep components focused and testable
-- Follow the established patterns for consistency
-- **Organization data model**: All user data is scoped to organizations for proper multi-tenancy
-- **TypeScript configuration**: Uses `"moduleResolution": "bundler"` (not the deprecated "node10")
-- **Development workflow**: Use utility scripts for quick database cleanup during development
-- **Responsive design**: UI components adapt between mobile and desktop with appropriate sizing
-- **Theme customization**: Custom sidebar theme colors defined in `globals.css` with `--sidebar-primary`
-- **Navigation consistency**: All routes use Next.js Link with proper active state management
-- **Avoid useEffect** unless for actual side effects (API calls, DOM manipulation)
-- **Don't use useEffect** for state synchronization or derived state
-- **Prefer derived state** and proper state management
-- **Use custom hooks** for complex logic extraction
-- **NEVER add shadcn components manually** - always request installation
-- **Always use shadcn/ui** components when building UI elements

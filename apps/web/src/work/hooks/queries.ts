@@ -3,7 +3,7 @@ import { useQuery } from "convex/react";
 
 export const usePomodoroSettings = () => {
   const pomodoroSettings = useQuery(
-    api.workSessions.queries.getPomodoroSettings,
+    api.workSessions.queries.session.getPomodoroSettings,
   );
 
   return {

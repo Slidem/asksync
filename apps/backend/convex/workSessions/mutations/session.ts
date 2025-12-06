@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "../_generated/server";
-import { getUser } from "../auth/user";
+import { mutation } from "../../_generated/server";
+import { getUser } from "../../auth/user";
+import { clearOtherWorkingTasks } from "../../tasks/helpers";
 
 // Start a new work session
 export const startSession = mutation({
@@ -44,12 +45,31 @@ export const startSession = mutation({
       });
     }
 
+    // Determine timeblock to use
+    let timeblockId = args.timeblockId;
+    if (!timeblockId) {
+      // Try to find current timeblock based on current time
+      const now = Date.now();
+      const timeblocks = await ctx.db
+        .query("timeblocks")
+        .withIndex("by_org_and_creator", (q) =>
+          q.eq("orgId", user.orgId).eq("createdBy", user.id),
+        )
+        .collect();
+
+      const currentTimeblock = timeblocks.find(
+        (tb) => tb.startTime <= now && tb.endTime >= now,
+      );
+
+      timeblockId = currentTimeblock?._id;
+    }
+
     // Create new session
     const sessionId = await ctx.db.insert("workSessions", {
       userId: user.id,
       orgId: user.orgId,
       sessionType: args.sessionType,
-      timeblockId: args.timeblockId,
+      timeblockId,
       taskId: args.taskId,
       questionId: undefined,
       startedAt: Date.now(),
@@ -82,7 +102,7 @@ export const startSession = mutation({
         args.sessionType === "work" ? ("working" as const) : ("break" as const),
       currentTaskId: args.taskId,
       currentQuestionId: undefined,
-      currentTimeblockId: args.timeblockId,
+      currentTimeblockId: timeblockId,
       sessionStartedAt: Date.now(),
       expectedEndAt: Date.now() + args.targetDuration,
       focusMode: args.focusMode,
@@ -238,204 +258,11 @@ export const endSession = mutation({
       });
     }
 
-    return { success: true };
-  },
-});
-
-// Update session progress (tasks completed, current focus)
-export const updateSessionProgress = mutation({
-  args: {
-    sessionId: v.id("workSessions"),
-    taskId: v.optional(v.id("tasks")),
-    questionId: v.optional(v.id("questions")),
-    completedTaskId: v.optional(v.id("tasks")),
-    answeredQuestionId: v.optional(v.id("questions")),
-    timeblockId: v.optional(v.id("timeblocks")),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUser(ctx);
-    if (!user) throw new ConvexError("Not authenticated");
-
-    const session = await ctx.db.get(args.sessionId);
-    if (!session) throw new ConvexError("Session not found");
-    if (session.userId !== user.id) throw new ConvexError("Not authorized");
-
-    const updates: any = {
-      updatedAt: Date.now(),
-    };
-
-    // Update timeblock if provided
-    if (args.timeblockId !== undefined) {
-      updates.timeblockId = args.timeblockId;
-    }
-
-    // Update current task
-    if (args.taskId !== undefined) {
-      updates.taskId = args.taskId;
-
-      // If setting a task, also mark it as currently working on
-      if (args.taskId) {
-        const task = await ctx.db.get(args.taskId);
-        if (task && task.orgId === user.orgId) {
-          // Clear other tasks' currentlyWorkingOn flag for this timeblock
-          const allTasks = await ctx.db
-            .query("tasks")
-            .withIndex("by_timeblock", (q) =>
-              q.eq("timeblockId", task.timeblockId),
-            )
-            .collect();
-
-          for (const t of allTasks) {
-            if (t._id !== args.taskId && t.currentlyWorkingOn) {
-              await ctx.db.patch(t._id, { currentlyWorkingOn: false });
-            }
-          }
-
-          // Set this task as currently working on
-          await ctx.db.patch(args.taskId, { currentlyWorkingOn: true });
-        }
-      }
-    }
-
-    // Update current question
-    if (args.questionId !== undefined) {
-      updates.questionId = args.questionId;
-    }
-
-    // Add completed task
-    if (args.completedTaskId) {
-      updates.tasksCompleted = [
-        ...session.tasksCompleted,
-        args.completedTaskId,
-      ];
-
-      // Mark task as completed in tasks table
-      const task = await ctx.db.get(args.completedTaskId);
-      if (task && task.orgId === user.orgId) {
-        await ctx.db.patch(args.completedTaskId, {
-          completed: true,
-          completedAt: Date.now(),
-          currentlyWorkingOn: false,
-        });
-      }
-    }
-
-    // Add answered question
-    if (args.answeredQuestionId) {
-      updates.questionsAnswered = [
-        ...session.questionsAnswered,
-        args.answeredQuestionId,
-      ];
-    }
-
-    await ctx.db.patch(args.sessionId, updates);
-
-    // Update work status if changing current task/question/timeblock
-    if (
-      args.taskId !== undefined ||
-      args.questionId !== undefined ||
-      args.timeblockId !== undefined
-    ) {
-      const status = await ctx.db
-        .query("userWorkStatus")
-        .withIndex("by_user_and_org", (q) =>
-          q.eq("userId", user.id).eq("orgId", user.orgId),
-        )
-        .first();
-
-      if (status) {
-        const statusUpdates: any = {
-          lastUpdated: Date.now(),
-        };
-        if (args.taskId !== undefined) {
-          statusUpdates.currentTaskId = args.taskId;
-        }
-        if (args.questionId !== undefined) {
-          statusUpdates.currentQuestionId = args.questionId;
-        }
-        if (args.timeblockId !== undefined) {
-          statusUpdates.currentTimeblockId = args.timeblockId;
-        }
-        await ctx.db.patch(status._id, statusUpdates);
-      }
+    // Clear "currently working on" flags for all tasks in this session's timeblock
+    if (session.timeblockId) {
+      await clearOtherWorkingTasks(ctx, session.timeblockId);
     }
 
     return { success: true };
-  },
-});
-
-// Update or create pomodoro settings
-export const updatePomodoroSettings = mutation({
-  args: {
-    defaultWorkDuration: v.optional(v.number()),
-    defaultShortBreak: v.optional(v.number()),
-    defaultLongBreak: v.optional(v.number()),
-    sessionsBeforeLongBreak: v.optional(v.number()),
-    autoStartBreaks: v.optional(v.boolean()),
-    autoStartWork: v.optional(v.boolean()),
-    soundEnabled: v.optional(v.boolean()),
-    notificationsEnabled: v.optional(v.boolean()),
-    currentFocusMode: v.optional(
-      v.union(
-        v.literal("deep"),
-        v.literal("normal"),
-        v.literal("quick"),
-        v.literal("review"),
-        v.literal("custom"),
-      ),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUser(ctx);
-    if (!user) throw new ConvexError("Not authenticated");
-
-    const existing = await ctx.db
-      .query("pomodoroSettings")
-      .withIndex("by_user_and_org", (q) =>
-        q.eq("userId", user.id).eq("orgId", user.orgId),
-      )
-      .first();
-
-    const defaultPresets = {
-      deep: { work: 90, shortBreak: 15, longBreak: 30 },
-      normal: { work: 25, shortBreak: 5, longBreak: 15 },
-      quick: { work: 15, shortBreak: 3, longBreak: 10 },
-      review: { work: 45, shortBreak: 10, longBreak: 20 },
-    };
-
-    if (existing) {
-      const updates: any = {
-        updatedAt: Date.now(),
-      };
-
-      Object.keys(args).forEach((key) => {
-        if (args[key as keyof typeof args] !== undefined) {
-          updates[key] = args[key as keyof typeof args];
-        }
-      });
-
-      await ctx.db.patch(existing._id, updates);
-      return existing._id;
-    } else {
-      // Create with defaults
-      const settingsId = await ctx.db.insert("pomodoroSettings", {
-        userId: user.id,
-        orgId: user.orgId,
-        defaultWorkDuration: args.defaultWorkDuration ?? 25,
-        defaultShortBreak: args.defaultShortBreak ?? 5,
-        defaultLongBreak: args.defaultLongBreak ?? 15,
-        sessionsBeforeLongBreak: args.sessionsBeforeLongBreak ?? 4,
-        presets: defaultPresets,
-        autoStartBreaks: args.autoStartBreaks ?? false,
-        autoStartWork: args.autoStartWork ?? false,
-        soundEnabled: args.soundEnabled ?? true,
-        notificationsEnabled: args.notificationsEnabled ?? true,
-        currentFocusMode: args.currentFocusMode ?? "normal",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-
-      return settingsId;
-    }
   },
 });

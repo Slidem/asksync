@@ -9,9 +9,9 @@ import { getExistingTimeblock, validateTagsPermissions } from "./permissions";
 import { Doc } from "../_generated/dataModel";
 import { PatchValue } from "../common/types";
 import { getUser } from "../auth/user";
+import { internal } from "../_generated/api";
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
 
 // Create a new timeblock
 export const createTimeblock = mutation({
@@ -70,7 +70,7 @@ export const createTimeblock = mutation({
       updatedAt: Date.now(),
     });
 
-    // Schedule recalculation for affected questions
+    // // Schedule recalculation for affected questions
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTags,

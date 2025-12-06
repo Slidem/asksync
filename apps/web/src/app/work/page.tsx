@@ -1,8 +1,8 @@
 "use client";
 
-import { PomodoroTimer, WorkStatusBar } from "@/work";
-
 import { FocusPanelDrawer } from "@/work/components/FocusPanelDrawer";
+import { PomodoroTimer } from "@/work/components/PomodoroTimer";
+import { WorkStatusBar } from "@/work/components/WorkStatusBar";
 
 export default function WorkModePage() {
   return (

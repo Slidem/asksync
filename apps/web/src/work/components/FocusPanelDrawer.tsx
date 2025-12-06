@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Target } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { CurrentFocusPanel } from "./CurrentFocusPanel";
+import { CurrentFocusPanel } from "@/work/components/focusPanel/CurrentFocusPanel";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useWorkModeStore } from "../stores/workModeStore";

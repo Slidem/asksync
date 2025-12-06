@@ -12,13 +12,18 @@ export function useInitializeWorkMode() {
   const initialized = useRef(false);
   const deviceId = useWorkModeStore((state) => state.deviceId);
 
-  const activeSession = useQuery(api.workSessions.queries.getActiveSession, {
-    deviceId,
-  });
-  const pomodoroSettings = useQuery(
-    api.workSessions.queries.getPomodoroSettings,
+  const activeSession = useQuery(
+    api.workSessions.queries.session.getActiveSession,
+    {
+      deviceId,
+    },
   );
-  const todaysSessions = useQuery(api.workSessions.queries.getTodaysSessions);
+  const pomodoroSettings = useQuery(
+    api.workSessions.queries.session.getPomodoroSettings,
+  );
+  const todaysSessions = useQuery(
+    api.workSessions.queries.session.getTodaysSessions,
+  );
 
   // Store actions
   const {

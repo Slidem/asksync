@@ -96,7 +96,14 @@ export const recalculateBulkQuestions = internalMutation({
 // Recalculate all pending/assigned questions (cron job)
 export const recalculateAllPendingQuestions = internalMutation({
   args: { cursor: v.optional(v.string()) },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    updatedCount: number;
+    skippedCount: number;
+    hasMore: boolean;
+  }> => {
     const BATCH_SIZE = 100;
 
     // Query pending and assigned questions
