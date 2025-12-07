@@ -43,7 +43,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
   useTimerTick();
 
   // Handle timer completion
-  useTimerCompletion();
+  const { autoStartCountdown, cancelAutoStart } = useTimerCompletion();
 
   // Session control handlers
   const { handleStart, handlePause, handleResume, handleSkip, handleComplete } =
@@ -78,20 +78,40 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
         />
       </CircularProgress>
 
+      {/* Auto-start countdown badge */}
+      {autoStartCountdown !== null && (
+        <Badge
+          variant="secondary"
+          className="text-base px-4 py-2 animate-pulse"
+        >
+          Auto-starting in {autoStartCountdown}s
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={cancelAutoStart}
+            className="ml-2 h-6 px-2"
+          >
+            Cancel
+          </Button>
+        </Badge>
+      )}
+
       {/* Focus mode selector */}
-      <FocusModeSelector />
+      {!autoStartCountdown && <FocusModeSelector />}
 
       {/* Control buttons */}
-      <ControlButtons
-        isRunning={isRunning}
-        isPaused={isPaused}
-        sessionType={sessionType}
-        onStart={handleStart}
-        onPause={handlePause}
-        onResume={handleResume}
-        onSkip={handleSkip}
-        onComplete={handleComplete}
-      />
+      {!autoStartCountdown && (
+        <ControlButtons
+          isRunning={isRunning}
+          isPaused={isPaused}
+          sessionType={sessionType}
+          onStart={handleStart}
+          onPause={handlePause}
+          onResume={handleResume}
+          onSkip={handleSkip}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   );
 });

@@ -1,0 +1,136 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Bell, BellOff, Volume2, AlertCircle } from "lucide-react";
+import { PomodoroSettings } from "@/work/types";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  showTestNotification,
+} from "@/work/utils/notifications";
+import { useEffect, useState } from "react";
+
+interface NotificationSettingsProps {
+  settings: PomodoroSettings;
+  onUpdate: (settings: Partial<PomodoroSettings>) => void;
+}
+
+export function NotificationSettings({ settings, onUpdate }: NotificationSettingsProps) {
+  const [notificationPermission, setNotificationPermission] = useState<string>("default");
+  const [isRequesting, setIsRequesting] = useState(false);
+
+  useEffect(() => {
+    setNotificationPermission(getNotificationPermission());
+  }, []);
+
+  const handleRequestPermission = async () => {
+    setIsRequesting(true);
+    const permission = await requestNotificationPermission();
+    setNotificationPermission(permission);
+    setIsRequesting(false);
+
+    if (permission === "granted") {
+      onUpdate({ notificationsEnabled: true });
+    }
+  };
+
+  const handleTestNotification = () => {
+    showTestNotification();
+  };
+
+  const handleNotificationsToggle = (enabled: boolean) => {
+    if (enabled && notificationPermission !== "granted") {
+      handleRequestPermission();
+    } else {
+      onUpdate({ notificationsEnabled: enabled });
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>
+          Configure how you receive timer completion alerts
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Browser Notifications */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                <Label htmlFor="browser-notifications">Browser Notifications</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Show desktop notifications when timer completes
+              </p>
+            </div>
+            <Switch
+              id="browser-notifications"
+              checked={settings.notificationsEnabled}
+              onCheckedChange={handleNotificationsToggle}
+              disabled={notificationPermission === "denied"}
+            />
+          </div>
+
+          {/* Permission Status */}
+          {notificationPermission === "denied" && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Notifications are blocked. Please enable them in your browser settings.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {notificationPermission === "default" && (
+            <Alert>
+              <BellOff className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>Click the switch above to enable notifications</span>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {notificationPermission === "granted" && settings.notificationsEnabled && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTestNotification}
+              >
+                Test Notification
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="border-b" />
+
+        {/* Sound Notifications */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4" />
+              <Label htmlFor="sound-notifications">Sound Notifications</Label>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Play a sound when timer completes
+            </p>
+          </div>
+          <Switch
+            id="sound-notifications"
+            checked={settings.soundEnabled}
+            onCheckedChange={(enabled) => onUpdate({ soundEnabled: enabled })}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -172,31 +172,46 @@ apps/web/src/work/components/
 
 ---
 
-### Phase 5: Focus Mode Presets & Settings ⚙️
+### Phase 5: Focus Mode Presets & Settings ⚙️ ✅ COMPLETED
 
 **Goal:** Customizable timer durations and user preferences
 
 #### Backend Tasks
 
-- [ ] Implement focus mode presets in settings
-- [ ] Add per-timeblock duration override support
-- [ ] Create settings update mutations
+- [x] Implement focus mode presets in settings
+- [x] Create settings update mutations with validation
+- [x] Add preset schema validation (durations 1-180 min)
 
 #### Frontend Tasks
 
-- [ ] Build `FocusModeSelector` component
-- [ ] Create settings dialog/panel
-- [ ] Add duration adjustment controls
-- [ ] Implement preset switching
-- [ ] Store preferences in backend
+- [x] Build `FocusModeSelector` component with custom duration dialog
+- [x] Create settings page at /settings/work-mode
+- [x] Add duration adjustment controls (DurationControl component)
+- [x] Implement preset switching
+- [x] Store preferences in backend
+- [x] Chrome notification support with permission handling
+- [x] Auto-start countdown with cancel option
+- [x] One-time custom duration OR save as preset
 
-#### Files to Create
+#### Files Created
 
 ```
-apps/web/src/work/components/
-├── FocusModeSelector.tsx
-├── WorkModeSettings.tsx
-└── DurationControl.tsx
+apps/web/src/
+├── app/settings/work-mode/
+│   └── page.tsx (Settings page with all sections)
+├── work/components/settings/
+│   ├── DurationControl.tsx (Reusable duration input)
+│   ├── PresetEditor.tsx (Edit all presets)
+│   ├── NotificationSettings.tsx (Browser & sound toggles)
+│   └── AutomationSettings.tsx (Auto-start toggles)
+├── work/utils/
+│   └── notifications.ts (Chrome notification utilities)
+└── work/components/
+    ├── FocusModeSelector.tsx (UPDATED - custom duration dialog)
+    └── PomodoroTimer.tsx (UPDATED - auto-start countdown badge)
+
+apps/backend/convex/workSessions/mutations/
+└── settings.ts (UPDATED - validation added)
 ```
 
 ---
@@ -566,8 +581,10 @@ apps/web/src/work/hooks/
 - Phase 2: ✅ COMPLETED (Timeblock & Task Integration)
 - Phase 3: ✅ COMPLETED (UI Enhancements & Polish)
 - Phase 4: ✅ COMPLETED (Question Integration)
-- Last Updated: 2024-12-06
-- Next Step: Phase 5 (Focus Mode Presets & Settings) or Phase 6 (Multi-Device Sync)
+- Phase 5: ✅ COMPLETED (Focus Mode Presets & Settings)
+- Last Updated: 2025-12-06
+- Next Step: Phase 7 (Team Visibility) or Phase 8 (Polish & Analytics)
+- **Note:** Phase 6 (Multi-Device Sync) skipped for now
 
 ## Completed Features
 
@@ -596,3 +613,11 @@ apps/web/src/work/hooks/
 - ✅ Thread modal overlay for viewing/answering questions
 - ✅ Question count in status bar
 - ✅ Session tracking for answered questions
+- ✅ Comprehensive settings page at /settings/work-mode
+- ✅ Customizable preset durations for all focus modes
+- ✅ Custom duration with one-time or save options
+- ✅ Chrome browser notifications with permission handling
+- ✅ Auto-start breaks and work sessions with countdown
+- ✅ Sound and notification toggles
+- ✅ Settings button in work mode for quick access
+- ✅ Backend validation for duration ranges

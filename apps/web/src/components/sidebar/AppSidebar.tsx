@@ -5,11 +5,12 @@ import * as React from "react";
 import {
   Calendar1,
   MessageCircleQuestionMark,
+  Settings,
   SquareTerminal,
   TagIcon,
+  Timer,
   Users,
   Zap,
-  Timer,
 } from "lucide-react";
 import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
 import {
@@ -51,6 +52,11 @@ const items = [
     title: "Members",
     url: "/members",
     icon: Users,
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
   },
 ];
 

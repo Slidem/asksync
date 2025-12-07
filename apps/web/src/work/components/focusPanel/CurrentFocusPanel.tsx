@@ -1,6 +1,11 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  UnderlineTabs,
+  UnderlineTabsContent,
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/ui/UnderlineTabs";
 import { memo, useCallback, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -196,27 +201,20 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
       </div>
 
       <div className="flex-1 p-6 flex flex-col overflow-hidden">
-        <Tabs defaultValue="tasks" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="tasks">
+        <UnderlineTabs defaultValue="tasks" className="flex-1 flex flex-col">
+          <UnderlineTabsList className="mb-4">
+            <UnderlineTabsTrigger value="tasks" badge={tasks.length}>
               Tasks
-              {tasks.length > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
-                  {tasks.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="questions">
+            </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger value="questions" badge={questions.length}>
               Questions
-              {questions.length > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
-                  {questions.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
+            </UnderlineTabsTrigger>
+          </UnderlineTabsList>
 
-          <TabsContent value="tasks" className="flex-1 flex flex-col mt-0">
+          <UnderlineTabsContent
+            value="tasks"
+            className="flex-1 flex flex-col mt-0"
+          >
             <TasksList
               tasks={tasks}
               incompleteTasks={incompleteTasks}
@@ -235,9 +233,12 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
               onNewTaskTitleChange={setNewTaskTitle}
               onToggleAddingTask={setIsAddingTask}
             />
-          </TabsContent>
+          </UnderlineTabsContent>
 
-          <TabsContent value="questions" className="flex-1 flex flex-col mt-0">
+          <UnderlineTabsContent
+            value="questions"
+            className="flex-1 flex flex-col mt-0"
+          >
             <QuestionsPanel
               questions={questions}
               currentQuestionId={currentQuestionId}
@@ -245,8 +246,8 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
               onViewThread={handleViewThread}
               onWorkingOn={handleQuestionWorkingOn}
             />
-          </TabsContent>
-        </Tabs>
+          </UnderlineTabsContent>
+        </UnderlineTabs>
       </div>
 
       <QuestionThreadModal

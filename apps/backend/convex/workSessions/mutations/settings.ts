@@ -2,6 +2,12 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "../../_generated/server";
 import { getUser } from "../../auth/user";
 
+const presetSchema = v.object({
+  work: v.number(),
+  shortBreak: v.number(),
+  longBreak: v.number(),
+});
+
 // Update or create pomodoro settings
 export const updatePomodoroSettings = mutation({
   args: {
@@ -9,6 +15,14 @@ export const updatePomodoroSettings = mutation({
     defaultShortBreak: v.optional(v.number()),
     defaultLongBreak: v.optional(v.number()),
     sessionsBeforeLongBreak: v.optional(v.number()),
+    presets: v.optional(
+      v.object({
+        deep: presetSchema,
+        normal: presetSchema,
+        quick: presetSchema,
+        review: presetSchema,
+      }),
+    ),
     autoStartBreaks: v.optional(v.boolean()),
     autoStartWork: v.optional(v.boolean()),
     soundEnabled: v.optional(v.boolean()),
@@ -26,6 +40,29 @@ export const updatePomodoroSettings = mutation({
   handler: async (ctx, args) => {
     const user = await getUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
+
+    // Validate duration ranges
+    const validateDuration = (value: number | undefined, min: number, max: number, field: string) => {
+      if (value !== undefined && (value < min || value > max)) {
+        throw new ConvexError(
+          `${field} must be between ${min} and ${max} minutes`,
+        );
+      }
+    };
+
+    validateDuration(args.defaultWorkDuration, 1, 180, "Work duration");
+    validateDuration(args.defaultShortBreak, 1, 60, "Short break");
+    validateDuration(args.defaultLongBreak, 1, 90, "Long break");
+    validateDuration(args.sessionsBeforeLongBreak, 1, 10, "Sessions before long break");
+
+    // Validate presets if provided
+    if (args.presets) {
+      Object.entries(args.presets).forEach(([presetName, preset]) => {
+        validateDuration(preset.work, 1, 180, `${presetName} work duration`);
+        validateDuration(preset.shortBreak, 1, 60, `${presetName} short break`);
+        validateDuration(preset.longBreak, 1, 90, `${presetName} long break`);
+      });
+    }
 
     const existing = await ctx.db
       .query("pomodoroSettings")

@@ -3,10 +3,22 @@
 import { FocusPanelDrawer } from "@/work/components/FocusPanelDrawer";
 import { PomodoroTimer } from "@/work/components/PomodoroTimer";
 import { WorkStatusBar } from "@/work/components/WorkStatusBar";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import Link from "next/link";
 
 export default function WorkModePage() {
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex flex-col h-full">
+      {/* Settings Button - Fixed top-right */}
+      <div className="absolute top-4 right-4 z-20">
+        <Link href="/settings">
+          <Button variant="outline" size="icon" className="h-9 w-9">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+
       {/* Main Content Area - Timer centered */}
       <div className="flex-1 flex items-center justify-center p-6">
         <PomodoroTimer />
