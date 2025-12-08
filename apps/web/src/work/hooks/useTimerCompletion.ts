@@ -17,7 +17,10 @@ export function useTimerCompletion() {
     activeSessionId,
     sessionType,
     settings,
+    completedWorkSessions,
     setSessionType,
+    incrementCompletedWorkSessions,
+    resetCompletedWorkSessions,
   } = useWorkModeStore(
     useShallow((state) => ({
       remainingTime: state.remainingTime,
@@ -25,7 +28,10 @@ export function useTimerCompletion() {
       activeSessionId: state.activeSessionId,
       sessionType: state.sessionType,
       settings: state.settings,
+      completedWorkSessions: state.completedWorkSessions,
       setSessionType: state.setSessionType,
+      incrementCompletedWorkSessions: state.incrementCompletedWorkSessions,
+      resetCompletedWorkSessions: state.resetCompletedWorkSessions,
     })),
   );
 
@@ -38,6 +44,16 @@ export function useTimerCompletion() {
   useEffect(() => {
     if (remainingTime === 0 && isRunning && activeSessionId) {
       handleComplete();
+
+      // If work session completed, increment counter
+      if (sessionType === "work") {
+        incrementCompletedWorkSessions();
+      }
+
+      // If long break completed, reset counter
+      if (sessionType === "longBreak") {
+        resetCompletedWorkSessions();
+      }
 
       // Show browser notification if enabled
       if (settings?.notificationsEnabled) {
@@ -64,6 +80,8 @@ export function useTimerCompletion() {
     sessionType,
     settings,
     handleComplete,
+    incrementCompletedWorkSessions,
+    resetCompletedWorkSessions,
   ]);
 
   // Auto-start countdown logic
@@ -75,7 +93,19 @@ export function useTimerCompletion() {
       return () => clearTimeout(timer);
     } else if (autoStartCountdown === 0) {
       // Determine next session type
-      const nextSessionType = sessionType === "work" ? "shortBreak" : "work";
+      let nextSessionType: "work" | "shortBreak" | "longBreak";
+
+      if (sessionType === "work") {
+        // Work session just completed, determine break type
+        const sessionsBeforeLongBreak = settings?.sessionsBeforeLongBreak || 4;
+        // completedWorkSessions was already incremented, so check if we've hit the threshold
+        const shouldTakeLongBreak = completedWorkSessions >= sessionsBeforeLongBreak;
+        nextSessionType = shouldTakeLongBreak ? "longBreak" : "shortBreak";
+      } else {
+        // Break session completed, next is work
+        nextSessionType = "work";
+      }
+
       setSessionType(nextSessionType);
       setAutoStartCountdown(null);
 
@@ -84,7 +114,14 @@ export function useTimerCompletion() {
         handleStart();
       }, 100);
     }
-  }, [autoStartCountdown, sessionType, setSessionType, handleStart]);
+  }, [
+    autoStartCountdown,
+    sessionType,
+    completedWorkSessions,
+    settings,
+    setSessionType,
+    handleStart,
+  ]);
 
   const cancelAutoStart = useCallback(() => {
     setAutoStartCountdown(null);

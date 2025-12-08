@@ -11,30 +11,41 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "./CircularProgress";
 import { FocusModeSelector } from "./FocusModeSelector";
+import { TakeBreakDialog } from "./TakeBreakDialog";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { useInitializeWorkMode } from "../hooks/useInitializeWorkMode";
 import { useSessionControls } from "../hooks/useSessionControls";
 import { useShallow } from "zustand/react/shallow";
 import { useTimerCompletion } from "../hooks/useTimerCompletion";
 import { useTimerTick } from "../hooks/timer";
 import { useWorkModeStore } from "../stores/workModeStore";
+import { SessionType } from "../types";
 
 /**
  * Main Pomodoro Timer Component
  * Manages work sessions with timer, controls, and visual feedback
  */
 export const PomodoroTimer = memo(function PomodoroTimer() {
-  const { sessionType, targetDuration, remainingTime, isRunning, isPaused } =
-    useWorkModeStore(
-      useShallow((state) => ({
-        sessionType: state.sessionType,
-        targetDuration: state.targetDuration,
-        remainingTime: state.remainingTime,
-        isRunning: state.isRunning,
-        isPaused: state.isPaused,
-      })),
-    );
+  const {
+    sessionType,
+    targetDuration,
+    remainingTime,
+    isRunning,
+    isPaused,
+    completedWorkSessions,
+    settings,
+  } = useWorkModeStore(
+    useShallow((state) => ({
+      sessionType: state.sessionType,
+      targetDuration: state.targetDuration,
+      remainingTime: state.remainingTime,
+      isRunning: state.isRunning,
+      isPaused: state.isPaused,
+      completedWorkSessions: state.completedWorkSessions,
+      settings: state.settings,
+    })),
+  );
 
   // Initialize work mode
   const { isLoading } = useInitializeWorkMode();
@@ -49,6 +60,50 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
   const { handleStart, handlePause, handleResume, handleSkip, handleComplete } =
     useSessionControls();
 
+  // Handle manual break
+  const handleTakeBreak = useCallback(
+    async (breakType: SessionType) => {
+      // End current work session
+      await handleComplete();
+
+      // Get the current focus mode and settings to determine break duration
+      const currentState = useWorkModeStore.getState();
+      const currentSettings = currentState.settings;
+      const currentFocusMode = currentState.focusMode;
+
+      // Calculate break duration based on current focus mode
+      let breakDuration: number;
+      if (currentSettings && currentFocusMode !== "custom") {
+        const preset = currentSettings.presets[currentFocusMode];
+        breakDuration =
+          breakType === "longBreak"
+            ? preset.longBreak * 60 * 1000
+            : preset.shortBreak * 60 * 1000;
+      } else {
+        // Fallback to defaults
+        breakDuration =
+          breakType === "longBreak"
+            ? (currentSettings?.defaultLongBreak || 15) * 60 * 1000
+            : (currentSettings?.defaultShortBreak || 5) * 60 * 1000;
+      }
+
+      // Set break type and duration
+      useWorkModeStore.setState({
+        sessionType: breakType,
+        targetDuration: breakDuration,
+        remainingTime: breakDuration,
+        isRunning: false,
+        isPaused: false,
+      });
+
+      // Start break session
+      setTimeout(async () => {
+        await handleStart();
+      }, 200);
+    },
+    [handleComplete, handleStart],
+  );
+
   // Calculate progress percentage
   const progress = ((targetDuration - remainingTime) / targetDuration) * 100;
 
@@ -60,10 +115,20 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     );
   }
 
+  const sessionsBeforeLongBreak = settings?.sessionsBeforeLongBreak || 4;
+
   return (
     <div className="flex flex-col items-center space-y-8">
       {/* Session type badge */}
       <SessionTypeBadge sessionType={sessionType} />
+
+      {/* Session progress indicator */}
+      {sessionType === "work" && (
+        <Badge variant="secondary" className="text-sm px-3 py-1">
+          Session {completedWorkSessions + 1}/{sessionsBeforeLongBreak} before
+          long break
+        </Badge>
+      )}
 
       {/* Circular timer - much larger */}
       <CircularProgress
@@ -110,6 +175,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
           onResume={handleResume}
           onSkip={handleSkip}
           onComplete={handleComplete}
+          onTakeBreak={handleTakeBreak}
         />
       )}
     </div>
@@ -181,6 +247,7 @@ const ControlButtons = memo(function ControlButtons({
   onResume,
   onSkip,
   onComplete,
+  onTakeBreak,
 }: {
   isRunning: boolean;
   isPaused: boolean;
@@ -190,6 +257,7 @@ const ControlButtons = memo(function ControlButtons({
   onResume: () => void;
   onSkip: () => void;
   onComplete: () => void;
+  onTakeBreak: (breakType: SessionType) => void;
 }) {
   const sessionColor = getSessionColor(sessionType);
 
@@ -240,6 +308,34 @@ const ControlButtons = memo(function ControlButtons({
     );
   }
 
+  // Active work session - show pause, take break, and end buttons
+  if (sessionType === "work") {
+    return (
+      <div className="flex gap-4">
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={onPause}
+          className="px-6 py-6 text-lg font-semibold hover:scale-105 transition-all"
+        >
+          <Pause className="mr-2 h-6 w-6" />
+          Pause
+        </Button>
+        <TakeBreakDialog onTakeBreak={onTakeBreak} />
+        <Button
+          size="lg"
+          variant="destructive"
+          onClick={onComplete}
+          className="px-6 py-6 text-lg font-semibold hover:scale-105 transition-all"
+        >
+          <Square className="mr-2 h-6 w-6" />
+          End
+        </Button>
+      </div>
+    );
+  }
+
+  // Active break session - show pause, skip break, and end buttons
   return (
     <div className="flex gap-4">
       <Button
@@ -258,7 +354,7 @@ const ControlButtons = memo(function ControlButtons({
         className="px-6 py-6 text-lg font-semibold hover:scale-105 transition-all"
       >
         <SkipForward className="mr-2 h-6 w-6" />
-        Skip
+        Skip Break
       </Button>
       <Button
         size="lg"

@@ -33,6 +33,7 @@ interface WorkModeState {
 
   // Session tracking
   sessionCount: number; // work sessions today
+  completedWorkSessions: number; // completed work sessions since last long break
   todaysStats: SessionStats | null;
 
   // Actions
@@ -54,6 +55,9 @@ interface WorkModeState {
   setDeviceId: (id: string) => void;
 
   setSessionCount: (count: number) => void;
+  setCompletedWorkSessions: (count: number) => void;
+  incrementCompletedWorkSessions: () => void;
+  resetCompletedWorkSessions: () => void;
   setTodaysStats: (stats: SessionStats | null) => void;
 
   // Helper actions
@@ -93,6 +97,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   deviceId: getDeviceId(),
 
   sessionCount: 0,
+  completedWorkSessions: 0,
   todaysStats: null,
 
   // Actions
@@ -164,6 +169,12 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   setDeviceId: (id) => set({ deviceId: id }),
 
   setSessionCount: (count) => set({ sessionCount: count }),
+  setCompletedWorkSessions: (count) => set({ completedWorkSessions: count }),
+  incrementCompletedWorkSessions: () =>
+    set((state) => ({
+      completedWorkSessions: state.completedWorkSessions + 1,
+    })),
+  resetCompletedWorkSessions: () => set({ completedWorkSessions: 0 }),
   setTodaysStats: (stats) => set({ todaysStats: stats }),
 
   tick: () => {
