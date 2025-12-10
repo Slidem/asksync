@@ -1,11 +1,11 @@
 "use client";
 
-import { FocusPanelDrawer } from "@/work/components/FocusPanelDrawer";
-import { PomodoroTimer } from "@/work/components/PomodoroTimer";
-import { WorkStatusBar } from "@/work/components/WorkStatusBar";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { FocusPanelDrawer } from "@/work/components/FocusPanelDrawer";
 import Link from "next/link";
+import { PomodoroTimer } from "@/work/components/pomodoro/PomodoroTimer";
+import { Settings } from "lucide-react";
+import { WorkStatusBar } from "@/work/components/WorkStatusBar";
 
 export default function WorkModePage() {
   return (

@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Coffee } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,8 +10,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+import { Button } from "@/components/ui/button";
+import { Coffee } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { usePomodoroSettings } from "../hooks/usePomodoroSettings";
+import { useState } from "react";
 
 interface TakeBreakDialogProps {
   onTakeBreak: (breakType: "shortBreak" | "longBreak") => void;
@@ -32,10 +33,15 @@ export function TakeBreakDialog({ onTakeBreak }: TakeBreakDialogProps) {
     setOpen(false);
   };
 
+  if (!settings || settings.currentFocusMode === "custom") {
+    return null;
+  }
+
   const shortBreakDuration =
     settings?.presets[settings.currentFocusMode]?.shortBreak ||
     settings?.defaultShortBreak ||
     5;
+
   const longBreakDuration =
     settings?.presets[settings.currentFocusMode]?.longBreak ||
     settings?.defaultLongBreak ||

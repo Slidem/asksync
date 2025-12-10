@@ -1,7 +1,9 @@
 import {
+  DEFAULT_LONG_BREAK_MINUTES,
+  DEFAULT_SHORT_BREAK_MINUTES,
+  DEFAULT_WORK_DURATION_MINUTES,
   FocusMode,
   PomodoroSettings,
-  SessionStats,
   SessionStatus,
   SessionType,
 } from "../types";
@@ -29,12 +31,8 @@ interface WorkModeState {
 
   // Settings
   settings: PomodoroSettings | null;
-  deviceId: string;
 
-  // Session tracking
-  sessionCount: number; // work sessions today
   completedWorkSessions: number; // completed work sessions since last long break
-  todaysStats: SessionStats | null;
 
   // Actions
   setActiveSession: (sessionId: Id<"workSessions"> | null) => void;
@@ -50,19 +48,16 @@ interface WorkModeState {
   setCurrentTimeblock: (id: Id<"timeblocks"> | null) => void;
   setCurrentTask: (id: Id<"tasks"> | null) => void;
   setCurrentQuestion: (id: Id<"questions"> | null) => void;
-
   setSettings: (settings: PomodoroSettings) => void;
-  setDeviceId: (id: string) => void;
-
-  setSessionCount: (count: number) => void;
-  setCompletedWorkSessions: (count: number) => void;
-  incrementCompletedWorkSessions: () => void;
-  resetCompletedWorkSessions: () => void;
-  setTodaysStats: (stats: SessionStats | null) => void;
 
   // Helper actions
   tick: () => void;
   reset: () => void;
+  resetToNextSessionType: () => {
+    targetDuration: number;
+    remainingTime: number;
+    sessionType: SessionType;
+  };
 }
 
 // Generate or retrieve device ID
@@ -71,7 +66,9 @@ const getDeviceId = (): string => {
 
   let deviceId = localStorage.getItem("workModeDeviceId");
   if (!deviceId) {
-    deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    deviceId = `device_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     localStorage.setItem("workModeDeviceId", deviceId);
   }
   return deviceId;
@@ -129,54 +126,21 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
     }
   },
 
-  setTargetDuration: (duration) =>
-    set({ targetDuration: duration, remainingTime: duration }),
-  setRemainingTime: (time) => set({ remainingTime: time }),
+  setTargetDuration: (duration) => {
+    console.trace("Setting target duration:", duration);
+    set({ targetDuration: duration, remainingTime: duration });
+  },
+  setRemainingTime: (time) => {
+    console.trace("Setting remaining time:", time);
+    set({ remainingTime: time });
+  },
   setIsRunning: (running) => set({ isRunning: running }),
   setIsPaused: (paused) => set({ isPaused: paused }),
 
   setCurrentTimeblock: (id) => set({ currentTimeblockId: id }),
   setCurrentTask: (id) => set({ currentTaskId: id }),
   setCurrentQuestion: (id) => set({ currentQuestionId: id }),
-
-  setSettings: (settings) => {
-    const currentMode = settings.currentFocusMode;
-    const sessionType = get().sessionType;
-
-    if (currentMode !== "custom") {
-      const preset = settings.presets[currentMode];
-      let duration: number;
-
-      if (sessionType === "work") {
-        duration = preset.work * 60 * 1000;
-      } else if (sessionType === "shortBreak") {
-        duration = preset.shortBreak * 60 * 1000;
-      } else {
-        duration = preset.longBreak * 60 * 1000;
-      }
-
-      set({
-        settings,
-        focusMode: currentMode,
-        targetDuration: duration,
-        remainingTime: duration,
-      });
-    } else {
-      set({ settings });
-    }
-  },
-
-  setDeviceId: (id) => set({ deviceId: id }),
-
-  setSessionCount: (count) => set({ sessionCount: count }),
-  setCompletedWorkSessions: (count) => set({ completedWorkSessions: count }),
-  incrementCompletedWorkSessions: () =>
-    set((state) => ({
-      completedWorkSessions: state.completedWorkSessions + 1,
-    })),
-  resetCompletedWorkSessions: () => set({ completedWorkSessions: 0 }),
-  setTodaysStats: (stats) => set({ todaysStats: stats }),
-
+  setSettings: (settings) => set({ settings }),
   tick: () => {
     const { remainingTime, isRunning, isPaused } = get();
     if (isRunning && !isPaused && remainingTime > 0) {
@@ -185,13 +149,113 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   },
 
   reset: () => {
-    const { targetDuration } = get();
+    const { focusMode, targetDuration, settings } = get();
+    let newTargetDuration = targetDuration;
+
+    if (focusMode !== "custom") {
+      const preset = settings ? settings.presets[focusMode] : null;
+      if (preset) {
+        newTargetDuration = minutesToMilliseconds(preset.work);
+      }
+    }
     set({
-      remainingTime: targetDuration,
+      targetDuration: newTargetDuration,
+      remainingTime: newTargetDuration,
+      sessionType: "work",
       isRunning: false,
       isPaused: false,
       sessionStatus: null,
       activeSessionId: null,
+      completedWorkSessions: 0,
     });
   },
+
+  resetToNextSessionType: () => {
+    const {
+      sessionType,
+      focusMode,
+      settings,
+      reset,
+      targetDuration: currentTargetDuration,
+    } = get();
+
+    if (focusMode === "custom") {
+      reset();
+      return {
+        sessionType: "work",
+        remainingTime: currentTargetDuration,
+        targetDuration: currentTargetDuration,
+      };
+    }
+
+    const preset = settings ? settings.presets[focusMode] : null;
+
+    if (sessionType !== "work") {
+      const workDurationMillis = preset
+        ? minutesToMilliseconds(preset.work)
+        : minutesToMilliseconds(DEFAULT_WORK_DURATION_MINUTES);
+
+      set({
+        sessionType: "work",
+        remainingTime: workDurationMillis,
+        targetDuration: workDurationMillis,
+        isRunning: false,
+        isPaused: false,
+      });
+      return {
+        sessionType: "work",
+        remainingTime: workDurationMillis,
+        targetDuration: workDurationMillis,
+      };
+    }
+
+    const completedSessions = get().completedWorkSessions;
+
+    const sessionsBeforeLongBreak = settings
+      ? settings.sessionsBeforeLongBreak
+      : 4;
+
+    const isLongBreak = (completedSessions + 1) % sessionsBeforeLongBreak === 0;
+
+    if (isLongBreak) {
+      const longBreakDurationMillis = preset
+        ? minutesToMilliseconds(preset.longBreak)
+        : minutesToMilliseconds(DEFAULT_LONG_BREAK_MINUTES);
+
+      set({
+        sessionType: "longBreak",
+        remainingTime: longBreakDurationMillis,
+        targetDuration: longBreakDurationMillis,
+        completedWorkSessions: 0,
+        isRunning: false,
+        isPaused: false,
+      });
+      return {
+        sessionType: "longBreak",
+        remainingTime: longBreakDurationMillis,
+        targetDuration: longBreakDurationMillis,
+      };
+    } else {
+      const shortBreakDurationMillis = preset
+        ? minutesToMilliseconds(preset.shortBreak)
+        : minutesToMilliseconds(DEFAULT_SHORT_BREAK_MINUTES);
+      set({
+        sessionType: "shortBreak",
+        remainingTime: shortBreakDurationMillis,
+        targetDuration: shortBreakDurationMillis,
+        completedWorkSessions: completedSessions + 1,
+        isRunning: false,
+        isPaused: false,
+      });
+      return {
+        sessionType: "shortBreak",
+        remainingTime: shortBreakDurationMillis,
+        targetDuration: shortBreakDurationMillis,
+      };
+    }
+  },
 }));
+
+function minutesToMilliseconds(minutes: number): number {
+  return minutes * 60 * 1000;
+}

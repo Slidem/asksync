@@ -1,10 +1,9 @@
-import { useQuery } from "convex/react";
 import { api } from "@/../../backend/convex/_generated/api";
-import { PomodoroSettings } from "../types";
+import { useQuery } from "convex/react";
 
 /**
  * Hook to fetch pomodoro settings
  */
-export function usePomodoroSettings(): PomodoroSettings | undefined {
+export function usePomodoroSettings() {
   return useQuery(api.workSessions.queries.session.getPomodoroSettings);
 }

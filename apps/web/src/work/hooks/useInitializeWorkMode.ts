@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 
 import { api } from "@/../../backend/convex/_generated/api";
+import { useDeviceId } from "@/lib/device";
 import { useQuery } from "convex/react";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "../stores/workModeStore";
 
 /**
@@ -10,7 +12,7 @@ import { useWorkModeStore } from "../stores/workModeStore";
  */
 export function useInitializeWorkMode() {
   const initialized = useRef(false);
-  const deviceId = useWorkModeStore((state) => state.deviceId);
+  const deviceId = useDeviceId();
 
   const activeSession = useQuery(
     api.workSessions.queries.session.getActiveSession,
@@ -25,71 +27,84 @@ export function useInitializeWorkMode() {
     api.workSessions.queries.session.getTodaysSessions,
   );
 
+  const isLoading =
+    pomodoroSettings === undefined ||
+    activeSession === undefined ||
+    todaysSessions === undefined;
+
   // Store actions
   const {
     setSettings,
     setActiveSession,
+    setFocusMode,
+    setSessionType,
     setSessionStatus,
     setRemainingTime,
     setIsRunning,
     setIsPaused,
-    setSessionCount,
-    setTodaysStats,
     reset,
-  } = useWorkModeStore();
+  } = useWorkModeStore(
+    useShallow((state) => ({
+      setSettings: state.setSettings,
+      setActiveSession: state.setActiveSession,
+      setSessionStatus: state.setSessionStatus,
+      setRemainingTime: state.setRemainingTime,
+      setIsRunning: state.setIsRunning,
+      setIsPaused: state.setIsPaused,
+      setFocusMode: state.setFocusMode,
+      setSessionType: state.setSessionType,
+      reset: state.reset,
+    })),
+  );
 
   useEffect(() => {
-    if (pomodoroSettings && !initialized.current) {
+    return () => {
+      reset();
+      initialized.current = false;
+    };
+  }, [reset]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    if (initialized.current) {
+      return;
+    }
+
+    initialized.current = true;
+
+    if (pomodoroSettings) {
       setSettings(pomodoroSettings);
     }
-  }, [pomodoroSettings, setSettings]);
 
-  useEffect(() => {
-    if (activeSession !== undefined) {
-      if (activeSession) {
-        setActiveSession(activeSession._id);
-        setSessionStatus(activeSession.status);
-        setRemainingTime(activeSession.remainingTime);
-        setIsRunning(activeSession.status === "active");
-        setIsPaused(activeSession.status === "paused");
-      } else if (initialized.current) {
-        // Only reset if we've been initialized and session disappeared
-        reset();
-      }
+    if (activeSession) {
+      setActiveSession(activeSession._id);
+      setSessionStatus(activeSession.status);
+      setSessionType(activeSession.sessionType);
+      setFocusMode(activeSession.focusMode);
+      setRemainingTime(activeSession.remainingTime);
+      setIsRunning(activeSession.status === "active");
+      setIsPaused(activeSession.status === "paused");
     }
   }, [
     activeSession,
-    setActiveSession,
-    setSessionStatus,
-    setRemainingTime,
-    setIsRunning,
-    setIsPaused,
+    isLoading,
+    pomodoroSettings,
     reset,
+    setActiveSession,
+    setFocusMode,
+    setIsPaused,
+    setIsRunning,
+    setRemainingTime,
+    setSessionStatus,
+    setSessionType,
+    setSettings,
+    todaysSessions,
   ]);
 
-  useEffect(() => {
-    if (todaysSessions) {
-      setSessionCount(todaysSessions.stats.totalSessions);
-      setTodaysStats(todaysSessions.stats);
-    }
-  }, [todaysSessions, setSessionCount, setTodaysStats]);
-
-  useEffect(() => {
-    if (
-      pomodoroSettings !== undefined &&
-      activeSession !== undefined &&
-      todaysSessions !== undefined &&
-      !initialized.current
-    ) {
-      initialized.current = true;
-    }
-  }, [pomodoroSettings, activeSession, todaysSessions]);
-
   return {
-    isLoading:
-      pomodoroSettings === undefined ||
-      activeSession === undefined ||
-      todaysSessions === undefined,
-    isInitialized: initialized.current,
+    isLoading,
   };
 }

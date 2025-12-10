@@ -1,11 +1,14 @@
-import { useEffect, useState, useCallback } from "react";
-import { useSessionControls } from "./useSessionControls";
-import { useShallow } from "zustand/react/shallow";
-import { useWorkModeStore } from "../stores/workModeStore";
 import {
-  notifyWorkComplete,
   notifyBreakComplete,
-} from "../utils/notifications";
+  notifyWorkComplete,
+} from "@/work/utils/notifications";
+import { useCallback, useEffect, useState } from "react";
+
+import { api } from "@convex/api";
+import { useMutation } from "convex/react";
+import { useShallow } from "zustand/react/shallow";
+import { useStartWork } from "@/work/hooks/sessionControls";
+import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * Hook that handles timer completion with notifications and auto-start
@@ -17,10 +20,7 @@ export function useTimerCompletion() {
     activeSessionId,
     sessionType,
     settings,
-    completedWorkSessions,
-    setSessionType,
-    incrementCompletedWorkSessions,
-    resetCompletedWorkSessions,
+    resetToNextSessionType,
   } = useWorkModeStore(
     useShallow((state) => ({
       remainingTime: state.remainingTime,
@@ -30,41 +30,25 @@ export function useTimerCompletion() {
       settings: state.settings,
       completedWorkSessions: state.completedWorkSessions,
       setSessionType: state.setSessionType,
-      incrementCompletedWorkSessions: state.incrementCompletedWorkSessions,
-      resetCompletedWorkSessions: state.resetCompletedWorkSessions,
+      resetToNextSessionType: state.resetToNextSessionType,
     })),
   );
 
-  const { handleComplete, handleStart } = useSessionControls();
   const [autoStartCountdown, setAutoStartCountdown] = useState<number | null>(
     null,
   );
 
+  const endSession = useMutation(api.workSessions.mutations.session.endSession);
+
+  const startSession = useStartWork();
+
   // Handle timer completion
   useEffect(() => {
-    if (remainingTime === 0 && isRunning && activeSessionId) {
-      handleComplete();
+    if (remainingTime > 0 || !isRunning || !activeSessionId) {
+      return;
+    }
 
-      // If work session completed, increment counter
-      if (sessionType === "work") {
-        incrementCompletedWorkSessions();
-      }
-
-      // If long break completed, reset counter
-      if (sessionType === "longBreak") {
-        resetCompletedWorkSessions();
-      }
-
-      // Show browser notification if enabled
-      if (settings?.notificationsEnabled) {
-        if (sessionType === "work") {
-          notifyWorkComplete();
-        } else {
-          notifyBreakComplete(sessionType === "longBreak");
-        }
-      }
-
-      // Check if auto-start is enabled
+    const startCountdownIfEnabled = () => {
       const shouldAutoStart =
         (sessionType === "work" && settings?.autoStartBreaks) ||
         (sessionType !== "work" && settings?.autoStartWork);
@@ -72,56 +56,55 @@ export function useTimerCompletion() {
       if (shouldAutoStart) {
         setAutoStartCountdown(3); // 3 second countdown
       }
-    }
+    };
+
+    const notifyCompletion = () => {
+      if (settings?.notificationsEnabled) {
+        if (sessionType === "work") {
+          notifyWorkComplete();
+        }
+
+        if (sessionType !== "work") {
+          notifyBreakComplete(sessionType === "longBreak");
+        }
+      }
+    };
+
+    const handleCompletion = async () => {
+      if (activeSessionId) {
+        await endSession({ sessionId: activeSessionId, completed: true });
+      }
+      resetToNextSessionType();
+    };
+
+    notifyCompletion();
+    handleCompletion();
+    startCountdownIfEnabled();
   }, [
     remainingTime,
     isRunning,
     activeSessionId,
     sessionType,
     settings,
-    handleComplete,
-    incrementCompletedWorkSessions,
-    resetCompletedWorkSessions,
+    endSession,
+    resetToNextSessionType,
   ]);
 
-  // Auto-start countdown logic
   useEffect(() => {
     if (autoStartCountdown !== null && autoStartCountdown > 0) {
       const timer = setTimeout(() => {
         setAutoStartCountdown(autoStartCountdown - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (autoStartCountdown === 0) {
-      // Determine next session type
-      let nextSessionType: "work" | "shortBreak" | "longBreak";
-
-      if (sessionType === "work") {
-        // Work session just completed, determine break type
-        const sessionsBeforeLongBreak = settings?.sessionsBeforeLongBreak || 4;
-        // completedWorkSessions was already incremented, so check if we've hit the threshold
-        const shouldTakeLongBreak = completedWorkSessions >= sessionsBeforeLongBreak;
-        nextSessionType = shouldTakeLongBreak ? "longBreak" : "shortBreak";
-      } else {
-        // Break session completed, next is work
-        nextSessionType = "work";
-      }
-
-      setSessionType(nextSessionType);
-      setAutoStartCountdown(null);
-
-      // Start the next session
-      setTimeout(() => {
-        handleStart();
-      }, 100);
     }
-  }, [
-    autoStartCountdown,
-    sessionType,
-    completedWorkSessions,
-    settings,
-    setSessionType,
-    handleStart,
-  ]);
+  }, [autoStartCountdown]);
+
+  useEffect(() => {
+    if (autoStartCountdown === 0) {
+      setAutoStartCountdown(null);
+      startSession();
+    }
+  }, [autoStartCountdown, startSession]);
 
   const cancelAutoStart = useCallback(() => {
     setAutoStartCountdown(null);

@@ -52,3 +52,6 @@ export interface SessionStats {
   totalQuestions: number;
   currentStreak: number;
 }
+export const DEFAULT_WORK_DURATION_MINUTES = 25;
+export const DEFAULT_SHORT_BREAK_MINUTES = 5;
+export const DEFAULT_LONG_BREAK_MINUTES = 15;

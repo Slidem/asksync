@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChevronDown, Save } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,14 +9,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ChevronDown, Save } from "lucide-react";
-import { FocusMode } from "../types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { memo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
-import { useWorkModeStore } from "../stores/workModeStore";
-import { useMutation } from "convex/react";
+
+import { Button } from "@/components/ui/button";
+import { FocusMode } from "../../types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { api } from "@/../../backend/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { useShallow } from "zustand/react/shallow";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkModeStore } from "../../stores/workModeStore";
 
 const focusModeLabels: Record<Exclude<FocusMode, "custom">, string> = {
   deep: "Deep Work",

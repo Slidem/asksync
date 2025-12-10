@@ -2,21 +2,26 @@
 
 import { CheckCircle, Clock, Flame, MessageCircle } from "lucide-react";
 
+import { api } from "@convex/api";
 import { formatDuration } from "../utils/formatting";
 import { memo } from "react";
-import { useShallow } from "zustand/react/shallow";
-import { useWorkModeStore } from "../stores/workModeStore";
+import { useQuery } from "convex/react";
 
 /**
  * Status bar component showing today's work statistics
  */
 export const WorkStatusBar = memo(function WorkStatusBar() {
-  const { sessionCount, todaysStats } = useWorkModeStore(
-    useShallow((state) => ({
-      sessionCount: state.sessionCount,
-      todaysStats: state.todaysStats,
-    })),
+  const todaysSessions = useQuery(
+    api.workSessions.queries.session.getTodaysSessions,
   );
+
+  const isLoading = todaysSessions === undefined;
+
+  if (isLoading) {
+    return null;
+  }
+
+  const { stats: todaysStats } = todaysSessions;
 
   return (
     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t dark:border-slate-800">
@@ -25,7 +30,7 @@ export const WorkStatusBar = memo(function WorkStatusBar() {
           {/* Sessions count */}
           <StatItem
             icon={<div className="text-2xl">🍅</div>}
-            value={sessionCount || 0}
+            value={todaysStats ? todaysStats.totalSessions : 0}
             label="sessions"
           />
 
