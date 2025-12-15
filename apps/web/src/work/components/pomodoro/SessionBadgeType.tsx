@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getSessionLabel } from "@/work/utils/formatting";
+import { getSessionLabel } from "@/work/utils/sessionUtils";
 import { memo } from "react";
 
 /**

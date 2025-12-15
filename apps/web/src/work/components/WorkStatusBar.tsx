@@ -3,7 +3,7 @@
 import { CheckCircle, Clock, Flame, MessageCircle } from "lucide-react";
 
 import { api } from "@convex/api";
-import { formatDuration } from "../utils/formatting";
+import { formatDuration } from "../utils/timeFormatting";
 import { memo } from "react";
 import { useQuery } from "convex/react";
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useResume } from "@/work/hooks/sessionControls";
-import { useSessionColor } from "@/work/hooks/sessionUtils";
+import { useSessionColor } from "@/work/utils/sessionUtils";
 
 export const ResumeSession = () => {
   const handleResume = useResume();

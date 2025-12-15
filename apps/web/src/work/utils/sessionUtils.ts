@@ -1,31 +1,12 @@
-/**
- * Format milliseconds to MM:SS display
- */
-export function formatTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
-}
+import { useWorkModeStore } from "@/work/stores/workModeStore";
 
-/**
- * Format duration to human-readable string
- */
-export function formatDuration(ms: number): string {
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
-}
-
-/**
+export const useSessionColor = () => {
+  const sessionType = useWorkModeStore((state) => state.sessionType);
+  return getSessionColor(sessionType);
+}; /**
  * Get session type color classes
  */
+
 export function getSessionColor(sessionType: string): string {
   switch (sessionType) {
     case "work":
@@ -38,10 +19,10 @@ export function getSessionColor(sessionType: string): string {
       return "from-gray-500 to-gray-600";
   }
 }
-
 /**
  * Get session type label
  */
+
 export function getSessionLabel(sessionType: string): string {
   switch (sessionType) {
     case "work":

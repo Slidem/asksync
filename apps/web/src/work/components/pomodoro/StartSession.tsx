@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { getSessionColor } from "@/work/utils/formatting";
+import { getSessionColor } from "@/work/utils/sessionUtils";
 import { useStartWork } from "@/work/hooks/sessionControls";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 

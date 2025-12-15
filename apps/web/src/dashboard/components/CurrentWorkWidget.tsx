@@ -5,7 +5,7 @@ import { Clock, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { QuickStartButton } from "./QuickStartButton";
-import { formatTime } from "@/work/utils/formatting";
+import { formatTime } from "@/work/utils/timeFormatting";
 
 interface CurrentWorkWidgetProps {
   activeSession?: {

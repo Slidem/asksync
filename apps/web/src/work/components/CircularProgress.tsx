@@ -9,6 +9,26 @@ interface CircularProgressProps {
   children: React.ReactNode;
 }
 
+const DEFAULT_COLORS = {
+  start: "stop-color-gray-500",
+  end: "stop-color-gray-600",
+};
+
+const SESSION_TYPE_COLORS: Record<string, { start: string; end: string }> = {
+  work: {
+    start: "stop-color-blue-500",
+    end: "stop-color-purple-600",
+  },
+  shortBreak: {
+    start: "stop-color-green-500",
+    end: "stop-color-emerald-600",
+  },
+  longBreak: {
+    start: "stop-color-orange-500",
+    end: "stop-color-amber-600",
+  },
+};
+
 /**
  * Circular progress ring component for the timer
  */
@@ -17,35 +37,9 @@ export const CircularProgress = memo(function CircularProgress({
   sessionType,
   children,
 }: CircularProgressProps) {
-  const getGradientStopColors = () => {
-    switch (sessionType) {
-      case "work":
-        return {
-          start: "stop-color-blue-500",
-          end: "stop-color-purple-600",
-        };
-      case "shortBreak":
-        return {
-          start: "stop-color-green-500",
-          end: "stop-color-emerald-600",
-        };
-      case "longBreak":
-        return {
-          start: "stop-color-orange-500",
-          end: "stop-color-amber-600",
-        };
-      default:
-        return {
-          start: "stop-color-gray-500",
-          end: "stop-color-gray-600",
-        };
-    }
-  };
-
-  const colors = getGradientStopColors();
-  // Responsive radius - larger on bigger screens to contain text
+  const colors = SESSION_TYPE_COLORS[sessionType] || DEFAULT_COLORS;
   const viewBoxSize = 500;
-  const radius = 220; // Increased from 180
+  const radius = 220;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - progress / 100);
   const strokeWidth = 18;
@@ -53,11 +47,11 @@ export const CircularProgress = memo(function CircularProgress({
 
   return (
     <div className="relative w-96 h-96 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem]">
-      {/* Background circle */}
       <svg
         className="w-full h-full transform -rotate-90"
         viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
       >
+        {/* Background circle */}
         <circle
           cx={center}
           cy={center}
@@ -88,7 +82,6 @@ export const CircularProgress = memo(function CircularProgress({
         </defs>
       </svg>
 
-      {/* Timer display */}
       <div className="absolute inset-0 flex items-center justify-center">
         {children}
       </div>

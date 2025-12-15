@@ -6,7 +6,7 @@ import { Clock } from "lucide-react";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { MemberName } from "@/members/components/MemberName";
 import { WorkStatusIndicator } from "@/work/components/WorkStatusIndicator";
-import { formatTime } from "@/work/utils/formatting";
+import { formatTime } from "@/work/utils/timeFormatting";
 
 type WorkStatus = "working" | "break" | "offline";
 

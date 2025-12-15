@@ -1,6 +1,6 @@
-import { formatTime, getSessionColor } from "@/work/utils/formatting";
-
 import { cn } from "@/lib/utils";
+import { formatTime } from "@/work/utils/timeFormatting";
+import { getSessionColor } from "@/work/utils/sessionUtils";
 import { memo } from "react";
 
 /**

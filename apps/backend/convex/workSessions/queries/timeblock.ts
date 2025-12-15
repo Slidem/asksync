@@ -1,4 +1,3 @@
-import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import { getUser } from "../../auth/user";
 
@@ -38,32 +37,6 @@ export const getCurrentTimeblock = query({
 
     return {
       timeblock: currentTimeblock,
-      tasks: tasks.sort((a, b) => a.order - b.order),
-    };
-  },
-});
-
-// Get timeblock with tasks by ID
-export const getTimeblockWithTasks = query({
-  args: {
-    timeblockId: v.id("timeblocks"),
-  },
-  handler: async (ctx, args) => {
-    const user = await getUser(ctx);
-    if (!user) return null;
-
-    const timeblock = await ctx.db.get(args.timeblockId);
-    if (!timeblock || timeblock.orgId !== user.orgId) return null;
-
-    // Get tasks for this timeblock
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_timeblock", (q) => q.eq("timeblockId", args.timeblockId))
-      .order("asc")
-      .collect();
-
-    return {
-      timeblock,
       tasks: tasks.sort((a, b) => a.order - b.order),
     };
   },
