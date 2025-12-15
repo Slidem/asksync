@@ -1,7 +1,14 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PomodoroSettings } from "@/work/types";
 import { DurationControl } from "./DurationControl";
+import { PomodoroSettings } from "@/work/types";
 
 interface PresetEditorProps {
   settings: PomodoroSettings;
@@ -33,7 +40,7 @@ export function PresetEditor({ settings, onUpdate }: PresetEditorProps) {
   const handlePresetChange = (
     presetName: keyof PomodoroSettings["presets"],
     field: "work" | "shortBreak" | "longBreak",
-    value: number
+    value: number,
   ) => {
     onUpdate({
       presets: {
@@ -62,17 +69,15 @@ export function PresetEditor({ settings, onUpdate }: PresetEditorProps) {
               Customize durations for each focus mode
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleResetToDefaults}
-          >
+          <Button variant="outline" size="sm" onClick={handleResetToDefaults}>
             Reset to Defaults
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {(Object.keys(PRESET_LABELS) as Array<keyof PomodoroSettings["presets"]>).map((presetName) => (
+        {(
+          Object.keys(PRESET_LABELS) as Array<keyof PomodoroSettings["presets"]>
+        ).map((presetName) => (
           <div key={presetName} className="space-y-4">
             <div>
               <h4 className="font-medium">{PRESET_LABELS[presetName]}</h4>
@@ -84,21 +89,27 @@ export function PresetEditor({ settings, onUpdate }: PresetEditorProps) {
               <DurationControl
                 label="Work"
                 value={settings.presets[presetName].work}
-                onChange={(value) => handlePresetChange(presetName, "work", value)}
+                onChange={(value) =>
+                  handlePresetChange(presetName, "work", value)
+                }
                 min={1}
                 max={180}
               />
               <DurationControl
                 label="Short Break"
                 value={settings.presets[presetName].shortBreak}
-                onChange={(value) => handlePresetChange(presetName, "shortBreak", value)}
+                onChange={(value) =>
+                  handlePresetChange(presetName, "shortBreak", value)
+                }
                 min={1}
                 max={60}
               />
               <DurationControl
                 label="Long Break"
                 value={settings.presets[presetName].longBreak}
-                onChange={(value) => handlePresetChange(presetName, "longBreak", value)}
+                onChange={(value) =>
+                  handlePresetChange(presetName, "longBreak", value)
+                }
                 min={1}
                 max={90}
               />

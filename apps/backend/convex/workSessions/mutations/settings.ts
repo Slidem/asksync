@@ -42,7 +42,12 @@ export const updatePomodoroSettings = mutation({
     if (!user) throw new ConvexError("Not authenticated");
 
     // Validate duration ranges
-    const validateDuration = (value: number | undefined, min: number, max: number, field: string) => {
+    const validateDuration = (
+      value: number | undefined,
+      min: number,
+      max: number,
+      field: string,
+    ) => {
       if (value !== undefined && (value < min || value > max)) {
         throw new ConvexError(
           `${field} must be between ${min} and ${max} minutes`,
@@ -53,7 +58,12 @@ export const updatePomodoroSettings = mutation({
     validateDuration(args.defaultWorkDuration, 1, 180, "Work duration");
     validateDuration(args.defaultShortBreak, 1, 60, "Short break");
     validateDuration(args.defaultLongBreak, 1, 90, "Long break");
-    validateDuration(args.sessionsBeforeLongBreak, 1, 10, "Sessions before long break");
+    validateDuration(
+      args.sessionsBeforeLongBreak,
+      1,
+      10,
+      "Sessions before long break",
+    );
 
     // Validate presets if provided
     if (args.presets) {
@@ -112,5 +122,32 @@ export const updatePomodoroSettings = mutation({
 
       return settingsId;
     }
+  },
+});
+
+// Update share details privacy setting
+export const updateShareDetails = mutation({
+  args: {
+    shareDetails: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUser(ctx);
+    if (!user) throw new ConvexError("Not authenticated");
+
+    const status = await ctx.db
+      .query("userWorkStatus")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", user.id).eq("orgId", user.orgId),
+      )
+      .first();
+
+    if (status) {
+      await ctx.db.patch(status._id, {
+        shareDetails: args.shareDetails,
+        lastUpdated: Date.now(),
+      });
+    }
+
+    return { success: true };
   },
 });

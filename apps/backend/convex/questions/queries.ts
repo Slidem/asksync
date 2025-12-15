@@ -278,6 +278,104 @@ export const getQuestionStats = query({
   },
 });
 
+// Get urgent questions for dashboard
+export const getUrgentQuestions = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserWithGroups(ctx);
+    const limit = args.limit || 3;
+
+    // Get all questions assigned to user that are not answered/resolved
+    const allQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
+      .collect();
+
+    const assignedQuestions = allQuestions.filter(
+      (q) =>
+        q.assigneeIds.includes(user.id) &&
+        q.status !== "answered" &&
+        q.status !== "resolved",
+    );
+
+    // Get current timeblock to check tag matching
+    const currentTimeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator", (q) =>
+        q.eq("orgId", user.orgId).eq("createdBy", user.id),
+      )
+      .collect();
+
+    const now = Date.now();
+    const currentTimeblock = currentTimeblocks.find((tb) => {
+      const startTime = tb.startTime;
+      const endTime = tb.endTime;
+      return startTime <= now && now <= endTime;
+    });
+
+    const currentTags = currentTimeblock?.tagIds || [];
+
+    // Calculate urgency and match timeblock
+    const questionsWithUrgency = assignedQuestions.map((q) => {
+      const isOverdue = q.expectedAnswerTime < now;
+      const matchesCurrentBlock = q.tagIds.some((tagId) =>
+        currentTags.includes(tagId),
+      );
+      const urgencyScore = isOverdue ? 1000 : q.expectedAnswerTime - now;
+
+      return {
+        ...q,
+        isOverdue,
+        matchesCurrentBlock,
+        urgencyScore,
+      };
+    });
+
+    // Sort by urgency (overdue first, then by expected time)
+    questionsWithUrgency.sort((a, b) => a.urgencyScore - b.urgencyScore);
+
+    // Take top N
+    const topQuestions = questionsWithUrgency.slice(0, limit);
+
+    // Fetch related data
+    const questionsWithData = await Promise.all(
+      topQuestions.map(async (question) => {
+        // Get tags
+        const tags = await Promise.all(
+          question.tagIds.map((tagId: string) =>
+            ctx.db.get(tagId as Id<"tags">),
+          ),
+        );
+
+        const filteredTags = tags.filter((tag) => tag !== null);
+
+        const tagsWithPermissions = await decorateResourceWithGrants({
+          ctx,
+          currentUser: user,
+          resourceType: "tags",
+          resources: filteredTags,
+        });
+
+        return {
+          _id: question._id,
+          _creationTime: question._creationTime,
+          title: question.title,
+          contentPlaintext: question.contentPlaintext,
+          expectedAnswerTime: question.expectedAnswerTime,
+          isOverdue: question.isOverdue,
+          matchesCurrentBlock: question.matchesCurrentBlock,
+          tags: tagsWithPermissions,
+          threadId: question.threadId,
+        };
+      }),
+    );
+
+    return questionsWithData;
+  },
+});
+
 // Get a specific question by ID with full details
 export const getQuestionById = query({
   args: { questionId: v.id("questions") },

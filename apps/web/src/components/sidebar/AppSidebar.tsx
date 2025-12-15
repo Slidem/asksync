@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import {
+  BarChart3,
   Calendar1,
   MessageCircleQuestionMark,
   Settings,
@@ -32,6 +33,16 @@ const items = [
     title: "Work Mode",
     url: "/work",
     icon: Timer,
+  },
+  {
+    title: "Team Status",
+    url: "/team",
+    icon: Users,
+  },
+  {
+    title: "Analytics",
+    url: "/analytics",
+    icon: BarChart3,
   },
   {
     title: "Schedule",

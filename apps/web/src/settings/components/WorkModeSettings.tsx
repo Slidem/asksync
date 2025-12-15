@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { PresetEditor } from "@/work/components/settings/PresetEditor";
-import { NotificationSettings } from "@/work/components/settings/NotificationSettings";
+import { Loader2, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { AutomationSettings } from "@/work/components/settings/AutomationSettings";
-import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
-import { useMutation } from "convex/react";
-import { api } from "@/../../backend/convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import { NotificationSettings } from "@/work/components/settings/NotificationSettings";
 import { PomodoroSettings } from "@/work/types";
-import { Save, Loader2 } from "lucide-react";
+import { PresetEditor } from "@/work/components/settings/PresetEditor";
+import { api } from "@/../../backend/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
 import { useToast } from "@/hooks/use-toast";
 
 export function WorkModeSettings() {
@@ -144,7 +145,10 @@ export function WorkModeSettings() {
 
       <div className="space-y-6">
         <PresetEditor settings={localSettings} onUpdate={handleUpdate} />
-        <NotificationSettings settings={localSettings} onUpdate={handleUpdate} />
+        <NotificationSettings
+          settings={localSettings}
+          onUpdate={handleUpdate}
+        />
         <AutomationSettings settings={localSettings} onUpdate={handleUpdate} />
       </div>
     </div>
