@@ -1,12 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Bell, BellOff, Volume2, AlertCircle } from "lucide-react";
-import { PomodoroSettings } from "@/work/types";
+import { AlertCircle, Bell, BellOff, Volume2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   getNotificationPermission,
   requestNotificationPermission,
@@ -14,24 +16,30 @@ import {
 } from "@/work/utils/notifications";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { PomodoroSettings } from "@/work/types";
+import { Switch } from "@/components/ui/switch";
+
 interface NotificationSettingsProps {
   settings: PomodoroSettings;
   onUpdate: (settings: Partial<PomodoroSettings>) => void;
 }
 
-export function NotificationSettings({ settings, onUpdate }: NotificationSettingsProps) {
-  const [notificationPermission, setNotificationPermission] = useState<string>("default");
-  const [isRequesting, setIsRequesting] = useState(false);
+export function NotificationSettings({
+  settings,
+  onUpdate,
+}: NotificationSettingsProps) {
+  const [notificationPermission, setNotificationPermission] =
+    useState<string>("default");
 
   useEffect(() => {
     setNotificationPermission(getNotificationPermission());
   }, []);
 
   const handleRequestPermission = async () => {
-    setIsRequesting(true);
     const permission = await requestNotificationPermission();
     setNotificationPermission(permission);
-    setIsRequesting(false);
 
     if (permission === "granted") {
       onUpdate({ notificationsEnabled: true });
@@ -65,7 +73,9 @@ export function NotificationSettings({ settings, onUpdate }: NotificationSetting
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
-                <Label htmlFor="browser-notifications">Browser Notifications</Label>
+                <Label htmlFor="browser-notifications">
+                  Browser Notifications
+                </Label>
               </div>
               <p className="text-sm text-muted-foreground">
                 Show desktop notifications when timer completes
@@ -84,7 +94,8 @@ export function NotificationSettings({ settings, onUpdate }: NotificationSetting
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Notifications are blocked. Please enable them in your browser settings.
+                Notifications are blocked. Please enable them in your browser
+                settings.
               </AlertDescription>
             </Alert>
           )}
@@ -98,17 +109,18 @@ export function NotificationSettings({ settings, onUpdate }: NotificationSetting
             </Alert>
           )}
 
-          {notificationPermission === "granted" && settings.notificationsEnabled && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTestNotification}
-              >
-                Test Notification
-              </Button>
-            </div>
-          )}
+          {notificationPermission === "granted" &&
+            settings.notificationsEnabled && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestNotification}
+                >
+                  Test Notification
+                </Button>
+              </div>
+            )}
         </div>
 
         <div className="border-b" />

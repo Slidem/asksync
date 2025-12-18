@@ -127,11 +127,9 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   },
 
   setTargetDuration: (duration) => {
-    console.trace("Setting target duration:", duration);
     set({ targetDuration: duration, remainingTime: duration });
   },
   setRemainingTime: (time) => {
-    console.trace("Setting remaining time:", time);
     set({ remainingTime: time });
   },
   setIsRunning: (running) => set({ isRunning: running }),

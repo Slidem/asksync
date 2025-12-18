@@ -41,6 +41,7 @@ export const useCreateTag = () => {
         await syncPermissions("tags", tagId, [], data.permissions);
       }
       toast.success("Tag created successfully");
+      return tagId;
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to create tag",

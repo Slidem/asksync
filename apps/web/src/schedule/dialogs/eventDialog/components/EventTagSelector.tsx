@@ -12,6 +12,8 @@ import type { Tag } from "@asksync/shared";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useShallow } from "zustand/react/shallow";
 import { useTags } from "@/tags/hooks/queries";
+import { CreateTagButton } from "@/schedule/dialogs/eventDialog/components/CreateTagButton";
+import { InlineTagCreateForm } from "@/schedule/dialogs/eventDialog/components/InlineTagCreateForm";
 
 export const EventTagSelector: React.FC = () => {
   const { tags: availableTags } = useTags({});
@@ -24,6 +26,7 @@ export const EventTagSelector: React.FC = () => {
 
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [isCreatingTag, setIsCreatingTag] = React.useState(false);
 
   const selectedTags = React.useMemo(() => {
     return availableTags.filter((tag) => selectedTagIds.includes(tag.id));
@@ -62,6 +65,30 @@ export const EventTagSelector: React.FC = () => {
     },
     [],
   );
+
+  const handleStartCreatingTag = React.useCallback(() => {
+    setIsCreatingTag(true);
+  }, []);
+
+  const handleCancelCreatingTag = React.useCallback(() => {
+    setIsCreatingTag(false);
+  }, []);
+
+  const handleTagCreated = React.useCallback(
+    (newTagId: string) => {
+      toggleTagId(newTagId);
+      setIsCreatingTag(false);
+      setSearchQuery("");
+    },
+    [toggleTagId],
+  );
+
+  // Reset creating state when expanded state changes
+  React.useEffect(() => {
+    if (!isExpanded) {
+      setIsCreatingTag(false);
+    }
+  }, [isExpanded]);
 
   return (
     <div className="space-y-3">
@@ -122,10 +149,25 @@ export const EventTagSelector: React.FC = () => {
           {/* Tag List */}
           <div className="max-h-48 overflow-y-auto space-y-2">
             {filteredAvailableTags.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-4">
-                {searchQuery
-                  ? "No tags match your search"
-                  : "No tags available"}
+              <div className="py-2">
+                {searchQuery.trim() ? (
+                  isCreatingTag ? (
+                    <InlineTagCreateForm
+                      initialName={searchQuery.trim()}
+                      onSuccess={handleTagCreated}
+                      onCancel={handleCancelCreatingTag}
+                    />
+                  ) : (
+                    <CreateTagButton
+                      searchQuery={searchQuery.trim()}
+                      onClick={handleStartCreatingTag}
+                    />
+                  )
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center py-4">
+                    No tags available
+                  </div>
+                )}
               </div>
             ) : (
               filteredAvailableTags.map((tag) => (

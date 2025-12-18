@@ -7,6 +7,7 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
+import { FileText, Calendar, Tag, CheckSquare, Shield } from "lucide-react";
 
 import { EventChecklistsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventChecklistsTab";
 import { EventDateTimeTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDateTimeTab";
@@ -79,6 +80,7 @@ export const EventDialog: React.FC = () => {
             <UnderlineTabsTrigger
               value="details"
               className={cn("font-semibold")}
+              icon={<FileText className="h-4 w-4" />}
             >
               Details
             </UnderlineTabsTrigger>
@@ -86,21 +88,28 @@ export const EventDialog: React.FC = () => {
               value="datetime"
               className={cn("font-semibold")}
               hasError={tabsWithErrors.includes(1)}
+              icon={<Calendar className="h-4 w-4" />}
             >
               Date & Time
             </UnderlineTabsTrigger>
-            <UnderlineTabsTrigger value="tags" className={cn("font-semibold")}>
+            <UnderlineTabsTrigger
+              value="tags"
+              className={cn("font-semibold")}
+              icon={<Tag className="h-4 w-4" />}
+            >
               Tags
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="checklists"
               className={cn("font-semibold")}
+              icon={<CheckSquare className="h-4 w-4" />}
             >
               Checklists
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="permissions"
               className={cn("font-semibold")}
+              icon={<Shield className="h-4 w-4" />}
             >
               Permissions
             </UnderlineTabsTrigger>
