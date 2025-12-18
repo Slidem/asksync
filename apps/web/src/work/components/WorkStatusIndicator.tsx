@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type WorkStatus = "working" | "break" | "offline";
+type WorkStatus = "working" | "break" | "paused" | "offline";
 
 interface WorkStatusIndicatorProps {
   status: WorkStatus;
@@ -14,12 +14,14 @@ export function WorkStatusIndicator({
   const colors = {
     working: "bg-green-500",
     break: "bg-blue-500",
+    paused: "bg-yellow-500",
     offline: "bg-gray-400",
   };
 
   const labels = {
     working: "Working",
     break: "On Break",
+    paused: "Paused",
     offline: "Offline",
   };
 

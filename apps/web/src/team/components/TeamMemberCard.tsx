@@ -8,7 +8,7 @@ import { MemberName } from "@/members/components/MemberName";
 import { WorkStatusIndicator } from "@/work/components/WorkStatusIndicator";
 import { formatTime } from "@/work/utils/timeFormatting";
 
-type WorkStatus = "working" | "break" | "offline";
+type WorkStatus = "working" | "break" | "paused" | "offline";
 
 interface TeamMemberCardProps {
   member: {

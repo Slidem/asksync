@@ -53,12 +53,8 @@ export function expandRecurringTimeblocks<T extends Doc<"timeblocks">>(
 
   for (const timeblock of timeblocks) {
     if (!timeblock.recurrenceRule) {
-      // Non-recurring timeblock
-      if (timeblock.startTime >= startDate && timeblock.startTime < endDate) {
-        expanded.push(timeblock);
-      }
+      expanded.push(timeblock);
     } else {
-      // Recurring timeblock
       const instances = generateRecurringInstances(
         timeblock,
         startDate,

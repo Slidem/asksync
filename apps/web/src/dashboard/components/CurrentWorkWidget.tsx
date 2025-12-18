@@ -2,41 +2,48 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { QuickStartButton } from "./QuickStartButton";
+import { api } from "@convex/api";
 import { formatTime } from "@/work/utils/timeFormatting";
+import { useQuery } from "convex/react";
 
-interface CurrentWorkWidgetProps {
-  activeSession?: {
-    sessionType: "work" | "shortBreak" | "longBreak";
-    focusMode: string;
-    currentTaskId?: string;
-    currentQuestionId?: string;
-    expectedEndAt?: number;
-    status: string;
-  } | null;
-}
-
-export function CurrentWorkWidget({ activeSession }: CurrentWorkWidgetProps) {
+export const CurrentWorkWidget = memo(function CurrentWorkWidget() {
+  const activeSession = useQuery(
+    api.workSessions.queries.session.getActiveSession,
+    {},
+  );
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const lastServerTime = useRef<number | null>(null);
 
+  // Sync with server and tick locally
   useEffect(() => {
-    if (!activeSession?.expectedEndAt) {
+    if (activeSession === undefined) return;
+    if (!activeSession || activeSession.status !== "active") {
       setTimeRemaining(null);
+      lastServerTime.current = null;
       return;
     }
 
-    const updateTime = () => {
-      const remaining = Math.max(0, activeSession.expectedEndAt! - Date.now());
-      setTimeRemaining(remaining);
-    };
+    // Re-sync when server value changes significantly (>2s drift or first load)
+    const serverTime = activeSession.remainingTime;
+    const currentTime = timeRemaining ?? 0;
+    const drift = Math.abs(serverTime - currentTime);
 
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    if (lastServerTime.current !== serverTime && (drift > 2000 || timeRemaining === null)) {
+      setTimeRemaining(serverTime);
+      lastServerTime.current = serverTime;
+    }
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) =>
+        prev !== null ? Math.max(0, prev - 1000) : null,
+      );
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeSession?.expectedEndAt]);
+  }, [activeSession, timeRemaining]);
 
   const sessionTypeLabels = {
     work: "Work Session",
@@ -51,6 +58,25 @@ export function CurrentWorkWidget({ activeSession }: CurrentWorkWidgetProps) {
     review: "Review",
     custom: "Custom",
   };
+
+  // Loading state
+  if (activeSession === undefined) {
+    return (
+      <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Timer className="h-5 w-5" />
+            Current Work Session
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center gap-4 py-8">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!activeSession || activeSession.status !== "active") {
     return (
@@ -104,4 +130,4 @@ export function CurrentWorkWidget({ activeSession }: CurrentWorkWidgetProps) {
       </CardContent>
     </Card>
   );
-}
+});

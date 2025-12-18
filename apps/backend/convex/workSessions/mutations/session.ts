@@ -155,7 +155,7 @@ export const pauseSession = mutation({
 
     if (status) {
       await ctx.db.patch(status._id, {
-        status: "offline",
+        status: "paused",
         lastUpdated: now,
       });
     }

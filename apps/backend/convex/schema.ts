@@ -333,6 +333,7 @@ export default defineSchema({
     status: v.union(
       v.literal("working"),
       v.literal("break"),
+      v.literal("paused"),
       v.literal("offline"),
     ),
     currentTaskId: v.optional(v.id("tasks")),

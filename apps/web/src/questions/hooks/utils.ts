@@ -23,15 +23,21 @@ export const getTimeUntilAnswer = (
   if (timeDiff < 0) {
     const overdue = Math.abs(timeDiff);
     const hours = Math.floor(overdue / (1000 * 60 * 60));
+    const minutes = Math.floor(overdue / (1000 * 60));
     const days = Math.floor(hours / 24);
+
     if (days > 0) return { text: `${days}d overdue`, isOverdue: true };
-    return { text: `${hours}h overdue`, isOverdue: true };
+    if (hours > 0) return { text: `${hours}h overdue`, isOverdue: true };
+    return { text: `${minutes}m overdue`, isOverdue: true };
   }
 
   const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+  const minutes = Math.floor(timeDiff / (1000 * 60));
   const days = Math.floor(hours / 24);
+
   if (days > 0) return { text: `${days}d remaining`, isOverdue: false };
-  return { text: `${hours}h remaining`, isOverdue: false };
+  if (hours > 0) return { text: `${hours}h remaining`, isOverdue: false };
+  return { text: `${minutes}m remaining`, isOverdue: false };
 };
 
 export const getInitials = (name: string): string => {

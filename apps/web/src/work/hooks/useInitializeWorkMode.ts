@@ -5,6 +5,10 @@ import { useDeviceId } from "@/lib/device";
 import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "../stores/workModeStore";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "@/work/utils/notifications";
 
 /**
  * Unified initialization hook for Work Mode
@@ -77,6 +81,14 @@ export function useInitializeWorkMode() {
 
     if (pomodoroSettings) {
       setSettings(pomodoroSettings);
+
+      // Auto-request notification permission if enabled in settings
+      if (pomodoroSettings.notificationsEnabled) {
+        const permission = getNotificationPermission();
+        if (permission === "default") {
+          requestNotificationPermission();
+        }
+      }
     }
 
     if (activeSession) {
