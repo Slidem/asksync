@@ -1,6 +1,13 @@
 "use client";
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   UnderlineTabs,
   UnderlineTabsContent,
   UnderlineTabsList,
@@ -14,13 +21,6 @@ import { Id } from "@/../../backend/convex/_generated/dataModel";
 import { LoadingState } from "./LoadingState";
 import { QuestionThreadModal } from "./QuestionThreadModal";
 import { QuestionsPanel } from "./QuestionsPanel";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Target } from "lucide-react";
 import { TasksList } from "./TasksList";
 import { TimeblockInfo } from "./TimeblockInfo";
@@ -63,7 +63,7 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
 
       await updateProgress({
         sessionId: activeSessionId,
-        taskId,
+        currentlyWorkingOnTaskId: taskId,
         timeblockId: timeblockData?.timeblocks[0]?._id,
       });
 
@@ -71,6 +71,17 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
     },
     [activeSessionId, timeblockData?.timeblocks, updateProgress],
   );
+
+  const handleTaskDeselect = useCallback(async () => {
+    if (!activeSessionId) return;
+
+    await updateProgress({
+      sessionId: activeSessionId,
+      currentlyWorkingOnTaskId: null,
+    });
+
+    useWorkModeStore.setState({ currentTaskId: null });
+  }, [activeSessionId, updateProgress]);
 
   const handleTaskComplete = useCallback(
     async (taskId: Id<"tasks">, completed: boolean) => {
@@ -91,18 +102,10 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
             sessionId: activeSessionId,
             uncompletedTaskId: taskId,
           });
-
-          if (taskId === currentTaskId) {
-            useWorkModeStore.setState({ currentTaskId: null });
-            await updateProgress({
-              sessionId: activeSessionId,
-              taskId: undefined,
-            });
-          }
         }
       }
     },
-    [activeSessionId, currentTaskId, updateProgress, updateTask],
+    [activeSessionId, updateProgress, updateTask],
   );
 
   const handleTaskWorkingOn = useCallback(
@@ -126,9 +129,11 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
 
       if (!isCurrentlyWorkingOn) {
         handleTaskSelect(taskId);
+      } else {
+        handleTaskDeselect();
       }
     },
-    [timeblockData, updateTask, handleTaskSelect],
+    [timeblockData, updateTask, handleTaskSelect, handleTaskDeselect],
   );
 
   const handleAddTask = useCallback(

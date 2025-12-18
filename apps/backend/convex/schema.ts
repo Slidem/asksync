@@ -226,7 +226,7 @@ export default defineSchema({
       v.literal("longBreak"),
     ),
     timeblockId: v.optional(v.id("timeblocks")),
-    taskId: v.optional(v.id("tasks")),
+    taskId: v.optional(v.union(v.id("tasks"), v.null())),
     questionId: v.optional(v.id("questions")),
 
     // Timing (all in milliseconds)
@@ -336,7 +336,7 @@ export default defineSchema({
       v.literal("paused"),
       v.literal("offline"),
     ),
-    currentTaskId: v.optional(v.id("tasks")),
+    currentTaskId: v.optional(v.union(v.id("tasks"), v.null())),
     currentQuestionId: v.optional(v.id("questions")),
     currentTimeblockId: v.optional(v.id("timeblocks")),
 

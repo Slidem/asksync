@@ -7,7 +7,7 @@ import { clearOtherWorkingTasks } from "../../tasks/helpers";
 export const updateSessionProgress = mutation({
   args: {
     sessionId: v.id("workSessions"),
-    taskId: v.optional(v.id("tasks")),
+    currentlyWorkingOnTaskId: v.optional(v.union(v.id("tasks"), v.null())),
     questionId: v.optional(v.id("questions")),
     completedTaskId: v.optional(v.id("tasks")),
     uncompletedTaskId: v.optional(v.id("tasks")),
@@ -32,18 +32,24 @@ export const updateSessionProgress = mutation({
     }
 
     // Update current task
-    if (args.taskId !== undefined) {
-      updates.taskId = args.taskId;
+    if (args.currentlyWorkingOnTaskId !== undefined) {
+      updates.taskId = args.currentlyWorkingOnTaskId;
 
       // If setting a task, also mark it as currently working on
-      if (args.taskId) {
-        const task = await ctx.db.get(args.taskId);
+      if (args.currentlyWorkingOnTaskId) {
+        const task = await ctx.db.get(args.currentlyWorkingOnTaskId);
         if (task && task.orgId === user.orgId) {
           // Clear other tasks' currentlyWorkingOn flag, except this one
-          await clearOtherWorkingTasks(ctx, task.timeblockId, args.taskId);
+          await clearOtherWorkingTasks(
+            ctx,
+            task.timeblockId,
+            args.currentlyWorkingOnTaskId,
+          );
 
           // Set this task as currently working on
-          await ctx.db.patch(args.taskId, { currentlyWorkingOn: true });
+          await ctx.db.patch(args.currentlyWorkingOnTaskId, {
+            currentlyWorkingOn: true,
+          });
         }
       }
     }
@@ -98,9 +104,10 @@ export const updateSessionProgress = mutation({
 
     // Update work status if changing current task/question/timeblock
     if (
-      args.taskId !== undefined ||
+      args.currentlyWorkingOnTaskId !== undefined ||
       args.questionId !== undefined ||
-      args.timeblockId !== undefined
+      args.timeblockId !== undefined ||
+      args.completedTaskId !== undefined
     ) {
       const status = await ctx.db
         .query("userWorkStatus")
@@ -113,8 +120,11 @@ export const updateSessionProgress = mutation({
         const statusUpdates: any = {
           lastUpdated: Date.now(),
         };
-        if (args.taskId !== undefined) {
-          statusUpdates.currentTaskId = args.taskId;
+        if (args.currentlyWorkingOnTaskId !== undefined) {
+          statusUpdates.currentTaskId = args.currentlyWorkingOnTaskId;
+        }
+        if (args.completedTaskId === status.currentTaskId) {
+          statusUpdates.currentTaskId = null;
         }
         if (args.questionId !== undefined) {
           statusUpdates.currentQuestionId = args.questionId;

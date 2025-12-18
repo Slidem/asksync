@@ -17,10 +17,10 @@ interface TeamMemberCardProps {
     shareDetails: boolean;
     sessionType?: "work" | "shortBreak" | "longBreak";
     focusMode?: string;
-    timeRemaining?: number;
     taskTitle?: string;
     questionTitle?: string;
     timeblockTitle?: string;
+    timeRemaining?: number;
   };
 }
 
@@ -71,8 +71,7 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span className="text-xs">
-                      {formatTime(Math.floor(member.timeRemaining / 1000))}{" "}
-                      remaining
+                      {formatTime(Math.floor(member.timeRemaining))} remaining
                     </span>
                   </div>
                 )}

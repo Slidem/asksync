@@ -1,11 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { EditableTaskItem } from "./EditableTaskItem";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { TasksListProps } from "./types";
 
 export function TasksList({
