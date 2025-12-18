@@ -4,7 +4,10 @@ import {
   getPermittedResourcesForType,
 } from "../permissions/common";
 
-import { expandRecurringTimeblocks } from "../timeblocks/helpers";
+import {
+  expandRecurringTimeblocks,
+  getTimeblocksForUser,
+} from "../timeblocks/helpers";
 import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
 import { v } from "convex/values";
@@ -243,13 +246,15 @@ export const getTagsWithAvailableTimeblocks = query({
       return accessibleTagIds.includes(tag._id);
     });
 
-    // Get user's timeblocks
-    const timeblocks = await ctx.db
-      .query("timeblocks")
-      .withIndex("by_org_and_creator", (qb) =>
-        qb.eq("orgId", orgId).eq("createdBy", args.userId),
-      )
-      .collect();
+    // Get user's timeblocks using utility
+    const timeblocks = await getTimeblocksForUser({
+      ctx,
+      orgId,
+      isInAuthContext: false, // No permission filtering for availability
+      forUserId: args.userId,
+      currentUser: user,
+      range: { start: args.startDate, end: args.endDate },
+    });
 
     // Expand recurring timeblocks
     const expandedTimeblocks = expandRecurringTimeblocks(
@@ -258,8 +263,10 @@ export const getTagsWithAvailableTimeblocks = query({
       args.endDate,
     );
 
+    // Filter to only future or in-progress timeblocks
+    const currentTime = Date.now();
     const filteredTimeblocks = expandedTimeblocks.filter(
-      (tb) => tb.startTime >= args.startDate && tb.startTime < args.endDate,
+      (tb) => tb.startTime > currentTime || tb.endTime > currentTime,
     );
 
     // Count timeblocks per tag and find fastest answer time
@@ -267,8 +274,6 @@ export const getTagsWithAvailableTimeblocks = query({
       string,
       { count: number; fastestAnswerMinutes: number }
     >();
-
-    const currentDateMinutes = Math.floor(Date.now() / 60000);
 
     for (const timeblock of filteredTimeblocks) {
       for (const tagId of timeblock.tagIds) {
@@ -288,12 +293,27 @@ export const getTagsWithAvailableTimeblocks = query({
             tag.responseTimeMinutes,
           );
         } else if (tag.answerMode === "scheduled") {
-          const responseTime =
-            Math.floor(timeblock.startTime / 60000) - currentDateMinutes;
+          // Handle in-progress timeblocks
+          let responseTimeMinutes: number;
+
+          if (
+            timeblock.startTime <= currentTime &&
+            timeblock.endTime > currentTime
+          ) {
+            // In-progress: answer when timeblock ends
+            responseTimeMinutes = Math.floor(
+              (timeblock.endTime - currentTime) / (60 * 1000),
+            );
+          } else {
+            // Upcoming: answer when timeblock starts
+            responseTimeMinutes = Math.floor(
+              (timeblock.startTime - currentTime) / (60 * 1000),
+            );
+          }
 
           stats.fastestAnswerMinutes = Math.min(
             stats.fastestAnswerMinutes,
-            responseTime,
+            responseTimeMinutes,
           );
         }
 

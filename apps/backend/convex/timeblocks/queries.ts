@@ -55,7 +55,6 @@ export const getAvailableTimeblocks = query({
   handler: async (ctx, args) => {
     const user = await getUserWithGroups(ctx);
     const { orgId } = user;
-
     const timeblocks = await getTimeblocksForUser({
       ctx,
       orgId,
@@ -63,6 +62,7 @@ export const getAvailableTimeblocks = query({
       currentUser: user,
       range: { start: args.startDate, end: args.endDate },
     });
+
     const filtered = filterByAnyTag(timeblocks, args.tagIds);
     return sortByStartTime(filtered);
   },

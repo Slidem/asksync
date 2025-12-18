@@ -1,4 +1,4 @@
-import { Id } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 import { hasPermission } from "../permissions/common";
 import {
   expandRecurringTimeblocks,
@@ -70,20 +70,33 @@ async function findNextAvailableTimeblock(
 ): Promise<number | null> {
   const lookAheadDays = 30;
   const endDate = currentTime + lookAheadDays * 24 * 60 * 60 * 1000;
-  const startOfDay = new Date(currentTime);
-  startOfDay.setHours(0, 0, 0, 0);
-
   let earliestTimeblock: number | null = null;
 
   for (const assigneeId of assigneeIds) {
-    const timeBlocks = await getTimeblocksForUser({
+    const timeBlocks: Doc<"timeblocks">[] = [];
+
+    const currentAvailableTimeblocks = await getTimeblocksForUser({
       ctx,
       orgId,
       isInAuthContext: false,
       forUserId: assigneeId,
       currentUser: ctx.user,
-      range: { start: startOfDay.getTime(), end: endDate },
+      currentDate: currentTime,
     });
+
+    if (currentAvailableTimeblocks.length > 0) {
+      timeBlocks.push(...currentAvailableTimeblocks);
+    } else {
+      const futureTimeblocks = await getTimeblocksForUser({
+        ctx,
+        orgId,
+        isInAuthContext: false,
+        forUserId: assigneeId,
+        currentUser: ctx.user,
+        range: { start: currentTime, end: endDate },
+      });
+      timeBlocks.push(...futureTimeblocks);
+    }
 
     const timeBlocksWithTag = timeBlocks.filter((tb) =>
       tb.tagIds.includes(tagId),
@@ -91,7 +104,7 @@ async function findNextAvailableTimeblock(
 
     const expandedTimeblocks = await expandRecurringTimeblocks(
       timeBlocksWithTag,
-      startOfDay.getTime(),
+      currentTime,
       endDate,
     );
 
