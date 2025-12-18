@@ -13,6 +13,7 @@ import {
   UserSettings,
 } from "@asksync/shared";
 
+import { CalendarEvent } from "@/schedule";
 import { FunctionReturnType } from "convex/server";
 import { api } from "@convex/api";
 
@@ -46,6 +47,18 @@ export function docToTimeblock(doc: TimeblockType): Timeblock {
     createdAt: _creationTime,
     recurrenceRule: recurrenceRule as RecurrenceRule,
     exceptionDates: exceptionDates || [],
+    ...rest,
+  };
+}
+
+export function docToCalendarEvent(doc: TimeblockType): CalendarEvent {
+  const { _id, recurrenceRule, startTime, endTime, color, ...rest } = doc;
+  return {
+    id: _id,
+    recurrenceRule: recurrenceRule as RecurrenceRule,
+    start: new Date(startTime),
+    end: new Date(endTime),
+    color: color as CalendarEvent["color"],
     ...rest,
   };
 }

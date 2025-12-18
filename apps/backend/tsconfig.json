@@ -7,8 +7,11 @@
     "skipLibCheck": true,
     "isolatedModules": false,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "paths": {
+      "@/*": ["./convex/*"]
+    }
   },
-  "include": ["convex/**/*"],
+  "include": ["convex/**/*", "tests/**/*", "vitest.config.ts"],
   "exclude": ["convex/_generated/**/*"]
 }

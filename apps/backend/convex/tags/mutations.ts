@@ -46,7 +46,6 @@ export const createTag = mutation({
 
     // Grant manage permission to creator
     await ctx.db.insert("permissions", {
-      all: false,
       userId,
       orgId,
       resourceType: "tags",

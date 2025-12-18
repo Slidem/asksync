@@ -1,11 +1,15 @@
 import { Id } from "../_generated/dataModel";
 import { hasPermission } from "../permissions/common";
-import { expandRecurringTimeblocks } from "../timeblocks/helpers";
+import {
+  expandRecurringTimeblocks,
+  getTimeblocksForUser,
+} from "../timeblocks/helpers";
 
 // Helper function to calculate expected answer time from tags
 export async function calculateExpectedAnswerTime(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any,
+  orgId: string,
   tagIds: string[],
   assigneeIds: string[],
   currentTime: number = Date.now(),
@@ -29,6 +33,7 @@ export async function calculateExpectedAnswerTime(
       // Scheduled: find next available timeblock from any assignee
       const minutesUntilNextTimeblock = await findNextAvailableTimeblock(
         ctx,
+        orgId,
         tag._id,
         assigneeIds,
         currentTime,
@@ -58,48 +63,51 @@ export async function calculateExpectedAnswerTime(
 async function findNextAvailableTimeblock(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any,
+  orgId: string,
   tagId: string,
   assigneeIds: string[],
   currentTime: number,
 ): Promise<number | null> {
   const lookAheadDays = 30;
   const endDate = currentTime + lookAheadDays * 24 * 60 * 60 * 1000;
+  const startOfDay = new Date(currentTime);
+  startOfDay.setHours(0, 0, 0, 0);
 
   let earliestTimeblock: number | null = null;
 
-  // Check timeblocks for each assignee
   for (const assigneeId of assigneeIds) {
-    // Query timeblocks created by this assignee
-    const timeblocks = await ctx.db
-      .query("timeblocks")
-      .withIndex("by_org_and_creator")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((q: any) => q.eq(q.field("createdBy"), assigneeId))
-      .collect();
+    const timeBlocks = await getTimeblocksForUser({
+      ctx,
+      orgId,
+      isInAuthContext: false,
+      forUserId: assigneeId,
+      currentUser: ctx.user,
+      range: { start: startOfDay.getTime(), end: endDate },
+    });
 
-    // Filter timeblocks that handle this tag
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const relevantTimeblocks = timeblocks.filter((tb: any) =>
+    const timeBlocksWithTag = timeBlocks.filter((tb) =>
       tb.tagIds.includes(tagId),
     );
 
-    if (relevantTimeblocks.length === 0) continue;
-
-    // Expand recurring timeblocks
-    const expandedTimeblocks = expandRecurringTimeblocks(
-      relevantTimeblocks,
-      currentTime,
+    const expandedTimeblocks = await expandRecurringTimeblocks(
+      timeBlocksWithTag,
+      startOfDay.getTime(),
       endDate,
     );
 
     // Find earliest timeblock after current time
     const nextTimeblock = expandedTimeblocks
-      .filter((tb) => tb.startTime > currentTime)
+      .filter((tb) => tb.startTime > currentTime || tb.endTime > currentTime)
       .sort((a, b) => a.startTime - b.startTime)[0];
 
     if (nextTimeblock) {
-      const minutesUntilTimeblock =
+      let minutesUntilTimeblock =
         (nextTimeblock.startTime - currentTime) / (60 * 1000);
+
+      if (nextTimeblock.startTime <= currentTime) {
+        minutesUntilTimeblock =
+          (nextTimeblock.endTime - currentTime) / (60 * 1000);
+      }
 
       if (
         earliestTimeblock === null ||

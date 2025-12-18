@@ -35,6 +35,7 @@ async function recalculateSingleQuestion(
   // Recalculate expected answer time
   const newExpectedAnswerTime = await calculateExpectedAnswerTime(
     ctx,
+    question.orgId,
     question.tagIds,
     question.assigneeIds,
     now,

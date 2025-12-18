@@ -17,12 +17,12 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { Question } from "@asksync/shared";
+import { TiptapViewer } from "@/components/editor/TiptapViewer";
 import { getTimeUntilAnswer } from "@/questions/hooks/utils";
 import { useDeleteQuestion } from "@/questions/hooks/mutations";
 import { useRouter } from "next/navigation";
-import { MemberAvatar } from "@/members/components/MemberAvatar";
-import { TiptapViewer } from "@/components/editor/TiptapViewer";
 
 interface QuestionCardProps {
   question: Question;
@@ -37,10 +37,8 @@ export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const deleted = await deleteQuestion(question);
-    if (deleted) {
-      router.refresh();
-    }
+    await deleteQuestion(question);
+    router.refresh();
   };
 
   const getStatusColor = (status: string) => {

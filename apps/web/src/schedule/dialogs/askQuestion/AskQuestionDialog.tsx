@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useCallback, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { QuestionFormSection } from "./components/QuestionFormSection";
@@ -18,6 +17,8 @@ import { TimeblockInfoDisplay } from "./components/TimeblockInfoDisplay";
 import { api } from "@convex/api";
 import { toast } from "sonner";
 import { useAskQuestionDialogStore } from "./askQuestionDialogStore";
+import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
+import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 
 export const AskQuestionDialog: React.FC = () => {
@@ -42,11 +43,9 @@ export const AskQuestionDialog: React.FC = () => {
   );
 
   // Fetch timeblock data to display event info
-  const timeblocks = useQuery(api.timeblocks.queries.listTimeblocks, {
-    userId: assigneeUserId || undefined,
-  });
+  const timeblocks = useEventsForCurrentScheduleView();
 
-  const currentTimeblock = timeblocks?.find((tb) => tb._id === timeblockId);
+  const currentTimeblock = timeblocks?.find((tb) => tb.id === timeblockId);
 
   const handleSubmit = useCallback(async () => {
     if (!assigneeUserId || tagIds.length === 0) {
@@ -106,19 +105,7 @@ export const AskQuestionDialog: React.FC = () => {
   );
 
   // Convert timeblock to CalendarEvent for display
-  const event = currentTimeblock
-    ? {
-        id: currentTimeblock._id,
-        title: currentTimeblock.title,
-        description: currentTimeblock.description,
-        start: new Date(currentTimeblock.startTime),
-        end: new Date(currentTimeblock.endTime),
-        allDay: false,
-        location: currentTimeblock.location,
-        tagIds: currentTimeblock.tagIds,
-        permissions: [],
-      }
-    : null;
+  const event = currentTimeblock ? currentTimeblock : null;
 
   // Validation: Check if timeblock has no tags
   const hasNoTags = tagIds.length === 0;

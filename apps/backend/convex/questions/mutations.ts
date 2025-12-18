@@ -7,6 +7,7 @@ import {
 } from "./helpers";
 
 import { Id } from "../_generated/dataModel";
+import { getUserWithGroups } from "../auth/user";
 import { mutation } from "../_generated/server";
 
 // Create a new question with thread
@@ -20,15 +21,7 @@ export const createQuestion = mutation({
     participants: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     // Validate inputs
     if (args.tagIds.length === 0) {
@@ -43,7 +36,7 @@ export const createQuestion = mutation({
     const hasTagPermissions = await validateTagPermissions(
       ctx,
       orgId,
-      identity.subject,
+      userId,
       args.tagIds as Id<"tags">[],
     );
 
@@ -54,13 +47,14 @@ export const createQuestion = mutation({
     // Calculate expected answer time
     const expectedAnswerTime = await calculateExpectedAnswerTime(
       ctx,
+      orgId,
       args.tagIds,
       args.assigneeIds,
     );
 
     // Build participants list (creator + assignees + additional participants)
     const allParticipants = new Set([
-      identity.subject,
+      userId,
       ...args.assigneeIds,
       ...(args.participants || []),
     ]);
@@ -79,7 +73,7 @@ export const createQuestion = mutation({
       title: args.title,
       content: args.content,
       contentPlaintext: args.contentPlaintext,
-      createdBy: identity.subject,
+      createdBy: userId,
       participantIds: Array.from(allParticipants),
       assigneeIds: args.assigneeIds,
       orgId,
@@ -88,9 +82,7 @@ export const createQuestion = mutation({
       acceptedAnswers: [],
       expectedAnswerTime,
       isOverdue: false,
-      unreadBy: Array.from(allParticipants).filter(
-        (id) => id !== identity.subject,
-      ),
+      unreadBy: Array.from(allParticipants).filter((id) => id !== userId),
       threadId: threadId,
       messageCount: 0,
       updatedAt: Date.now(),
@@ -253,15 +245,7 @@ export const markMessageAsAccepted = mutation({
 export const resolveQuestion = mutation({
   args: { questionId: v.id("questions") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const question = await ctx.db.get(args.questionId);
     if (!question || question.orgId !== orgId) {
@@ -269,7 +253,7 @@ export const resolveQuestion = mutation({
     }
 
     // Check if user is an assignee
-    if (!question.assigneeIds.includes(identity.subject)) {
+    if (!question.assigneeIds.includes(userId)) {
       throw new ConvexError("Only assignees can resolve questions");
     }
 
@@ -319,15 +303,7 @@ export const markQuestionAsRead = mutation({
 export const deleteQuestion = mutation({
   args: { questionId: v.id("questions") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const question = await ctx.db.get(args.questionId);
     if (!question || question.orgId !== orgId) {
@@ -335,7 +311,7 @@ export const deleteQuestion = mutation({
     }
 
     // Only creator can delete
-    if (question.createdBy !== identity.subject) {
+    if (question.createdBy !== userId) {
       throw new ConvexError("Only the question creator can delete questions");
     }
 

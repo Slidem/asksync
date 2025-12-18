@@ -3,11 +3,11 @@ import { api } from "@convex/api";
 import { useQuery } from "convex/react";
 
 export const useTimeblockQuestions = (
-  timeblockId?: Id<"timeblocks"> | null,
+  timeblockIds?: Id<"timeblocks">[],
 ) => {
   const questions = useQuery(
     api.workSessions.queries.questions.getTimeblockQuestions,
-    timeblockId ? { timeblockId } : {},
+    timeblockIds && timeblockIds.length > 0 ? { timeblockIds } : {},
   );
 
   return {

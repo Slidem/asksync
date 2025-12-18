@@ -1,7 +1,13 @@
-import type { CalendarEvent, EventColor, TimeOption } from "@/schedule/types";
+import {
+  CalendarEvent,
+  EventColor,
+  RecurrenceRule,
+  Timeblock,
+} from "@asksync/shared";
 import { END_HOUR, START_HOUR } from "@/schedule/constants";
-import { RecurrenceRule, Timeblock } from "@asksync/shared";
 import { format, isSameDay } from "date-fns";
+
+import type { TimeOption } from "@/schedule/types";
 
 /**
  * Get CSS classes for event colors
@@ -413,7 +419,8 @@ export const getUTCMidnight = (date: Date): number => {
   const utcDate = new Date(date);
   utcDate.setUTCHours(0, 0, 0, 0);
   return utcDate.getTime();
-}; /**
+};
+/**
  * Common event handler for clicking on calendar events
  * Stops propagation and opens the event dialog
  */

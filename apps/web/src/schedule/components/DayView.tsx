@@ -6,7 +6,6 @@ import {
   useOpenCreateEventDialog,
   useSelectEventInDialog,
 } from "@/schedule/dialogs/eventDialog/eventDialogService";
-import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 import { CurrentTimeIndicator } from "@/schedule/components/CurrentTimeIndicator";
 import { EventItem } from "@/schedule/components/EventItem";
@@ -21,6 +20,7 @@ import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurre
 import { useFilteredDayEvents } from "@/schedule/hooks/filteredEvents";
 import { useGhostEventHandlers } from "../hooks/ghostEvent";
 import { useHourGrid } from "@/schedule/hooks/timeUtils";
+import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 /**
  * Day view calendar component

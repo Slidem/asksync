@@ -5,13 +5,13 @@ import { toMessageId, toQuestionId, toThreadId } from "@/lib/convexTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { MessageItem } from "./MessageItem";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { api } from "@convex/api";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { useState } from "react";
-import { confirmDialog } from "@/components/shared/ConfirmDialog";
 
 interface Message {
   id: string;
@@ -43,9 +43,9 @@ export function DiscussionThread({
   const [newMessagePlaintext, setNewMessagePlaintext] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  const sendMessage = useMutation(api.messages.sendMessage);
-  const editMessage = useMutation(api.messages.editMessage);
-  const deleteMessage = useMutation(api.messages.deleteMessage);
+  const sendMessage = useMutation(api.messages.mutations.sendMessage);
+  const editMessage = useMutation(api.messages.mutations.editMessage);
+  const deleteMessage = useMutation(api.messages.mutations.deleteMessage);
   const markAsAccepted = useMutation(
     api.questions.mutations.markMessageAsAccepted,
   );
@@ -72,7 +72,11 @@ export function DiscussionThread({
     }
   };
 
-  const handleEditMessage = async (messageId: string, content: string, contentPlaintext: string) => {
+  const handleEditMessage = async (
+    messageId: string,
+    content: string,
+    contentPlaintext: string,
+  ) => {
     try {
       await editMessage({
         messageId: toMessageId(messageId),

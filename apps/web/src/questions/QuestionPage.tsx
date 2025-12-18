@@ -32,7 +32,7 @@ export function QuestionPage({
   const { deleteQuestion } = useDeleteQuestion();
 
   const rawMessages = useQuery(
-    api.messages.getMessagesByThread,
+    api.messages.queries.getMessagesByThread,
     question?.threadId ? { threadId: toThreadId(question.threadId) } : "skip",
   );
   const messages = rawMessages?.map(docToMessage);
@@ -64,14 +64,12 @@ export function QuestionPage({
 
   const handleDeleteQuestion = async () => {
     if (!question) return;
-    const deleted = await deleteQuestion({
+    await deleteQuestion({
       ...question,
       messageCount: 0,
       hasUnread: false,
     });
-    if (deleted) {
-      router.push("/questions");
-    }
+    router.push("/questions");
   };
 
   const containerClass =

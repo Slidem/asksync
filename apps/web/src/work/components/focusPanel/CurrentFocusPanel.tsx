@@ -6,7 +6,7 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "./EmptyState";
@@ -14,6 +14,13 @@ import { Id } from "@/../../backend/convex/_generated/dataModel";
 import { LoadingState } from "./LoadingState";
 import { QuestionThreadModal } from "./QuestionThreadModal";
 import { QuestionsPanel } from "./QuestionsPanel";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Target } from "lucide-react";
 import { TasksList } from "./TasksList";
 import { TimeblockInfo } from "./TimeblockInfo";
@@ -25,7 +32,11 @@ import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
   const { timeblockData, isLoading } = useCurrentTimeblock();
-  const { questions } = useTimeblockQuestions(timeblockData?.timeblock._id);
+  const timeblockIds = useMemo(
+    () => timeblockData?.timeblocks.map((tb) => tb._id) ?? [],
+    [timeblockData?.timeblocks],
+  );
+  const { questions } = useTimeblockQuestions(timeblockIds);
   const activeSessionId = useWorkModeStore((state) => state.activeSessionId);
   const currentTaskId = useWorkModeStore((state) => state.currentTaskId);
   const currentQuestionId = useWorkModeStore(
@@ -36,6 +47,8 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     null,
   );
+  const [selectedTimeblockForTask, setSelectedTimeblockForTask] =
+    useState<Id<"timeblocks"> | null>(null);
 
   const updateProgress = useMutation(
     api.workSessions.mutations.progress.updateSessionProgress,
@@ -51,12 +64,12 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
       await updateProgress({
         sessionId: activeSessionId,
         taskId,
-        timeblockId: timeblockData?.timeblock._id,
+        timeblockId: timeblockData?.timeblocks[0]?._id,
       });
 
       useWorkModeStore.setState({ currentTaskId: taskId });
     },
-    [activeSessionId, timeblockData?.timeblock._id, updateProgress],
+    [activeSessionId, timeblockData?.timeblocks, updateProgress],
   );
 
   const handleTaskComplete = useCallback(
@@ -123,15 +136,21 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
       e.preventDefault();
       if (!newTaskTitle.trim() || !timeblockData) return;
 
+      const timeblocks = timeblockData.timeblocks;
+      const targetTimeblockId =
+        timeblocks.length === 1
+          ? timeblocks[0]._id
+          : (selectedTimeblockForTask ?? timeblocks[0]._id);
+
       await createTask({
-        timeblockId: timeblockData.timeblock._id,
+        timeblockId: targetTimeblockId,
         title: newTaskTitle.trim(),
       });
 
       setNewTaskTitle("");
       setIsAddingTask(false);
     },
-    [newTaskTitle, timeblockData, createTask],
+    [newTaskTitle, timeblockData, selectedTimeblockForTask, createTask],
   );
 
   const handleDeleteTask = useCallback(
@@ -169,13 +188,12 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
     return <LoadingState />;
   }
 
-  if (!timeblockData) {
+  if (!timeblockData || timeblockData.timeblocks.length === 0) {
     return <EmptyState />;
   }
 
-  const { timeblock, tasks } = timeblockData;
+  const { timeblocks, tasks } = timeblockData;
   const completedCount = tasks.filter((t) => t.completed).length;
-  const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
   const incompleteTasks = tasks.filter((t) => !t.completed);
   const completedTasks = tasks.filter((t) => t.completed);
 
@@ -192,12 +210,30 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
           </Badge>
         </div>
 
-        <TimeblockInfo
-          timeblock={timeblock}
-          tasks={tasks}
-          completedCount={completedCount}
-          progress={progress}
-        />
+        <div className="space-y-3">
+          {timeblocks.map((timeblock) => (
+            <TimeblockInfo
+              key={timeblock._id}
+              timeblock={timeblock}
+              tasks={tasks.filter((t) => t.timeblockId === timeblock._id)}
+              completedCount={
+                tasks.filter(
+                  (t) => t.timeblockId === timeblock._id && t.completed,
+                ).length
+              }
+              progress={
+                tasks.filter((t) => t.timeblockId === timeblock._id).length > 0
+                  ? (tasks.filter(
+                      (t) => t.timeblockId === timeblock._id && t.completed,
+                    ).length /
+                      tasks.filter((t) => t.timeblockId === timeblock._id)
+                        .length) *
+                    100
+                  : 0
+              }
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 p-6 flex flex-col overflow-hidden">
@@ -215,6 +251,30 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
             value="tasks"
             className="flex-1 flex flex-col mt-0"
           >
+            {timeblocks.length > 1 && (
+              <div className="mb-4">
+                <span className="text-xs text-muted-foreground mb-1.5 block">
+                  Add tasks to
+                </span>
+                <Select
+                  value={selectedTimeblockForTask ?? timeblocks[0]._id}
+                  onValueChange={(value) =>
+                    setSelectedTimeblockForTask(value as Id<"timeblocks">)
+                  }
+                >
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeblocks.map((tb) => (
+                      <SelectItem key={tb._id} value={tb._id}>
+                        {tb.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <TasksList
               tasks={tasks}
               incompleteTasks={incompleteTasks}

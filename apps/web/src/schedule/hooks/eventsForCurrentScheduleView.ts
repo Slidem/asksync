@@ -6,10 +6,8 @@ import {
   startOfWeek,
 } from "date-fns";
 
-import { Timeblock } from "@asksync/shared";
 import { api } from "@convex/api";
-import { docToTimeblock } from "@/lib/convexTypes";
-import { expandRecurringEvents } from "@/schedule/utils";
+import { docToCalendarEvent } from "@/lib/convexTypes";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
@@ -66,36 +64,35 @@ const getDefaultViewRange = (currentDate: Date) => {
   };
 };
 
-export const useEventsForCurrentScheduleView = () => {
+export const useDateRangeForCurrentCalendarView = () => {
   const view = useCalendarViewStore((state) => state.calendarView);
   const currentDate = useCalendarViewStore((state) => state.currentDate);
+  return useMemo(() => {
+    switch (view) {
+      case "month":
+        return getMonthViewRange(currentDate);
+      case "week":
+        return getWeekViewRange(currentDate);
+      case "day":
+        return getDayViewRange(currentDate);
+      case "agenda":
+        return getAgendaViewRange(currentDate);
+      default:
+        return getDefaultViewRange(currentDate);
+    }
+  }, [currentDate, view]);
+};
+
+export const useEventsForCurrentScheduleView = () => {
+  const range = useDateRangeForCurrentCalendarView();
   const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);
   const rawTimeblocks = useQuery(api.timeblocks.queries.listTimeblocks, {
     userId: selectedUserId ?? undefined,
+    range: {
+      start: range.start.getTime(),
+      end: range.end.getTime(),
+    },
   });
-  const timeblocks: Timeblock[] = useMemo(
-    () => (rawTimeblocks || []).map(docToTimeblock),
-    [rawTimeblocks],
-  );
 
-  return useMemo(() => {
-    const getViewRange = () => {
-      switch (view) {
-        case "month":
-          return getMonthViewRange(currentDate);
-        case "week":
-          return getWeekViewRange(currentDate);
-        case "day":
-          return getDayViewRange(currentDate);
-        case "agenda":
-          return getAgendaViewRange(currentDate);
-        default:
-          return getDefaultViewRange(currentDate);
-      }
-    };
-
-    const { start, end } = getViewRange();
-
-    return expandRecurringEvents(timeblocks, start, end);
-  }, [currentDate, view, timeblocks]);
+  return (rawTimeblocks || []).map(docToCalendarEvent);
 };

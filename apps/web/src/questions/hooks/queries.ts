@@ -1,4 +1,6 @@
 import { api } from "@convex/api";
+import { docToCalendarEvent } from "@/lib/convexTypes";
+import { useMemo } from "react";
 import { useOneWeekDateRange } from "@/lib/time";
 import { useQuery } from "convex/react";
 
@@ -13,15 +15,28 @@ export function useAvailableTimeblocksForUserAndTags({
 }: UseAvailableTimeblocksParams) {
   const { startDate, endDate } = useOneWeekDateRange();
 
-  const timeblocks = useQuery(api.timeblocks.queries.getAvailableTimeblocks, {
-    userId,
-    tagIds,
-    startDate,
-    endDate,
-  });
+  const rawTimeblocks = useQuery(
+    api.timeblocks.queries.getAvailableTimeblocks,
+    {
+      userId,
+      tagIds,
+      startDate,
+      endDate,
+    },
+  );
 
-  return {
-    timeblocks,
-    isLoading: timeblocks === undefined,
-  };
+  return useMemo(() => {
+    const calendarEvents = (rawTimeblocks || []).map((tb) =>
+      docToCalendarEvent({ ...tb, permissions: [] }),
+    );
+
+    const currentDate = new Date();
+
+    return {
+      timeblocks: calendarEvents.filter(
+        (tb) => tb.end.getTime() > currentDate.getTime(),
+      ),
+      isLoading: rawTimeblocks === undefined,
+    };
+  }, [rawTimeblocks]);
 }

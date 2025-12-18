@@ -1,54 +1,47 @@
-import { Doc, Id } from "../_generated/dataModel";
+import { QueryCtx as BaseQueryCtx, query } from "../_generated/server";
 /* eslint-disable import/order */
-import {
-  decorateResourceWithGrants,
-  getPermittedResourcesForType,
-} from "../permissions/common";
+import { Doc, Id } from "../_generated/dataModel";
 import {
   expandRecurringTimeblocks,
   filterByAnyTag,
+  getTimeblocksForUser,
   sortByStartTime,
 } from "./helpers";
 
-import { QueryCtx as BaseQueryCtx } from "../_generated/server";
 import { getUserWithGroups } from "../auth/user";
-import { query } from "../_generated/server";
 import { v } from "convex/values";
 
 export const listTimeblocks = query({
   args: {
     userId: v.optional(v.string()),
+    range: v.object({ start: v.number(), end: v.number() }),
   },
   handler: async (ctx, args) => {
     const user = await getUserWithGroups(ctx);
     const { orgId, id: authedUserId } = user;
     const userId = args.userId || authedUserId;
 
-    const timeBlocks = await ctx.db
-      .query("timeblocks")
-      .withIndex("by_org_and_creator", (q) =>
-        q.eq("orgId", orgId).eq("createdBy", userId),
-      )
-      .collect();
-
-    const filteredTimeblocks = await filterPermittedResources(timeBlocks, ctx);
-
-    const decorated = await decorateResourceWithGrants({
+    const timeblocks = await getTimeblocksForUser({
       ctx,
+      orgId,
+      forUserId: userId,
       currentUser: user,
-      resourceType: "timeblocks",
-      resources: filteredTimeblocks,
+      range: args.range,
     });
 
     // Add task counts to each timeblock
     const withTaskCounts = await Promise.all(
-      decorated.map(async (tb) => {
+      timeblocks.map(async (tb) => {
         const taskCount = await getTaskCount(ctx, tb._id, tb, authedUserId);
         return { ...tb, taskCount };
       }),
     );
 
-    return withTaskCounts;
+    return expandRecurringTimeblocks(
+      withTaskCounts,
+      args.range.start,
+      args.range.end,
+    );
   },
 });
 
@@ -63,46 +56,17 @@ export const getAvailableTimeblocks = query({
     const user = await getUserWithGroups(ctx);
     const { orgId } = user;
 
-    // Fetch user's timeblocks
-    const timeblocks = await ctx.db
-      .query("timeblocks")
-      .withIndex("by_org_and_creator", (q) =>
-        q.eq("orgId", orgId).eq("createdBy", args.userId),
-      )
-      .collect();
-
-    // Filter by permissions
-    const permittedTimeblocks = await filterPermittedResources(timeblocks, ctx);
-
-    // Expand recurring timeblocks
-    const expanded = expandRecurringTimeblocks(
-      permittedTimeblocks,
-      args.startDate,
-      args.endDate,
-    );
-
-    // Filter by tags (ANY match)
-    const filtered = filterByAnyTag(expanded, args.tagIds);
-
-    // Sort by earliest availability
-    const sorted = sortByStartTime(filtered);
-
-    return sorted;
+    const timeblocks = await getTimeblocksForUser({
+      ctx,
+      orgId,
+      forUserId: args.userId,
+      currentUser: user,
+      range: { start: args.startDate, end: args.endDate },
+    });
+    const filtered = filterByAnyTag(timeblocks, args.tagIds);
+    return sortByStartTime(filtered);
   },
 });
-
-async function filterPermittedResources(
-  timeblocks: Doc<"timeblocks">[],
-  ctx: BaseQueryCtx,
-): Promise<Doc<"timeblocks">[]> {
-  const accessibleTimeblockIds = await getPermittedResourcesForType(
-    ctx,
-    "timeblocks",
-    "view",
-  );
-
-  return timeblocks.filter((tb) => accessibleTimeblockIds.includes(tb._id));
-}
 
 async function getTaskCount(
   ctx: BaseQueryCtx,

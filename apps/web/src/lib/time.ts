@@ -17,11 +17,12 @@ export const formatResponseTime = (minutes?: number) => {
 export const useOneWeekDateRange = () => {
   return useMemo(() => {
     const now = new Date();
-    const start = now.getTime();
+    const start = new Date(now);
     const end = new Date(now);
+    start.setDate(start.getDate() - 1);
     end.setDate(end.getDate() + 7);
     return {
-      startDate: start,
+      startDate: start.getTime(),
       endDate: end.getTime(),
     };
   }, []);

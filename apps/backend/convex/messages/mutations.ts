@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation } from "../_generated/server";
+import { getUserWithGroups } from "../auth/user";
 
 // Send a message in a thread
 export const sendMessage = mutation({
@@ -10,15 +11,7 @@ export const sendMessage = mutation({
     messageType: v.optional(v.union(v.literal("text"), v.literal("system"))),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.orgId !== orgId) {
@@ -26,7 +19,7 @@ export const sendMessage = mutation({
     }
 
     // Check if user is a participant
-    if (!thread.participants.includes(identity.subject)) {
+    if (!thread.participants.includes(userId)) {
       throw new ConvexError("Not authorized to send messages in this thread");
     }
 
@@ -37,7 +30,7 @@ export const sendMessage = mutation({
       messageType: args.messageType || "text",
       attachments: [],
       threadId: args.threadId,
-      createdBy: identity.subject,
+      createdBy: userId,
       orgId,
       isAcceptedAnswer: false,
       isDeleted: false,
@@ -58,9 +51,7 @@ export const sendMessage = mutation({
 
     if (question) {
       // Mark as unread for all participants except the sender
-      const newUnreadBy = question.participantIds.filter(
-        (id) => id !== identity.subject,
-      );
+      const newUnreadBy = question.participantIds.filter((id) => id !== userId);
 
       // Update question status if needed
       let newStatus = question.status;
@@ -80,41 +71,6 @@ export const sendMessage = mutation({
   },
 });
 
-// Get messages for a thread
-export const getMessagesByThread = query({
-  args: { threadId: v.id("threads") },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
-
-    const thread = await ctx.db.get(args.threadId);
-    if (!thread || thread.orgId !== orgId) {
-      throw new ConvexError("Thread not found");
-    }
-
-    // Check if user is a participant
-    if (!thread.participants.includes(identity.subject)) {
-      throw new ConvexError("Not authorized to view messages in this thread");
-    }
-
-    const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
-      .order("asc")
-      .collect();
-
-    return messages.filter((m) => !m.isDeleted);
-  },
-});
-
-// Edit a message
 export const editMessage = mutation({
   args: {
     messageId: v.id("messages"),
@@ -122,23 +78,15 @@ export const editMessage = mutation({
     contentPlaintext: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const message = await ctx.db.get(args.messageId);
+
     if (!message || message.orgId !== orgId) {
       throw new ConvexError("Message not found");
     }
 
-    // Only sender can edit their own messages
-    if (message.createdBy !== identity.subject) {
+    if (message.createdBy !== userId) {
       throw new ConvexError("You can only edit your own messages");
     }
 
@@ -156,23 +104,16 @@ export const editMessage = mutation({
 export const deleteMessage = mutation({
   args: { messageId: v.id("messages") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const { orgId } = identity;
-    if (!orgId || typeof orgId !== "string") {
-      throw new ConvexError("Not in an organization");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const message = await ctx.db.get(args.messageId);
+
     if (!message || message.orgId !== orgId) {
       throw new ConvexError("Message not found");
     }
 
     // Only sender can delete their own messages
-    if (message.createdBy !== identity.subject) {
+    if (message.createdBy !== userId) {
       throw new ConvexError("You can only delete your own messages");
     }
 

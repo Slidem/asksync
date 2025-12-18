@@ -49,7 +49,12 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_org_and_creator", ["orgId", "createdBy"])
-    .index("by_org_and_time", ["orgId", "startTime"])
+    .index("by_org_and_creator_and_startTime_and_endTime", [
+      "orgId",
+      "createdBy",
+      "startTime",
+      "endTime",
+    ])
     .index("by_external_id", ["externalId"]),
 
   // Tasks - checklist items for timeblocks

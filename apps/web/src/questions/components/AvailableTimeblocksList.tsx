@@ -7,12 +7,12 @@ import {
 import { SortOrder, TagSortBy } from "@asksync/shared";
 
 import { Badge } from "@/components/ui/badge";
-import { ExpandedTimeblock } from "../dialogs/createQuestion/createQuestionDialogStore";
+import { CalendarEvent } from "@/schedule";
 import { format } from "date-fns";
 import { useTags } from "@/tags/hooks/queries";
 
 interface AvailableTimeblocksListProps {
-  timeblocks: ExpandedTimeblock[] | undefined;
+  timeblocks: CalendarEvent[] | undefined;
 }
 
 export function AvailableTimeblocksList({
@@ -53,7 +53,7 @@ export function AvailableTimeblocksList({
     <div className="space-y-2">
       {timeblocks.map((timeblock, index) => (
         <Collapsible
-          key={`${timeblock.timeblockId}-${timeblock.startTime}-${index}`}
+          key={`${timeblock.id}-${timeblock.start.getTime()}-${index}`}
         >
           <CollapsibleTrigger className="w-full group">
             <div className="bg-muted/30 hover:bg-muted/50 rounded-lg p-3 transition-colors">
@@ -65,8 +65,8 @@ export function AvailableTimeblocksList({
                       {timeblock.title}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {format(new Date(timeblock.startTime), "MMM d, h:mm a")} -{" "}
-                      {format(new Date(timeblock.endTime), "h:mm a")}
+                      {format(timeblock.start, "MMM d, h:mm a")} -{" "}
+                      {format(timeblock.end, "h:mm a")}
                     </div>
                   </div>
                 </div>
@@ -81,7 +81,10 @@ export function AvailableTimeblocksList({
                 <Clock className="h-3.5 w-3.5" />
                 <span>
                   Duration:{" "}
-                  {formatDuration(timeblock.startTime, timeblock.endTime)}
+                  {formatDuration(
+                    timeblock.start.getTime(),
+                    timeblock.end.getTime(),
+                  )}
                 </span>
               </div>
 

@@ -1,42 +1,48 @@
+import { v } from "convex/values";
 import { query } from "../../_generated/server";
-import { getUser } from "../../auth/user";
+import { getUserWithGroups } from "../../auth/user";
+import { getTimeblocksForUser } from "../../timeblocks/helpers";
 
 // Get current timeblock for user
 export const getCurrentTimeblock = query({
+  args: {
+    userId: v.optional(v.string()),
+  },
   handler: async (ctx) => {
-    const user = await getUser(ctx);
+    const user = await getUserWithGroups(ctx);
     if (!user) return null;
 
     const now = Date.now();
 
-    // Get all timeblocks for the user
-    const timeblocks = await ctx.db
-      .query("timeblocks")
-      .withIndex("by_org_and_creator", (q) =>
-        q.eq("orgId", user.orgId).eq("createdBy", user.id),
-      )
-      .collect();
+    const currentTimeblocks = await getTimeblocksForUser({
+      ctx,
+      orgId: user.orgId,
+      forUserId: user.id,
+      currentUser: user,
+      currentDate: now,
+    });
 
-    // Find timeblock that contains current time
-    // For now, we'll just check non-recurring timeblocks
-    // TODO: Handle recurring timeblocks in the future
-    const currentTimeblock = timeblocks.find(
-      (tb) => tb.startTime <= now && tb.endTime >= now,
-    );
+    if (currentTimeblocks.length === 0) {
+      return {
+        timeblocks: [],
+        tasks: [],
+      };
+    }
 
-    if (!currentTimeblock) return null;
+    const tasks = [];
 
-    // Get tasks for this timeblock
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_timeblock", (q) =>
-        q.eq("timeblockId", currentTimeblock._id),
-      )
-      .order("asc")
-      .collect();
+    for (const tb of currentTimeblocks) {
+      const tbTasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_timeblock", (q) => q.eq("timeblockId", tb._id))
+        .order("asc")
+        .collect();
+
+      tasks.push(...tbTasks);
+    }
 
     return {
-      timeblock: currentTimeblock,
+      timeblocks: currentTimeblocks,
       tasks: tasks.sort((a, b) => a.order - b.order),
     };
   },

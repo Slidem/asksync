@@ -20,7 +20,7 @@ export interface CalendarEvent {
   allDay?: boolean;
   color?: EventColor;
   location?: string;
-  tagIds?: string[];
+  tagIds: string[];
   recurrenceRule?: RecurrenceRule | null;
   source?: CalendarSource;
   externalId?: string;
