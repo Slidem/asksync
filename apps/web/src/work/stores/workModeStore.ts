@@ -24,9 +24,6 @@ interface WorkModeState {
   isRunning: boolean;
   isPaused: boolean;
 
-  // Current work context
-  currentTimeblockId: Id<"timeblocks"> | null;
-
   // Settings
   settings: PomodoroSettings | null;
 
@@ -43,7 +40,6 @@ interface WorkModeState {
   setIsRunning: (running: boolean) => void;
   setIsPaused: (paused: boolean) => void;
 
-  setCurrentTimeblock: (id: Id<"timeblocks"> | null) => void;
   setSettings: (settings: PomodoroSettings) => void;
 
   // Helper actions
@@ -130,7 +126,6 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   setIsRunning: (running) => set({ isRunning: running }),
   setIsPaused: (paused) => set({ isPaused: paused }),
 
-  setCurrentTimeblock: (id) => set({ currentTimeblockId: id }),
   setSettings: (settings) => set({ settings }),
   tick: () => {
     const { remainingTime, isRunning, isPaused } = get();

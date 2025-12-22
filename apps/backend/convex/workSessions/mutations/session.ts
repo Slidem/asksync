@@ -1,7 +1,9 @@
 import { ConvexError, v } from "convex/values";
+import { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
-import { getUser } from "../../auth/user";
+import { getUser, getUserWithGroups } from "../../auth/user";
 import { clearOtherWorkingTasks } from "../../tasks/helpers";
+import { getTimeblocksForUser } from "../../timeblocks/helpers";
 
 // Start a new work session
 export const startSession = mutation({
@@ -21,14 +23,12 @@ export const startSession = mutation({
     ),
     customDuration: v.optional(v.number()),
     timeblockId: v.optional(v.id("timeblocks")),
-    taskId: v.optional(v.id("tasks")),
     deviceId: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await getUser(ctx);
+    const user = await getUserWithGroups(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
-    // End any active sessions for this user
     const activeSessions = await ctx.db
       .query("workSessions")
       .withIndex("by_user_and_status", (q) =>
@@ -50,18 +50,41 @@ export const startSession = mutation({
     if (!timeblockId) {
       // Try to find current timeblock based on current time
       const now = Date.now();
-      const timeblocks = await ctx.db
-        .query("timeblocks")
-        .withIndex("by_org_and_creator", (q) =>
-          q.eq("orgId", user.orgId).eq("createdBy", user.id),
-        )
-        .collect();
+      const currentTimeblocks = await getTimeblocksForUser({
+        ctx,
+        orgId: user.orgId,
+        forUserId: user.id,
+        currentUser: user,
+        currentDate: now,
+      });
 
-      const currentTimeblock = timeblocks.find(
-        (tb) => tb.startTime <= now && tb.endTime >= now,
-      );
+      /**
+       * Should find "active" timeblocks based on selected one if multiple exist
+       * This should be found in the previous work session if any, or find the first otherwise
+       */
+      const currentTimeblock = currentTimeblocks.length
+        ? currentTimeblocks[0]
+        : null;
 
       timeblockId = currentTimeblock?._id;
+    }
+
+    let activeTaskId: Id<"tasks"> | undefined;
+
+    if (timeblockId) {
+      // Find active task in timeblock if any
+      const tasksInTimeblock = await ctx.db
+        .query("tasks")
+        .withIndex("by_timeblock", (q) => q.eq("timeblockId", timeblockId))
+        .collect();
+
+      const activeTask = tasksInTimeblock.find(
+        (task) => task.currentlyWorkingOn,
+      );
+
+      if (activeTask) {
+        activeTaskId = activeTask._id;
+      }
     }
 
     // Create new session
@@ -70,10 +93,8 @@ export const startSession = mutation({
       orgId: user.orgId,
       sessionType: args.sessionType,
       timeblockId,
-      taskId: args.taskId,
-      questionId: undefined,
+      taskId: activeTaskId,
       startedAt: Date.now(),
-      endedAt: undefined,
       pausedDuration: 0,
       targetDuration: args.targetDuration,
       actualDuration: 0,
@@ -100,9 +121,8 @@ export const startSession = mutation({
       orgId: user.orgId,
       status:
         args.sessionType === "work" ? ("working" as const) : ("break" as const),
-      currentTaskId: args.taskId,
-      currentQuestionId: undefined,
       currentTimeblockId: timeblockId,
+      currentTaskId: activeTaskId,
       sessionStartedAt: Date.now(),
       expectedEndAt: Date.now() + args.targetDuration,
       focusMode: args.focusMode,
@@ -218,7 +238,7 @@ export const endSession = mutation({
     completed: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const user = await getUser(ctx);
+    const user = await getUserWithGroups(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
     const session = await ctx.db.get(args.sessionId);
