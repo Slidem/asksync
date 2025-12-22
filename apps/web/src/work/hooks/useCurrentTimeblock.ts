@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
  */
 export function useCurrentTimeblock() {
   const timeblockData = useQuery(
-    api.workSessions.queries.timeblock.getCurrentTimeblock,
+    api.workSessions.queries.timeblock.getCurrentTimeblocks,
     {},
   );
 

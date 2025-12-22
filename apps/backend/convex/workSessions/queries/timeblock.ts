@@ -4,7 +4,7 @@ import { getUserWithGroups } from "../../auth/user";
 import { getTimeblocksForUser } from "../../timeblocks/helpers";
 
 // Get current timeblock for user
-export const getCurrentTimeblock = query({
+export const getCurrentTimeblocks = query({
   args: {
     userId: v.optional(v.string()),
   },

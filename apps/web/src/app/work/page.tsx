@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FocusPanelDrawer } from "@/work/components/FocusPanelDrawer";
+import { FocusPanelDrawer } from "@/work/components/focusPanel/FocusPanelDrawer";
 import Link from "next/link";
 import { PomodoroTimer } from "@/work/components/pomodoro/PomodoroTimer";
 import { Settings } from "lucide-react";

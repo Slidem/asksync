@@ -3,7 +3,7 @@
 import { CheckCircle, Clock, Flame, MessageCircle } from "lucide-react";
 
 import { api } from "@convex/api";
-import { formatDuration } from "../utils/timeFormatting";
+import { formatDurationHumanReadableString } from "@/lib/date";
 import { memo } from "react";
 import { useQuery } from "convex/react";
 
@@ -38,7 +38,9 @@ export const WorkStatusBar = memo(function WorkStatusBar() {
           <StatItem
             icon={<Clock className="h-4 w-4 text-muted-foreground" />}
             value={
-              todaysStats ? formatDuration(todaysStats.totalFocusTime) : "0m"
+              todaysStats
+                ? formatDurationHumanReadableString(todaysStats.totalFocusTime)
+                : "0m"
             }
             label="focus"
           />

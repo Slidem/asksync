@@ -1,7 +1,7 @@
 import { api } from "@convex/api";
 import { docToCalendarEvent } from "@/lib/convexTypes";
 import { useMemo } from "react";
-import { useOneWeekDateRange } from "@/lib/time";
+import { useOneWeekDateRange } from "@/lib/date";
 import { useQuery } from "convex/react";
 
 interface UseAvailableTimeblocksParams {

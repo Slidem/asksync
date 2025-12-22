@@ -69,12 +69,10 @@ export function showNotification(options: ShowNotificationOptions): void {
       badge: "/favicon.ico",
     });
 
-    // Auto-close after 5 seconds if not requireInteraction
     if (!options.requireInteraction) {
       setTimeout(() => notification.close(), 5000);
     }
 
-    // Focus window when notification clicked
     notification.onclick = () => {
       window.focus();
       notification.close();

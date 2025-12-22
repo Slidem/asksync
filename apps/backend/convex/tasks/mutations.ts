@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { getUserWithGroups } from "../auth/user";
 import { getExistingTimeblock } from "../timeblocks/permissions";
 import { clearOtherWorkingTasks } from "./helpers";
 
@@ -70,28 +71,13 @@ export const update = mutation({
     currentlyWorkingOn: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
-    const orgId = identity.orgId as string | undefined;
-    if (!orgId) throw new Error("No organization context");
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
     if (task.orgId !== orgId) throw new Error("Task not in organization");
-
-    // Verify user is timeblock owner
-    const timeblock = await getExistingTimeblock({
-      ctx,
-      args: { id: task.timeblockId },
-      orgId,
-      userId,
-      requiredPermission: null,
-    });
-
-    if (timeblock.createdBy !== userId) {
-      throw new Error("Only timeblock owner can update tasks");
+    if (task.createdBy !== userId) {
+      throw new Error("Only task creator can update the task");
     }
 
     const updates: Partial<typeof task> = {};
@@ -109,7 +95,7 @@ export const update = mutation({
       updates.currentlyWorkingOn = args.currentlyWorkingOn;
 
       // If setting this task as "currently working on", clear all others
-      if (args.currentlyWorkingOn) {
+      if (args.currentlyWorkingOn && task.timeblockId) {
         await clearOtherWorkingTasks(ctx, task.timeblockId, args.id);
       }
     }
@@ -123,30 +109,14 @@ export const remove = mutation({
     id: v.id("tasks"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
-    const orgId = identity.orgId as string | undefined;
-    if (!orgId) throw new Error("No organization context");
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
     if (task.orgId !== orgId) throw new Error("Task not in organization");
-
-    // Verify user is timeblock owner
-    const timeblock = await getExistingTimeblock({
-      ctx,
-      args: { id: task.timeblockId },
-      orgId,
-      userId,
-      requiredPermission: null,
-    });
-
-    if (timeblock.createdBy !== userId) {
-      throw new Error("Only timeblock owner can delete tasks");
+    if (task.createdBy !== userId) {
+      throw new Error("Only task creator can delete the task");
     }
-
     await ctx.db.delete(args.id);
   },
 });

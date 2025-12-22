@@ -1,8 +1,10 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { QuestionItem } from "./QuestionItem";
 import { Inbox } from "lucide-react";
+import { QuestionItem } from "./QuestionItem";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { api } from "@convex/api";
+import { useQuery } from "convex/react";
 
 interface QuestionsPanelProps {
   questions: Array<{
@@ -19,19 +21,18 @@ interface QuestionsPanelProps {
       color: string;
     }>;
   }>;
-  currentQuestionId?: string | null;
-  activeSessionId?: string | null;
   onViewThread: (questionId: string) => void;
-  onWorkingOn: (questionId: string) => void;
 }
 
 export function QuestionsPanel({
   questions,
-  currentQuestionId,
-  activeSessionId,
   onViewThread,
-  onWorkingOn,
 }: QuestionsPanelProps) {
+  const activeSession = useQuery(
+    api.workSessions.queries.analytics.getActiveSessionId,
+    {},
+  );
+
   return (
     <div className="flex-1 flex flex-col">
       <h4 className="text-sm font-medium mb-4">Questions</h4>
@@ -54,10 +55,8 @@ export function QuestionsPanel({
                 <QuestionItem
                   key={question._id}
                   question={question}
-                  isActive={question._id === currentQuestionId}
                   onViewThread={() => onViewThread(question._id)}
-                  onWorkingOn={() => onWorkingOn(question._id)}
-                  disabled={!activeSessionId}
+                  disabled={!activeSession}
                 />
               ))}
             </div>

@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { MemberName } from "@/members/components/MemberName";
-import { WorkStatusIndicator } from "@/work/components/WorkStatusIndicator";
-import { formatTime } from "@/work/utils/timeFormatting";
+import { WorkStatusIndicator } from "@/team/components/WorkStatusIndicator";
+import { formatMillisecondsToTimeDuration } from "@/lib/date";
 
 type WorkStatus = "working" | "break" | "paused" | "offline";
 
@@ -71,7 +71,10 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span className="text-xs">
-                      {formatTime(Math.floor(member.timeRemaining))} remaining
+                      {formatMillisecondsToTimeDuration(
+                        Math.floor(member.timeRemaining),
+                      )}{" "}
+                      remaining
                     </span>
                   </div>
                 )}

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { formatTime } from "@/work/utils/timeFormatting";
+import { formatMillisecondsToTimeDuration } from "@/lib/date";
 import { getSessionColor } from "@/work/utils/sessionUtils";
 import { memo } from "react";
 
@@ -18,7 +18,7 @@ export const TimerDisplay = memo(function TimerDisplay({
   return (
     <div className="text-center">
       <div className="text-7xl md:text-8xl lg:text-9xl font-bold tabular-nums tracking-tight">
-        {formatTime(time)}
+        {formatMillisecondsToTimeDuration(time)}
       </div>
       {isRunning && (
         <div

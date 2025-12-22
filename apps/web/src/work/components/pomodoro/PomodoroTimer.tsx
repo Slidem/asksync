@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CircularProgress } from "@/work/components/CircularProgress";
+import { CircularProgress } from "@/work/components/pomodoro/CircularProgress";
 import { ControlButtons } from "@/work/components/pomodoro/ControlButtons";
 import { FocusModeSelector } from "@/work/components/pomodoro/FocusModeSelector";
 import { SessionTypeBadge } from "@/work/components/pomodoro/SessionBadgeType";
@@ -39,13 +39,9 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     })),
   );
 
-  const { isLoading } = useInitializeWorkMode();
-
   useTimerTick();
-
+  const { isLoading } = useInitializeWorkMode();
   const { autoStartCountdown, cancelAutoStart } = useTimerCompletion();
-
-  // Calculate progress percentage
   const progress = ((targetDuration - remainingTime) / targetDuration) * 100;
 
   if (isLoading) {

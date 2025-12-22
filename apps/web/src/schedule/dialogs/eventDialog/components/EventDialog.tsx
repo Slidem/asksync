@@ -1,5 +1,6 @@
 "use client";
 
+import { Calendar, CheckSquare, FileText, Shield, Tag } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   UnderlineTabs,
@@ -7,9 +8,7 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { FileText, Calendar, Tag, CheckSquare, Shield } from "lucide-react";
 
-import { EventChecklistsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventChecklistsTab";
 import { EventDateTimeTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDateTimeTab";
 import { EventDetailsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventDetailsTab";
 import { EventDialogFooter } from "@/schedule/dialogs/eventDialog/components/EventDialogFooter";
@@ -17,6 +16,7 @@ import { EventDialogHeader } from "@/schedule/dialogs/eventDialog/components/Eve
 import { EventExternalInfo } from "@/schedule/dialogs/eventDialog/components/EventExternalInfo";
 import { EventPermissionsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventPermissionsTab";
 import { EventTagsTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventTagsTab";
+import { EventTasksTab } from "@/schedule/dialogs/eventDialog/components/tabs/EventChecklistsTab";
 import { cn } from "@/lib/utils";
 import { useCallback } from "react";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
@@ -128,7 +128,7 @@ export const EventDialog: React.FC = () => {
           </UnderlineTabsContent>
 
           <UnderlineTabsContent value="checklists" className="mt-4">
-            <EventChecklistsTab />
+            <EventTasksTab />
           </UnderlineTabsContent>
 
           <UnderlineTabsContent value="permissions" className="mt-4">

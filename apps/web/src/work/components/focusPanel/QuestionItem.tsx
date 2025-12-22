@@ -1,12 +1,13 @@
 "use client";
 
 import { AlertCircle, MessageCircle } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { MemberName } from "@/members/components/MemberName";
 import { TiptapViewer } from "@/components/editor/TiptapViewer";
+import { cn } from "@/lib/utils";
 
 interface QuestionItemProps {
   question: {
@@ -23,17 +24,13 @@ interface QuestionItemProps {
       color: string;
     }>;
   };
-  isActive?: boolean;
   onViewThread: () => void;
-  onWorkingOn?: () => void;
   disabled?: boolean;
 }
 
 export function QuestionItem({
   question,
-  isActive,
   onViewThread,
-  onWorkingOn,
   disabled,
 }: QuestionItemProps) {
   const getUrgencyColor = () => {
@@ -65,16 +62,14 @@ export function QuestionItem({
     <div
       className={cn(
         "p-3 rounded-lg border transition-all",
-        isActive
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-muted-foreground/30",
+        "border-primary bg-primary/5",
         disabled && "opacity-50",
       )}
-      onClick={onWorkingOn}
+      onClick={onViewThread}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onWorkingOn?.();
+          onViewThread();
         }
       }}
       role="button"

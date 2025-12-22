@@ -8,7 +8,7 @@ export const updateSessionProgress = mutation({
   args: {
     sessionId: v.id("workSessions"),
     currentlyWorkingOnTaskId: v.optional(v.union(v.id("tasks"), v.null())),
-    questionId: v.optional(v.id("questions")),
+    questionId: v.optional(v.union(v.id("questions"), v.null())),
     completedTaskId: v.optional(v.id("tasks")),
     uncompletedTaskId: v.optional(v.id("tasks")),
     answeredQuestionId: v.optional(v.id("questions")),
@@ -22,7 +22,7 @@ export const updateSessionProgress = mutation({
     if (!session) throw new ConvexError("Session not found");
     if (session.userId !== user.id) throw new ConvexError("Not authorized");
 
-    const updates: any = {
+    const updates: Partial<typeof session> = {
       updatedAt: Date.now(),
     };
 
@@ -39,6 +39,9 @@ export const updateSessionProgress = mutation({
       if (args.currentlyWorkingOnTaskId) {
         const task = await ctx.db.get(args.currentlyWorkingOnTaskId);
         if (task && task.orgId === user.orgId) {
+          if (!task.timeblockId) {
+            throw new ConvexError("Task does not belong to a timeblock");
+          }
           // Clear other tasks' currentlyWorkingOn flag, except this one
           await clearOtherWorkingTasks(
             ctx,
@@ -117,7 +120,7 @@ export const updateSessionProgress = mutation({
         .first();
 
       if (status) {
-        const statusUpdates: any = {
+        const statusUpdates: Partial<typeof status> = {
           lastUpdated: Date.now(),
         };
         if (args.currentlyWorkingOnTaskId !== undefined) {

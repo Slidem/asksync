@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { getUserWithGroups } from "../auth/user";
 import { hasPermission } from "../permissions/common";
 
 export const list = query({
@@ -7,14 +8,7 @@ export const list = query({
     timeblockId: v.id("timeblocks"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
-    const orgId = identity.orgId as string | undefined;
-    if (!orgId) {
-      throw new Error("No organization context");
-    }
+    const { id: userId, orgId } = await getUserWithGroups(ctx);
 
     // Get the timeblock
     const timeblock = await ctx.db.get(args.timeblockId);

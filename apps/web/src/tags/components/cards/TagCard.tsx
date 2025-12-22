@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/members/components/MemberAvatar";
 import { Tag } from "@asksync/shared";
 import { TagUsageDialog } from "@/tags/components/dialog/TagUsageDialog";
-import { formatResponseTime } from "@/lib/time";
+import { formatResponseTime } from "@/lib/date";
 import { useDeleteTag } from "@/tags/hooks/mutations";
 
 interface TagCardProps {

@@ -1,15 +1,25 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Coffee, PlayCircle } from "lucide-react";
+
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { PlayCircle, Coffee } from "lucide-react";
 import { PomodoroSettings } from "@/work/types";
+import { Switch } from "@/components/ui/switch";
 
 interface AutomationSettingsProps {
   settings: PomodoroSettings;
   onUpdate: (settings: Partial<PomodoroSettings>) => void;
 }
 
-export function AutomationSettings({ settings, onUpdate }: AutomationSettingsProps) {
+export function AutomationSettings({
+  settings,
+  onUpdate,
+}: AutomationSettingsProps) {
   return (
     <Card>
       <CardHeader>
@@ -32,7 +42,9 @@ export function AutomationSettings({ settings, onUpdate }: AutomationSettingsPro
           <Switch
             id="auto-start-breaks"
             checked={settings.autoStartBreaks}
-            onCheckedChange={(enabled) => onUpdate({ autoStartBreaks: enabled })}
+            onCheckedChange={(enabled) =>
+              onUpdate({ autoStartBreaks: enabled })
+            }
           />
         </div>
 

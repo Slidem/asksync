@@ -89,6 +89,7 @@ export const updatePomodoroSettings = mutation({
     };
 
     if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updates: any = {
         updatedAt: Date.now(),
       };

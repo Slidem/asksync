@@ -3,11 +3,11 @@ import {
   decorateResourceWithGrants,
   getPermittedResourcesForType,
 } from "../permissions/common";
-
 import {
   expandRecurringTimeblocks,
   getTimeblocksForUser,
 } from "../timeblocks/helpers";
+
 import { getUserWithGroups } from "../auth/user";
 import { query } from "../_generated/server";
 import { v } from "convex/values";
@@ -246,27 +246,30 @@ export const getTagsWithAvailableTimeblocks = query({
       return accessibleTagIds.includes(tag._id);
     });
 
+    const currentDate = Date.now();
+
     // Get user's timeblocks using utility
-    const timeblocks = await getTimeblocksForUser({
+    const futureTimeblocks = await getTimeblocksForUser({
       ctx,
       orgId,
-      isInAuthContext: false, // No permission filtering for availability
       forUserId: args.userId,
       currentUser: user,
       range: { start: args.startDate, end: args.endDate },
     });
 
+    const currentTimeblocks = await getTimeblocksForUser({
+      ctx,
+      orgId,
+      forUserId: args.userId,
+      currentUser: user,
+      currentDate: currentDate,
+    });
+
     // Expand recurring timeblocks
     const expandedTimeblocks = expandRecurringTimeblocks(
-      timeblocks,
+      [...futureTimeblocks, ...currentTimeblocks],
       args.startDate,
       args.endDate,
-    );
-
-    // Filter to only future or in-progress timeblocks
-    const currentTime = Date.now();
-    const filteredTimeblocks = expandedTimeblocks.filter(
-      (tb) => tb.startTime > currentTime || tb.endTime > currentTime,
     );
 
     // Count timeblocks per tag and find fastest answer time
@@ -275,7 +278,7 @@ export const getTagsWithAvailableTimeblocks = query({
       { count: number; fastestAnswerMinutes: number }
     >();
 
-    for (const timeblock of filteredTimeblocks) {
+    for (const timeblock of expandedTimeblocks) {
       for (const tagId of timeblock.tagIds) {
         const tag = visibleTags.find((t) => t._id === tagId);
         if (!tag) continue;
@@ -297,17 +300,17 @@ export const getTagsWithAvailableTimeblocks = query({
           let responseTimeMinutes: number;
 
           if (
-            timeblock.startTime <= currentTime &&
-            timeblock.endTime > currentTime
+            timeblock.startTime <= currentDate &&
+            timeblock.endTime > currentDate
           ) {
             // In-progress: answer when timeblock ends
             responseTimeMinutes = Math.floor(
-              (timeblock.endTime - currentTime) / (60 * 1000),
+              (timeblock.endTime - currentDate) / (60 * 1000),
             );
           } else {
             // Upcoming: answer when timeblock starts
             responseTimeMinutes = Math.floor(
-              (timeblock.startTime - currentTime) / (60 * 1000),
+              (timeblock.startTime - currentDate) / (60 * 1000),
             );
           }
 

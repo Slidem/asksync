@@ -1,18 +1,20 @@
 "use client";
 
-import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { TimeblockInfoProps } from "./types";
+import { Clock } from "lucide-react";
+import { Doc } from "@convex/dataModel";
+import { formatDateToHHmmTime } from "@/lib/date";
 
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+export interface TimeblockInfoProps {
+  timeblock: Doc<"timeblocks">;
+  tasks: Doc<"tasks">[];
+  completedCount: number;
+  progress: number;
 }
 
 export function TimeblockInfo({
   timeblock,
   tasks,
-  completedCount,
   progress,
 }: TimeblockInfoProps) {
   return (
@@ -28,7 +30,8 @@ export function TimeblockInfo({
         </div>
         <Badge variant="outline" className="ml-2">
           <Clock className="h-3 w-3 mr-1" />
-          {formatTime(timeblock.startTime)} - {formatTime(timeblock.endTime)}
+          {formatDateToHHmmTime(timeblock.startTime)} -{" "}
+          {formatDateToHHmmTime(timeblock.endTime)}
         </Badge>
       </div>
 

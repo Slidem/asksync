@@ -1,3 +1,7 @@
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "@/work/utils/notifications";
 import { useEffect, useRef } from "react";
 
 import { api } from "@/../../backend/convex/_generated/api";
@@ -5,10 +9,6 @@ import { useDeviceId } from "@/lib/device";
 import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "../stores/workModeStore";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-} from "@/work/utils/notifications";
 
 /**
  * Unified initialization hook for Work Mode

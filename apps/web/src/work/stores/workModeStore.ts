@@ -26,8 +26,6 @@ interface WorkModeState {
 
   // Current work context
   currentTimeblockId: Id<"timeblocks"> | null;
-  currentTaskId: Id<"tasks"> | null;
-  currentQuestionId: Id<"questions"> | null;
 
   // Settings
   settings: PomodoroSettings | null;
@@ -46,8 +44,6 @@ interface WorkModeState {
   setIsPaused: (paused: boolean) => void;
 
   setCurrentTimeblock: (id: Id<"timeblocks"> | null) => void;
-  setCurrentTask: (id: Id<"tasks"> | null) => void;
-  setCurrentQuestion: (id: Id<"questions"> | null) => void;
   setSettings: (settings: PomodoroSettings) => void;
 
   // Helper actions
@@ -88,7 +84,6 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
 
   currentTimeblockId: null,
   currentTaskId: null,
-  currentQuestionId: null,
 
   settings: null,
   deviceId: getDeviceId(),
@@ -136,8 +131,6 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   setIsPaused: (paused) => set({ isPaused: paused }),
 
   setCurrentTimeblock: (id) => set({ currentTimeblockId: id }),
-  setCurrentTask: (id) => set({ currentTaskId: id }),
-  setCurrentQuestion: (id) => set({ currentQuestionId: id }),
   setSettings: (settings) => set({ settings }),
   tick: () => {
     const { remainingTime, isRunning, isPaused } = get();

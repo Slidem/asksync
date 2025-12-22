@@ -2,6 +2,33 @@ import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import { getUser } from "../../auth/user";
 
+export const getActiveSessionId = query({
+  handler: async (ctx) => {
+    const user = await getUser(ctx);
+    if (!user) return { isWorking: false };
+
+    let session = await ctx.db
+      .query("workSessions")
+      .withIndex("by_user_and_status", (q) =>
+        q.eq("userId", user.id).eq("status", "active"),
+      )
+      .first();
+
+    if (!session) {
+      session = await ctx.db
+        .query("workSessions")
+        .withIndex("by_user_and_status", (q) =>
+          q.eq("userId", user.id).eq("status", "paused"),
+        )
+        .first();
+    }
+
+    return {
+      activeSessionId: session ? session._id : null,
+    };
+  },
+});
+
 // Get session history for analytics
 export const getSessionHistory = query({
   args: {

@@ -3,7 +3,7 @@ import { SortOrder, TagSortBy } from "@asksync/shared";
 import { api } from "@convex/api";
 import { docToTag } from "@/lib/convexTypes";
 import { useMemo } from "react";
-import { useOneWeekDateRange } from "@/lib/time";
+import { useOneWeekDateRange } from "@/lib/date";
 import { useQuery } from "convex/react";
 
 const DEFAULT_SORTING = {

@@ -62,8 +62,8 @@ export default defineSchema({
     timeblockId: v.id("timeblocks"),
     title: v.string(),
     completed: v.boolean(),
-    order: v.number(), // for sorting
-    currentlyWorkingOn: v.boolean(), // flag for active task
+    order: v.number(),
+    currentlyWorkingOn: v.boolean(),
     orgId: v.string(),
     createdBy: v.string(),
     createdAt: v.number(),
@@ -227,7 +227,7 @@ export default defineSchema({
     ),
     timeblockId: v.optional(v.id("timeblocks")),
     taskId: v.optional(v.union(v.id("tasks"), v.null())),
-    questionId: v.optional(v.id("questions")),
+    questionId: v.optional(v.union(v.id("questions"), v.null())),
 
     // Timing (all in milliseconds)
     startedAt: v.number(),
@@ -337,7 +337,7 @@ export default defineSchema({
       v.literal("offline"),
     ),
     currentTaskId: v.optional(v.union(v.id("tasks"), v.null())),
-    currentQuestionId: v.optional(v.id("questions")),
+    currentQuestionId: v.optional(v.union(v.id("questions"), v.null())),
     currentTimeblockId: v.optional(v.id("timeblocks")),
 
     // Session info

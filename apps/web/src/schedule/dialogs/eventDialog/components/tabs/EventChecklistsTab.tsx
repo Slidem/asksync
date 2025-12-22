@@ -14,7 +14,7 @@ import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogS
 import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
 
-export const EventChecklistsTab = () => {
+export const EventTasksTab = () => {
   const {
     eventId,
     checklistsVisible,

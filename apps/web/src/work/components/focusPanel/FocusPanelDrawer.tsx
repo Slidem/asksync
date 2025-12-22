@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CurrentFocusPanel } from "@/work/components/focusPanel/CurrentFocusPanel";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useWorkModeStore } from "../stores/workModeStore";
+import { useWorkModeStore } from "../../stores/workModeStore";
 
 /**
  * Collapsible drawer containing the CurrentFocusPanel

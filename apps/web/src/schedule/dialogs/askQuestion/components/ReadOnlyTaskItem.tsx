@@ -1,8 +1,9 @@
 "use client";
 
-import { Circle, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
+
+import { Doc } from "@convex/dataModel";
 import { cn } from "@/lib/utils";
-import { Doc } from "@convex/api";
 
 interface ReadOnlyTaskItemProps {
   task: Doc<"tasks">;
