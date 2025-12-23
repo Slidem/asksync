@@ -1,11 +1,6 @@
 "use client";
 
-import { memo } from "react";
 import { Pause, Play, SkipForward, Square } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { useShallow } from "zustand/react/shallow";
-import { useWorkModeStore } from "@/work/stores/workModeStore";
 import {
   useEndSession,
   usePauseSession,
@@ -13,6 +8,11 @@ import {
   useSkipSession,
   useStartWork,
 } from "@/work/hooks/sessionControls";
+
+import { Button } from "@/components/ui/button";
+import { memo } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 export const MiniTimerControls = memo(function MiniTimerControls() {
   const { isRunning, isPaused, sessionType } = useWorkModeStore(
