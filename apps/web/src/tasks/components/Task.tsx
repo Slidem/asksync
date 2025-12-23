@@ -1,10 +1,10 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import React from "react";
-import { TaskActiveButton } from "@/work/components/tasks/TaskActiveButton";
-import { TaskDeleteButton } from "@/work/components/tasks/TaskDeleteButton";
-import { TaskTitle } from "@/work/components/tasks/TaskTitle";
+import { TaskActiveButton } from "@/tasks/components/TaskActiveButton";
+import { TaskDeleteButton } from "@/tasks/components/TaskDeleteButton";
+import { TaskTitle } from "@/tasks/components/TaskTitle";
 import { cn } from "@/lib/utils";
-import { useTasksContext } from "@/work/components/tasks/TasksContext";
+import { useTasksContext } from "@/tasks/components/TasksContext";
 
 interface Props {
   id: string;

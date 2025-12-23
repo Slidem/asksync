@@ -1,9 +1,9 @@
 "use client";
 
-import { AddTaskInput } from "@/work/components/tasks/AddTaskInput";
+import { AddTaskInput } from "@/tasks/components/AddTaskInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Task } from "@/work/components/tasks/model";
-import { Task as TaskItem } from "@/work/components/tasks/Task";
+import { Task } from "@/tasks/model";
+import { Task as TaskItem } from "@/tasks/components/Task";
 
 interface Props {
   incompleteTasks: Task[];

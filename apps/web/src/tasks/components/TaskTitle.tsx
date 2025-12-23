@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useTasksContext } from "@/work/components/tasks/TasksContext";
+import { useTasksContext } from "@/tasks/components/TasksContext";
 
 interface Props {
   id: string;

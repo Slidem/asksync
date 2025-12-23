@@ -3,12 +3,12 @@
 import { Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AutomationSettings } from "@/work/components/settings/AutomationSettings";
+import { AutomationSettings } from "@/settings/components/AutomationSettings";
 import { Button } from "@/components/ui/button";
-import { NotificationSettings } from "@/work/components/settings/NotificationSettings";
+import { NotificationSettings } from "@/settings/components/NotificationSettings";
 import { PomodoroSettings } from "@/work/types";
-import { PresetEditor } from "@/work/components/settings/PresetEditor";
-import { api } from "@/../../backend/convex/_generated/api";
+import { PresetEditor } from "@/settings/components/PresetEditor";
+import { api } from "@convex/api";
 import { useMutation } from "convex/react";
 import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
 import { useToast } from "@/hooks/use-toast";

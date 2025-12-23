@@ -3,7 +3,7 @@ import { Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useTasksContext } from "@/work/components/tasks/TasksContext";
+import { useTasksContext } from "@/tasks/components/TasksContext";
 
 interface Props {
   id: string;

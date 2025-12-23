@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from "react";
 
 import { Id } from "@convex/dataModel";
-import { Task } from "@/work/components/tasks/model";
-import { TasksList } from "@/work/components/tasks/TasksList";
-import { TasksListProvider } from "@/work/components/tasks/TasksContext";
+import { Task } from "@/tasks/model";
+import { TasksList } from "@/tasks/components/TasksList";
+import { TasksListProvider } from "@/tasks/components/TasksContext";
 import { api } from "@convex/api";
 import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
 import { useMutation } from "convex/react";

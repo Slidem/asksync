@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { useTasks } from "@/work/hooks/tasks";
-import { useTasksContext } from "@/work/components/tasks/TasksContext";
+import { useTasks } from "../queries";
+import { useTasksContext } from "@/tasks/components/TasksContext";
 
 export const AddTaskInput = () => {
   const [isAddingTask, setIsAddingTask] = useState(false);

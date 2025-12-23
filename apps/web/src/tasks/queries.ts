@@ -1,7 +1,8 @@
 import { api } from "@convex/api";
 import { toTimeblockId } from "@/lib/convexTypes";
 import { useQuery } from "convex/react";
-import { useTasksContext } from "@/work/components/tasks/TasksContext";
+import { useTasksContext } from "@/tasks/components/TasksContext";
+
 export const useTasks = () => {
   const { timeblockId } = useTasksContext();
 
