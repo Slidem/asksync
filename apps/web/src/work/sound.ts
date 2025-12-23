@@ -1,20 +1,20 @@
-export const playPomodoroCompletionSound = () => {
-  try {
-    const audioContext = new window.AudioContext();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 800;
-    oscillator.type = "sine";
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.5,
-    );
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  } catch (error) {
-    console.warn("Could not play sound:", error);
-  }
+let alarmAudio: HTMLAudioElement | null = null;
+let countdownAudio: HTMLAudioElement | null = null;
+
+export const preloadSounds = () => {
+  if (typeof window === "undefined") return;
+  alarmAudio = new Audio("/sounds/alarm.wav");
+  countdownAudio = new Audio("/sounds/countdown.wav");
+};
+
+export const playAlarmSound = () => {
+  if (!alarmAudio) preloadSounds();
+  alarmAudio?.play().catch((e) => console.warn("Could not play alarm:", e));
+};
+
+export const playCountdownSound = () => {
+  if (!countdownAudio) preloadSounds();
+  countdownAudio
+    ?.play()
+    .catch((e) => console.warn("Could not play countdown:", e));
 };

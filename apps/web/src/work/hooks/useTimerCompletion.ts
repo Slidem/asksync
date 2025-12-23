@@ -2,9 +2,10 @@ import {
   notifyBreakComplete,
   notifyWorkComplete,
 } from "@/work/utils/notifications";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import { api } from "@convex/api";
+import { playAlarmSound } from "@/work/sound";
 import { useMutation } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
 import { useStartWork } from "@/work/hooks/sessionControls";
@@ -12,6 +13,7 @@ import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * Hook that handles timer completion with notifications and auto-start
+ * Should only be called in ONE place (SidebarTimer) to avoid duplicates
  */
 export function useTimerCompletion() {
   const {
@@ -20,6 +22,8 @@ export function useTimerCompletion() {
     activeSessionId,
     sessionType,
     settings,
+    autoStartCountdown,
+    setAutoStartCountdown,
     resetToNextSessionType,
   } = useWorkModeStore(
     useShallow((state) => ({
@@ -28,18 +32,13 @@ export function useTimerCompletion() {
       activeSessionId: state.activeSessionId,
       sessionType: state.sessionType,
       settings: state.settings,
-      completedWorkSessions: state.completedWorkSessions,
-      setSessionType: state.setSessionType,
+      autoStartCountdown: state.autoStartCountdown,
+      setAutoStartCountdown: state.setAutoStartCountdown,
       resetToNextSessionType: state.resetToNextSessionType,
     })),
   );
 
-  const [autoStartCountdown, setAutoStartCountdown] = useState<number | null>(
-    null,
-  );
-
   const endSession = useMutation(api.workSessions.mutations.session.endSession);
-
   const startSession = useStartWork();
 
   // Handle timer completion
@@ -59,6 +58,10 @@ export function useTimerCompletion() {
     };
 
     const notifyCompletion = () => {
+      if (settings?.soundEnabled) {
+        playAlarmSound();
+      }
+
       if (settings?.notificationsEnabled) {
         if (sessionType === "work") {
           notifyWorkComplete();
@@ -88,8 +91,10 @@ export function useTimerCompletion() {
     settings,
     endSession,
     resetToNextSessionType,
+    setAutoStartCountdown,
   ]);
 
+  // Countdown tick
   useEffect(() => {
     if (autoStartCountdown !== null && autoStartCountdown > 0) {
       const timer = setTimeout(() => {
@@ -97,21 +102,22 @@ export function useTimerCompletion() {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [autoStartCountdown]);
+  }, [autoStartCountdown, setAutoStartCountdown]);
 
+  // Auto-start when countdown reaches 0
   useEffect(() => {
     if (autoStartCountdown === 0) {
       setAutoStartCountdown(null);
       startSession();
     }
-  }, [autoStartCountdown, startSession]);
+  }, [autoStartCountdown, startSession, setAutoStartCountdown]);
 
   const cancelAutoStart = useCallback(() => {
     setAutoStartCountdown(null);
-  }, []);
+  }, [setAutoStartCountdown]);
 
   return {
-    autoStartCountdown,
     cancelAutoStart,
+    autoStartCountdown,
   };
 }

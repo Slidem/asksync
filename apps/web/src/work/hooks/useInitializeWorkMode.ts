@@ -5,14 +5,16 @@ import {
 import { useEffect, useRef } from "react";
 
 import { api } from "@/../../backend/convex/_generated/api";
+import { preloadSounds } from "@/work/sound";
 import { useDeviceId } from "@/lib/device";
 import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "../stores/workModeStore";
 
 /**
- * Unified initialization hook for Work Mode
- * Loads all necessary data on mount and manages cleanup
+ * Initialization hook for Work Mode
+ * Loads settings and restores active session state from backend.
+ * Called from SidebarTimer which is always mounted.
  */
 export function useInitializeWorkMode() {
   const initialized = useRef(false);
@@ -46,7 +48,6 @@ export function useInitializeWorkMode() {
     setRemainingTime,
     setIsRunning,
     setIsPaused,
-    reset,
   } = useWorkModeStore(
     useShallow((state) => ({
       setSettings: state.setSettings,
@@ -57,16 +58,14 @@ export function useInitializeWorkMode() {
       setIsPaused: state.setIsPaused,
       setFocusMode: state.setFocusMode,
       setSessionType: state.setSessionType,
-      reset: state.reset,
     })),
   );
 
   useEffect(() => {
     return () => {
-      reset();
       initialized.current = false;
     };
-  }, [reset]);
+  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -81,6 +80,11 @@ export function useInitializeWorkMode() {
 
     if (pomodoroSettings) {
       setSettings(pomodoroSettings);
+
+      // Preload sounds for instant playback
+      if (pomodoroSettings.soundEnabled) {
+        preloadSounds();
+      }
 
       // Auto-request notification permission if enabled in settings
       if (pomodoroSettings.notificationsEnabled) {
@@ -104,7 +108,6 @@ export function useInitializeWorkMode() {
     activeSession,
     isLoading,
     pomodoroSettings,
-    reset,
     setActiveSession,
     setFocusMode,
     setIsPaused,

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/sidebar";
 
 import { NavMain } from "@/components/sidebar/NavMain";
+import { SidebarTimer } from "@/work/components/sidebar/SidebarTimer";
+import { usePathname } from "next/navigation";
 
 const items = [
   {
@@ -73,6 +75,8 @@ const items = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
+  const pathname = usePathname();
+  const isWorkPage = pathname.includes("/work");
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -108,6 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter>
+        <SidebarTimer hideDisplay={isWorkPage} />
         <div className="flex items-center gap-3 p-4 border-t">
           <UserButton
             appearance={{

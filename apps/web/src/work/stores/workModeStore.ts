@@ -23,6 +23,8 @@ interface WorkModeState {
   remainingTime: number; // in milliseconds
   isRunning: boolean;
   isPaused: boolean;
+  autoStartCountdown: number | null; // countdown seconds before auto-start
+  countdownSoundFired: boolean; // track if 5s warning played
 
   // Settings
   settings: PomodoroSettings | null;
@@ -39,6 +41,8 @@ interface WorkModeState {
   setRemainingTime: (time: number) => void;
   setIsRunning: (running: boolean) => void;
   setIsPaused: (paused: boolean) => void;
+  setAutoStartCountdown: (countdown: number | null) => void;
+  setCountdownSoundFired: (fired: boolean) => void;
 
   setSettings: (settings: PomodoroSettings) => void;
 
@@ -77,6 +81,8 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   remainingTime: 25 * 60 * 1000,
   isRunning: false,
   isPaused: false,
+  autoStartCountdown: null,
+  countdownSoundFired: false,
 
   currentTimeblockId: null,
   currentTaskId: null,
@@ -125,6 +131,8 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   },
   setIsRunning: (running) => set({ isRunning: running }),
   setIsPaused: (paused) => set({ isPaused: paused }),
+  setAutoStartCountdown: (countdown) => set({ autoStartCountdown: countdown }),
+  setCountdownSoundFired: (fired) => set({ countdownSoundFired: fired }),
 
   setSettings: (settings) => set({ settings }),
   tick: () => {
@@ -153,6 +161,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
       sessionStatus: null,
       activeSessionId: null,
       completedWorkSessions: 0,
+      countdownSoundFired: false,
     });
   },
 
@@ -187,6 +196,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
         targetDuration: workDurationMillis,
         isRunning: false,
         isPaused: false,
+        countdownSoundFired: false,
       });
       return {
         sessionType: "work",
@@ -215,6 +225,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
         completedWorkSessions: 0,
         isRunning: false,
         isPaused: false,
+        countdownSoundFired: false,
       });
       return {
         sessionType: "longBreak",
@@ -232,6 +243,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
         completedWorkSessions: completedSessions + 1,
         isRunning: false,
         isPaused: false,
+        countdownSoundFired: false,
       });
       return {
         sessionType: "shortBreak",

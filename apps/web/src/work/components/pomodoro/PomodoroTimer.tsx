@@ -1,5 +1,7 @@
 "use client";
 
+import { memo, useCallback } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "@/work/components/pomodoro/CircularProgress";
@@ -7,16 +9,12 @@ import { ControlButtons } from "@/work/components/pomodoro/ControlButtons";
 import { FocusModeSelector } from "@/work/components/pomodoro/FocusModeSelector";
 import { SessionTypeBadge } from "@/work/components/pomodoro/SessionBadgeType";
 import { TimerDisplay } from "@/work/components/pomodoro/TimerDisplay";
-import { memo } from "react";
-import { useInitializeWorkMode } from "@/work/hooks/useInitializeWorkMode";
 import { useShallow } from "zustand/react/shallow";
-import { useTimerCompletion } from "@/work/hooks/useTimerCompletion";
-import { useTimerTick } from "@/work/hooks/timer";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * Main Pomodoro Timer Component
- * Manages work sessions with timer, controls, and visual feedback
+ * Reads timer state from global store (SidebarTimer handles tick/completion)
  */
 export const PomodoroTimer = memo(function PomodoroTimer() {
   const {
@@ -26,25 +24,29 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     isRunning,
     completedWorkSessions,
     settings,
+    autoStartCountdown,
+    setAutoStartCountdown,
   } = useWorkModeStore(
     useShallow((state) => ({
       sessionType: state.sessionType,
-      focusMode: state.focusMode,
       targetDuration: state.targetDuration,
       remainingTime: state.remainingTime,
       isRunning: state.isRunning,
-      isPaused: state.isPaused,
       completedWorkSessions: state.completedWorkSessions,
       settings: state.settings,
+      autoStartCountdown: state.autoStartCountdown,
+      setAutoStartCountdown: state.setAutoStartCountdown,
     })),
   );
 
-  useTimerTick();
-  const { isLoading } = useInitializeWorkMode();
-  const { autoStartCountdown, cancelAutoStart } = useTimerCompletion();
+  const cancelAutoStart = useCallback(() => {
+    setAutoStartCountdown(null);
+  }, [setAutoStartCountdown]);
+
   const progress = ((targetDuration - remainingTime) / targetDuration) * 100;
 
-  if (isLoading) {
+  // Settings loaded by SidebarTimer, show loading if not ready
+  if (!settings) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-muted-foreground text-xl">Loading...</div>
@@ -52,7 +54,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     );
   }
 
-  const sessionsBeforeLongBreak = settings?.sessionsBeforeLongBreak || 4;
+  const sessionsBeforeLongBreak = settings.sessionsBeforeLongBreak || 4;
 
   return (
     <div className="flex flex-col items-center space-y-8">
@@ -67,7 +69,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
         </Badge>
       )}
 
-      {/* Circular timer - much larger */}
+      {/* Circular timer */}
       <CircularProgress
         progress={progress}
         sessionType={sessionType}
@@ -99,7 +101,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
       )}
 
       {/* Focus mode selector */}
-      {!autoStartCountdown && (
+      {autoStartCountdown === null && (
         <>
           <FocusModeSelector />
           <ControlButtons />
