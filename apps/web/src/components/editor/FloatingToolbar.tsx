@@ -59,7 +59,7 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
 
       setPosition({
         top,
-        left: start.left + window.scrollX
+        left: start.left + window.scrollX,
       });
       setShow(true);
     };
@@ -112,7 +112,7 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
-        pointerEvents: 'auto',
+        pointerEvents: "auto",
       }}
       onMouseDown={(e) => e.preventDefault()}
     >

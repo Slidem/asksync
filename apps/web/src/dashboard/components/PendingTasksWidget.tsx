@@ -63,7 +63,8 @@ function QuestionItem({
       className={cn(
         "w-full text-left rounded-xl p-4 transition-all cursor-pointer",
         "bg-card shadow-sm hover:shadow-md",
-        question.isOverdue && "ring-2 ring-red-500/50 bg-red-50/30 dark:bg-red-950/10",
+        question.isOverdue &&
+          "ring-2 ring-red-500/50 bg-red-50/30 dark:bg-red-950/10",
       )}
       onClick={onClick}
     >
@@ -71,15 +72,21 @@ function QuestionItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             {question.isOverdue ? (
-              <AlertTriangle className={cn("h-4 w-4 flex-shrink-0", getUrgencyColor())} />
+              <AlertTriangle
+                className={cn("h-4 w-4 flex-shrink-0", getUrgencyColor())}
+              />
             ) : (
-              <Clock className={cn("h-4 w-4 flex-shrink-0", getUrgencyColor())} />
+              <Clock
+                className={cn("h-4 w-4 flex-shrink-0", getUrgencyColor())}
+              />
             )}
             <span className={cn("text-sm font-medium", getUrgencyColor())}>
               {getUrgencyText()}
             </span>
           </div>
-          <h4 className="font-medium text-sm line-clamp-2 mb-2">{question.title}</h4>
+          <h4 className="font-medium text-sm line-clamp-2 mb-2">
+            {question.title}
+          </h4>
           {question.contentPlaintext && (
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
               {question.contentPlaintext}
@@ -109,7 +116,9 @@ function QuestionItem({
   );
 }
 
-export function PendingTasksWidget({ urgentQuestions }: PendingTasksWidgetProps) {
+export function PendingTasksWidget({
+  urgentQuestions,
+}: PendingTasksWidgetProps) {
   const router = useRouter();
 
   if (!urgentQuestions || urgentQuestions.length === 0) {
@@ -119,14 +128,18 @@ export function PendingTasksWidget({ urgentQuestions }: PendingTasksWidgetProps)
           <Clock className="h-8 w-8 text-green-600 dark:text-green-400" />
         </div>
         <h3 className="text-lg font-medium mb-1">All caught up!</h3>
-        <p className="text-sm text-muted-foreground">No pending questions to answer</p>
+        <p className="text-sm text-muted-foreground">
+          No pending questions to answer
+        </p>
       </div>
     );
   }
 
   // Separate into current timeblock and upcoming
   const currentQuestions = urgentQuestions.filter((q) => q.matchesCurrentBlock);
-  const upcomingQuestions = urgentQuestions.filter((q) => !q.matchesCurrentBlock);
+  const upcomingQuestions = urgentQuestions.filter(
+    (q) => !q.matchesCurrentBlock,
+  );
 
   const handleQuestionClick = (question: UrgentQuestion) => {
     router.push(`/questions?thread=${question.threadId}`);

@@ -38,7 +38,10 @@ export function QuestionsTabs({
         <UnderlineTabsTrigger value="created" badge={stats?.created}>
           Asked by me
         </UnderlineTabsTrigger>
-        <UnderlineTabsTrigger value="participating" badge={stats?.participating}>
+        <UnderlineTabsTrigger
+          value="participating"
+          badge={stats?.participating}
+        >
           Participating in
         </UnderlineTabsTrigger>
       </UnderlineTabsList>

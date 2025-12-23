@@ -13,7 +13,7 @@ const UnderlineTabsList = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex items-center justify-center bg-transparent border-b h-auto p-0 rounded-none gap-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -41,7 +41,7 @@ const UnderlineTabsTrigger = React.forwardRef<
       "data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground",
       "hover:text-foreground",
       hasError && "text-destructive",
-      className
+      className,
     )}
     {...props}
   >
@@ -64,7 +64,7 @@ const UnderlineTabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
+      className,
     )}
     {...props}
   />

@@ -90,7 +90,9 @@ export const QuestionFormSection = ({
             <Label htmlFor="question-content">Question Details *</Label>
             <TiptapEditor
               value={questionContent}
-              onChange={(html, plaintext) => setQuestionContent(html, plaintext)}
+              onChange={(html, plaintext) =>
+                setQuestionContent(html, plaintext)
+              }
               placeholder="Provide more details about your question..."
               minHeight={100}
             />

@@ -22,7 +22,9 @@ export const useDeleteQuestion = () => {
           toast.success("Question deleted successfully");
         } catch (error) {
           toast.error(
-            error instanceof Error ? error.message : "Failed to delete question",
+            error instanceof Error
+              ? error.message
+              : "Failed to delete question",
           );
         }
       },

@@ -25,7 +25,11 @@ interface MessageItemProps {
   message: Message;
   isAssignee: boolean;
   isResolved: boolean;
-  onEdit: (messageId: string, content: string, contentPlaintext: string) => Promise<void>;
+  onEdit: (
+    messageId: string,
+    content: string,
+    contentPlaintext: string,
+  ) => Promise<void>;
   onDelete: (messageId: string) => void;
   onMarkAsAnswer: (messageId: string) => void;
 }

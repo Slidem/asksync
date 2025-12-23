@@ -14,7 +14,6 @@ export function useDashboardData() {
   return {
     sessionStats,
     urgentQuestions,
-    isLoading:
-      todaysSessions === undefined || urgentQuestions === undefined,
+    isLoading: todaysSessions === undefined || urgentQuestions === undefined,
   };
 }

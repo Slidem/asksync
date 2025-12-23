@@ -1,18 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
-import { ChecklistItem } from "../ChecklistItem";
-import { Input } from "@/components/ui/input";
+import { DraftTask } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Task } from "@/tasks/model";
+import { TasksList } from "@/tasks/components/TasksList";
+import { TasksListProvider } from "@/tasks/components/TasksContext";
 import { api } from "@convex/api";
 import { toTimeblockId } from "@/lib/convexTypes";
 import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogStore";
 import { useQuery } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
+
+const draftToTask = (draft: DraftTask): Task => ({
+  id: draft.id,
+  orgId: "",
+  title: draft.title,
+  completed: draft.completed,
+  currentlyWorkingOn: draft.currentlyWorkingOn,
+  order: draft.order,
+  createdBy: "",
+  createdAt: Date.now(),
+});
 
 export const EventTasksTab = () => {
   const {
@@ -35,15 +46,11 @@ export const EventTasksTab = () => {
     })),
   );
 
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-
-  // Load existing tasks when editing
   const tasksData = useQuery(
     api.tasks.queries.list,
     eventId ? { timeblockId: toTimeblockId(eventId) } : "skip",
   );
 
-  // Initialize draftTasks from backend when editing
   useEffect(() => {
     if (tasksData?.tasks && eventId && draftTasks.length === 0) {
       setFormFields({
@@ -58,35 +65,53 @@ export const EventTasksTab = () => {
     }
   }, [tasksData, eventId, draftTasks.length, setFormFields]);
 
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) return;
-    addDraftTask(newTaskTitle.trim());
-    setNewTaskTitle("");
-  };
+  const tasks = useMemo(() => draftTasks.map(draftToTask), [draftTasks]);
+  const incompleteTasks = useMemo(
+    () => tasks.filter((t) => !t.completed),
+    [tasks],
+  );
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.completed),
+    [tasks],
+  );
 
-  const handleToggleComplete = (taskId: string, completed: boolean) => {
-    updateDraftTask(taskId, { completed: !completed });
-  };
+  const handleTaskAdded = useCallback(
+    (title: string) => {
+      addDraftTask(title);
+    },
+    [addDraftTask],
+  );
 
-  const handleUpdateTitle = (taskId: string, title: string) => {
-    updateDraftTask(taskId, { title });
-  };
+  const handleTaskRemoved = useCallback(
+    (id: string) => {
+      removeDraftTask(id);
+    },
+    [removeDraftTask],
+  );
 
-  const handleToggleWorkingOn = (
-    taskId: string,
-    currentlyWorkingOn: boolean,
-  ) => {
-    updateDraftTask(taskId, { currentlyWorkingOn: !currentlyWorkingOn });
-  };
+  const handleTaskEdited = useCallback(
+    (id: string, title: string) => {
+      updateDraftTask(id, { title });
+    },
+    [updateDraftTask],
+  );
 
-  const handleDelete = (taskId: string) => {
-    removeDraftTask(taskId);
-  };
+  const handleTaskCompleted = useCallback(
+    (id: string, completed: boolean) => {
+      updateDraftTask(id, { completed });
+    },
+    [updateDraftTask],
+  );
 
-  // Owner view
+  const handleTaskActiveStateChanged = useCallback(
+    (id: string, isCurrentlyWorkingOn: boolean) => {
+      updateDraftTask(id, { currentlyWorkingOn: isCurrentlyWorkingOn });
+    },
+    [updateDraftTask],
+  );
+
   return (
     <div className="space-y-4">
-      {/* Visibility toggle */}
       <div className="flex items-center justify-between p-3 border rounded-lg">
         <div className="flex-1">
           <Label htmlFor="checklists-visible" className="font-medium">
@@ -105,57 +130,22 @@ export const EventTasksTab = () => {
         />
       </div>
 
-      {/* Add task input */}
-      <div className="flex gap-2">
-        <Input
-          placeholder="Add a task..."
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddTask();
-            }
-          }}
-          disabled={draftTasks.length >= 20}
+      <TasksListProvider
+        timeblockId={eventId || ""}
+        tasks={tasks}
+        maxTasks={20}
+        onTaskAdded={handleTaskAdded}
+        onTaskRemoved={handleTaskRemoved}
+        onTaskEdited={handleTaskEdited}
+        onTaskCompleted={handleTaskCompleted}
+        onTaskActiveStateChanged={handleTaskActiveStateChanged}
+      >
+        <TasksList
+          incompleteTasks={incompleteTasks}
+          completedTasks={completedTasks}
         />
-        <Button
-          onClick={handleAddTask}
-          disabled={!newTaskTitle.trim() || draftTasks.length >= 20}
-          size="icon"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+      </TasksListProvider>
 
-      {draftTasks.length >= 20 && (
-        <p className="text-sm text-muted-foreground">
-          Maximum 20 tasks per timeblock
-        </p>
-      )}
-
-      {/* Task list */}
-      {draftTasks.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No tasks yet. Add one above to get started.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {draftTasks.map((task) => (
-            <ChecklistItem
-              key={task.id}
-              task={task}
-              isOwner={true}
-              onToggleComplete={handleToggleComplete}
-              onUpdateTitle={handleUpdateTitle}
-              onToggleWorkingOn={handleToggleWorkingOn}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Stats */}
       {draftTasks.length > 0 && (
         <div className="text-sm text-muted-foreground">
           {draftTasks.filter((t) => t.completed).length} of {draftTasks.length}{" "}

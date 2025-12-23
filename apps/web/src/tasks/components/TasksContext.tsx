@@ -1,7 +1,10 @@
 import { createContext, useContext } from "react";
 
+import { Task } from "@/tasks/model";
+
 interface TasksListContextProps {
   timeblockId: string;
+  tasks?: Task[];
   isReadOnly?: boolean;
   maxTasks?: number;
   onTaskAdded?: (content: string) => void;

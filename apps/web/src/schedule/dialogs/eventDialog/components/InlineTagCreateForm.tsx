@@ -84,9 +84,7 @@ export const InlineTagCreateForm: React.FC<InlineTagCreateFormProps> = ({
               key={c}
               type="button"
               className={`w-8 h-8 rounded-full border-2 ${
-                color === c
-                  ? "border-gray-900 scale-110"
-                  : "border-gray-300"
+                color === c ? "border-gray-900 scale-110" : "border-gray-300"
               } transition-all`}
               style={{ backgroundColor: c }}
               onClick={() => setColor(c)}

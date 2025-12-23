@@ -118,7 +118,13 @@ export const useResume = () => {
     if (!isWorkPage) {
       toast.info("Session Resumed");
     }
-  }, [activeSessionId, resumeSession, setIsPaused, setSessionStatus, isWorkPage]);
+  }, [
+    activeSessionId,
+    resumeSession,
+    setIsPaused,
+    setSessionStatus,
+    isWorkPage,
+  ]);
 };
 
 export const useSkipSession = () => {
@@ -166,7 +172,13 @@ export const usePauseSession = () => {
         toast.info("Session Paused");
       }
     }
-  }, [activeSessionId, pauseSession, setSessionStatus, setIsPaused, isWorkPage]);
+  }, [
+    activeSessionId,
+    pauseSession,
+    setSessionStatus,
+    setIsPaused,
+    isWorkPage,
+  ]);
 };
 
 export const useEndSession = () => {

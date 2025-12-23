@@ -4,12 +4,23 @@ import { useQuery } from "convex/react";
 import { useTasksContext } from "@/tasks/components/TasksContext";
 
 export const useTasks = () => {
-  const { timeblockId } = useTasksContext();
+  const { timeblockId, tasks: contextTasks } = useTasksContext();
 
   const queryResult = useQuery(
     api.tasks.queries.list,
-    timeblockId ? { timeblockId: toTimeblockId(timeblockId) } : "skip",
+    timeblockId && contextTasks === undefined
+      ? { timeblockId: toTimeblockId(timeblockId) }
+      : "skip",
   );
+
+  if (contextTasks !== undefined) {
+    return {
+      isLoading: false,
+      tasks: contextTasks,
+      canViewTasks: true,
+      isOwner: true,
+    };
+  }
 
   return {
     isLoading: queryResult === undefined,
