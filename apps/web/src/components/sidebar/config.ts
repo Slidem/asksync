@@ -1,9 +1,12 @@
 import {
-  BookOpen,
+  BarChart3,
   Calendar1,
   MessageCircleQuestionMark,
+  Settings,
   SquareTerminal,
   TagIcon,
+  Timer,
+  Users,
 } from "lucide-react";
 
 export type SidebarItem = {
@@ -13,29 +16,12 @@ export type SidebarItem = {
 };
 
 export const sidebarItems: SidebarItem[] = [
-  {
-    title: "Dashboard",
-    path: "/",
-    icon: SquareTerminal,
-  },
-  {
-    title: "Schedule",
-    path: "/schedule",
-    icon: Calendar1,
-  },
-  {
-    title: "Tags",
-    path: "/tags",
-    icon: TagIcon,
-  },
-  {
-    title: "Questions",
-    path: "/questions",
-    icon: MessageCircleQuestionMark,
-  },
-  {
-    title: "Knowledge base",
-    path: "/knowledge-base",
-    icon: BookOpen,
-  },
+  { title: "Dashboard", path: "/", icon: SquareTerminal },
+  { title: "Work Mode", path: "/work", icon: Timer },
+  { title: "Schedule", path: "/schedule", icon: Calendar1 },
+  { title: "Tags", path: "/tags", icon: TagIcon },
+  { title: "Members", path: "/members", icon: Users },
+  { title: "Questions", path: "/questions", icon: MessageCircleQuestionMark },
+  { title: "Analytics", path: "/analytics", icon: BarChart3 },
+  { title: "Settings", path: "/settings", icon: Settings },
 ];

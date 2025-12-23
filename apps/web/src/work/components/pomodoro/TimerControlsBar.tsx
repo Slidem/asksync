@@ -1,13 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import {
-  Coffee,
-  Pause,
-  Play,
-  SkipForward,
-  Square,
-} from "lucide-react";
+import { Coffee, Pause, Play, SkipForward, Square } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
 import { Button } from "@/components/ui/button";

@@ -18,58 +18,47 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { NavMain } from "@/components/sidebar/NavMain";
+import { NavMain, type NavGroup } from "@/components/sidebar/NavMain";
 import { SidebarTimer } from "@/work/components/sidebar/SidebarTimer";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
-const items = [
+const navGroups: NavGroup[] = [
   {
-    title: "Dashboard",
-    url: "/",
-    icon: SquareTerminal,
+    label: "Overview",
+    items: [
+      { title: "Dashboard", url: "/", icon: SquareTerminal },
+      { title: "Analytics", url: "/analytics", icon: BarChart3 },
+    ],
   },
   {
-    title: "Work Mode",
-    url: "/work",
-    icon: Timer,
+    label: "Productivity",
+    items: [
+      { title: "Work Mode", url: "/work", icon: Timer },
+      { title: "Schedule", url: "/schedule", icon: Calendar1 },
+      { title: "Tags", url: "/tags", icon: TagIcon },
+    ],
   },
   {
-    title: "Team Status",
-    url: "/team",
-    icon: Users,
+    label: "Communication",
+    items: [
+      {
+        title: "Questions",
+        url: "/questions",
+        icon: MessageCircleQuestionMark,
+      },
+    ],
   },
   {
-    title: "Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Schedule",
-    url: "/schedule",
-    icon: Calendar1,
-  },
-  {
-    title: "Tags",
-    url: "/tags",
-    icon: TagIcon,
-  },
-  {
-    title: "Questions",
-    url: "/questions",
-    icon: MessageCircleQuestionMark,
-  },
-  {
-    title: "Members",
-    url: "/members",
-    icon: Users,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
+    label: "Team",
+    items: [{ title: "Members", url: "/members", icon: Users }],
   },
 ];
 
@@ -77,6 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   const pathname = usePathname();
   const isWorkPage = pathname.includes("/work");
+  const isSettingsActive = pathname === "/settings";
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -109,7 +99,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={items} />
+        <NavMain groups={navGroups} />
+
+        {/* Settings - separate at bottom of nav */}
+        <SidebarGroup className="mt-auto">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Settings"
+                isActive={isSettingsActive}
+                className="md:h-10 md:text-base"
+              >
+                <Link href="/settings">
+                  <Settings className="md:h-4 md:w-4" />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarTimer hideDisplay={isWorkPage} />

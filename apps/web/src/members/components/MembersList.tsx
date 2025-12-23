@@ -1,33 +1,28 @@
+"use client";
+
 import { useState, useMemo } from "react";
-import { useOrganization, useUser } from "@clerk/nextjs";
+import { useOrganization } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
-import { MemberCard } from "./MemberCard";
+import { MemberCard } from "@/members/components/MemberCard";
 import { Search } from "lucide-react";
+import { useMembersWithWorkStatus } from "@/members/hooks/useMembersWithWorkStatus";
 
 export function MembersList() {
-  const { user } = useUser();
-  const { memberships, membership } = useOrganization({
-    memberships: {
-      infinite: true,
-    },
-  });
+  const { membership } = useOrganization();
+  const { members, isLoading, memberCount } = useMembersWithWorkStatus();
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const currentUserId = user?.id || "";
   const canManage = membership?.role === "org:admin";
 
-  // Filter members based on search query
   const filteredMembers = useMemo(() => {
-    if (!memberships?.data) return [];
-
     const query = searchQuery.toLowerCase().trim();
-    if (!query) return memberships.data;
+    if (!query) return members;
 
-    return memberships.data.filter((m) => {
-      const firstName = m.publicUserData?.firstName || "";
-      const lastName = m.publicUserData?.lastName || "";
-      const identifier = m.publicUserData?.identifier || "";
+    return members.filter((m) => {
+      const firstName = m.firstName || "";
+      const lastName = m.lastName || "";
+      const identifier = m.identifier || "";
       const fullName = `${firstName} ${lastName}`.toLowerCase();
       const email = identifier.toLowerCase();
 
@@ -38,12 +33,11 @@ export function MembersList() {
         lastName?.toLowerCase().includes(query)
       );
     });
-  }, [memberships?.data, searchQuery]);
+  }, [members, searchQuery]);
 
-  const memberCount = memberships?.data?.length || 0;
   const filteredCount = filteredMembers.length;
 
-  if (!memberships) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <p className="text-muted-foreground">Loading members...</p>
@@ -90,11 +84,10 @@ export function MembersList() {
         </div>
       ) : (
         <div className="grid gap-3">
-          {filteredMembers.map((membership) => (
+          {filteredMembers.map((member) => (
             <MemberCard
-              key={membership.id}
-              membership={membership}
-              currentUserId={currentUserId}
+              key={member.id}
+              member={member}
               canManage={canManage}
             />
           ))}
