@@ -1,12 +1,17 @@
 import { DEFAULT_WORK_DURATION_MINUTES } from "@/work/types";
 import { api } from "@convex/api";
+import { toast } from "sonner";
 import { useCallback } from "react";
 import { useDeviceId } from "@/lib/device";
 import { useMutation } from "convex/react";
+import { usePathname } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 export const useStartWork = () => {
+  const pathname = usePathname();
+  const isWorkPage = pathname.includes("/work");
+
   const {
     focusMode,
     sessionType,
@@ -59,6 +64,17 @@ export const useStartWork = () => {
     setSessionStatus("active");
     setIsRunning(true);
     setIsPaused(false);
+
+    // Show toast notification when NOT on work page
+    if (!isWorkPage) {
+      const sessionName =
+        sessionType === "work"
+          ? "Work Session"
+          : sessionType === "shortBreak"
+            ? "Short Break"
+            : "Long Break";
+      toast.success(`${sessionName} Started`);
+    }
   }, [
     focusMode,
     sessionType,
@@ -69,10 +85,14 @@ export const useStartWork = () => {
     setIsRunning,
     setIsPaused,
     startSession,
+    isWorkPage,
   ]);
 };
 
 export const useResume = () => {
+  const pathname = usePathname();
+  const isWorkPage = pathname.includes("/work");
+
   const { activeSessionId, setSessionStatus, setIsPaused } = useWorkModeStore(
     useShallow((state) => ({
       activeSessionId: state.activeSessionId,
@@ -93,7 +113,12 @@ export const useResume = () => {
     await resumeSession({ sessionId: activeSessionId });
     setSessionStatus("active");
     setIsPaused(false);
-  }, [activeSessionId, resumeSession, setIsPaused, setSessionStatus]);
+
+    // Show toast notification when NOT on work page
+    if (!isWorkPage) {
+      toast.info("Session Resumed");
+    }
+  }, [activeSessionId, resumeSession, setIsPaused, setSessionStatus, isWorkPage]);
 };
 
 export const useSkipSession = () => {
@@ -115,6 +140,9 @@ export const useSkipSession = () => {
 };
 
 export const usePauseSession = () => {
+  const pathname = usePathname();
+  const isWorkPage = pathname.includes("/work");
+
   const { activeSessionId, setSessionStatus, setIsPaused } = useWorkModeStore(
     useShallow((state) => ({
       activeSessionId: state.activeSessionId,
@@ -132,8 +160,13 @@ export const usePauseSession = () => {
       await pauseSession({ sessionId: activeSessionId });
       setSessionStatus("paused");
       setIsPaused(true);
+
+      // Show toast notification when NOT on work page
+      if (!isWorkPage) {
+        toast.info("Session Paused");
+      }
     }
-  }, [activeSessionId, pauseSession, setSessionStatus, setIsPaused]);
+  }, [activeSessionId, pauseSession, setSessionStatus, setIsPaused, isWorkPage]);
 };
 
 export const useEndSession = () => {

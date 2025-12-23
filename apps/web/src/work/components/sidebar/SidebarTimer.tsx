@@ -1,13 +1,12 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import { MiniTimerControls } from "@/work/components/sidebar/MiniTimerControls";
 import { MiniTimerDisplay } from "@/work/components/sidebar/MiniTimerDisplay";
+import { Button } from "@/components/ui/button";
 import { memo } from "react";
-import { useInitializeWorkMode } from "@/work/hooks/useInitializeWorkMode";
-import { useTimerCompletion } from "@/work/hooks/useTimerCompletion";
-import { useTimerTick } from "@/work/hooks/timer";
-import { useTimerWarning } from "@/work/hooks/useTimerWarning";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
+import { useShallow } from "zustand/react/shallow";
 
 interface SidebarTimerProps {
   hideDisplay?: boolean;
@@ -16,22 +15,17 @@ interface SidebarTimerProps {
 export const SidebarTimer = memo(function SidebarTimer({
   hideDisplay = false,
 }: SidebarTimerProps) {
-  const settings = useWorkModeStore((state) => state.settings);
+  const { settings, floatingTimerVisible, setFloatingTimerVisible } =
+    useWorkModeStore(
+      useShallow((state) => ({
+        settings: state.settings,
+        floatingTimerVisible: state.floatingTimerVisible,
+        setFloatingTimerVisible: state.setFloatingTimerVisible,
+      })),
+    );
 
-  // Initialize settings and restore active session
-  const { isLoading } = useInitializeWorkMode();
-
-  // Keep timer ticking (only place this runs)
-  useTimerTick();
-
-  // Handle timer completion - notifications, auto-start (only place this runs)
-  useTimerCompletion();
-
-  // Handle 5-second warning sound (only place this runs)
-  useTimerWarning();
-
-  // Don't render display until settings are loaded, but hooks still run
-  if (isLoading || !settings || hideDisplay) {
+  // Don't render display until settings are loaded
+  if (!settings || hideDisplay) {
     return null;
   }
 
@@ -41,6 +35,21 @@ export const SidebarTimer = memo(function SidebarTimer({
         <MiniTimerDisplay />
         <MiniTimerControls />
       </div>
+
+      {/* Show button to unhide floating timer on mobile */}
+      {!floatingTimerVisible && (
+        <div className="mt-2 md:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => setFloatingTimerVisible(true)}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Show Floating Timer
+          </Button>
+        </div>
+      )}
     </div>
   );
 });

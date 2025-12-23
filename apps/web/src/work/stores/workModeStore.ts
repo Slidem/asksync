@@ -31,6 +31,9 @@ interface WorkModeState {
 
   completedWorkSessions: number; // completed work sessions since last long break
 
+  // Floating timer (mobile)
+  floatingTimerVisible: boolean;
+
   // Actions
   setActiveSession: (sessionId: Id<"workSessions"> | null) => void;
   setSessionType: (type: SessionType) => void;
@@ -45,6 +48,7 @@ interface WorkModeState {
   setCountdownSoundFired: (fired: boolean) => void;
 
   setSettings: (settings: PomodoroSettings) => void;
+  setFloatingTimerVisible: (visible: boolean) => void;
 
   // Helper actions
   tick: () => void;
@@ -70,6 +74,13 @@ const getDeviceId = (): string => {
   return deviceId;
 };
 
+// Get floating timer visibility from localStorage
+const getFloatingTimerVisible = (): boolean => {
+  if (typeof window === "undefined") return true;
+  const stored = localStorage.getItem("floatingTimerVisible");
+  return stored === null ? true : stored === "true";
+};
+
 export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   // Initial state
   activeSessionId: null,
@@ -93,6 +104,8 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   sessionCount: 0,
   completedWorkSessions: 0,
   todaysStats: null,
+
+  floatingTimerVisible: getFloatingTimerVisible(),
 
   // Actions
   setActiveSession: (sessionId) => set({ activeSessionId: sessionId }),
@@ -135,6 +148,13 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
   setCountdownSoundFired: (fired) => set({ countdownSoundFired: fired }),
 
   setSettings: (settings) => set({ settings }),
+  setFloatingTimerVisible: (visible) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("floatingTimerVisible", visible.toString());
+    }
+    set({ floatingTimerVisible: visible });
+  },
+
   tick: () => {
     const { remainingTime, isRunning, isPaused } = get();
     if (isRunning && !isPaused && remainingTime > 0) {

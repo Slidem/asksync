@@ -11,6 +11,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { BreadcrumbsNav } from "@/components/breadcrumbs/BreadcrumbsNav";
+import { FloatingTimer } from "@/work/components/FloatingTimer";
+import { GlobalTimerProvider } from "@/work/components/GlobalTimerProvider";
 import { Separator } from "@/components/ui/separator";
 import Spinner from "@/components/ui/spinner";
 
@@ -64,6 +66,8 @@ function OrganizationRouter({ children }: OrganizationRouterProps) {
   if (organization) {
     return (
       <SidebarProvider>
+        <GlobalTimerProvider />
+        <FloatingTimer />
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2">

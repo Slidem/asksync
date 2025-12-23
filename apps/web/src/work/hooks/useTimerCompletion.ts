@@ -6,16 +6,20 @@ import { useCallback, useEffect } from "react";
 
 import { api } from "@convex/api";
 import { playAlarmSound } from "@/work/sound";
+import { toast } from "sonner";
 import { useMutation } from "convex/react";
+import { usePathname } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
 import { useStartWork } from "@/work/hooks/sessionControls";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * Hook that handles timer completion with notifications and auto-start
- * Should only be called in ONE place (SidebarTimer) to avoid duplicates
+ * Should only be called in ONE place (GlobalTimerProvider) to avoid duplicates
  */
 export function useTimerCompletion() {
+  const pathname = usePathname();
+  const isWorkPage = pathname.includes("/work");
   const {
     remainingTime,
     isRunning,
@@ -71,6 +75,22 @@ export function useTimerCompletion() {
           notifyBreakComplete(sessionType === "longBreak");
         }
       }
+
+      // Show toast notifications when NOT on work page
+      if (!isWorkPage) {
+        if (sessionType === "work") {
+          toast.success("Work Session Complete!", {
+            description: "Great job! Time for a break.",
+          });
+        } else {
+          toast.info(
+            sessionType === "longBreak" ? "Long Break Over" : "Break Over",
+            {
+              description: "Ready to get back to work?",
+            },
+          );
+        }
+      }
     };
 
     const handleCompletion = async () => {
@@ -92,6 +112,7 @@ export function useTimerCompletion() {
     endSession,
     resetToNextSessionType,
     setAutoStartCountdown,
+    isWorkPage,
   ]);
 
   // Countdown tick
