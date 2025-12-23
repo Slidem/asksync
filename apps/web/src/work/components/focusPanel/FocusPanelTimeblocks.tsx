@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { SheetClose } from "@/components/ui/sheet";
 import React from "react";
-import { Target } from "lucide-react";
+import { Target, X } from "lucide-react";
 import { TimeblockInfo } from "@/work/components/focusPanel/TimeblockInfo";
 import { useCurrentTimeblock as useCurrentTimeblocks } from "@/work/hooks/useCurrentTimeblock";
 
@@ -34,9 +35,15 @@ export const FocusPanelTimeblocks = () => {
           <Target className="h-5 w-5" />
           Current Focus
         </h2>
-        <Badge variant="secondary">
-          {completedTasks.length}/{tasks.length} done
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">
+            {completedTasks.length}/{tasks.length} done
+          </Badge>
+          <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </SheetClose>
+        </div>
       </div>
 
       <div className="space-y-3">

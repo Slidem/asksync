@@ -50,13 +50,13 @@ export const playCountdownSound = () => {
       .play()
       .catch((e) => console.warn("Could not play countdown:", e));
 
-    // Pause after 2 seconds
+    // Pause after 5 seconds
     countdownTimeout = setTimeout(() => {
       if (countdownAudio) {
         countdownAudio.pause();
         countdownAudio.currentTime = 0;
       }
       countdownTimeout = null;
-    }, 2000);
+    }, 5000);
   }
 };

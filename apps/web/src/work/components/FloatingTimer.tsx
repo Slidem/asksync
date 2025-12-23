@@ -7,6 +7,12 @@ import { MiniTimerControls } from "@/work/components/sidebar/MiniTimerControls";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
@@ -164,15 +170,21 @@ export const FloatingTimer = memo(function FloatingTimer() {
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
           <MiniTimerDisplay />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => setFloatingTimerVisible(false)}
-            title="Hide timer"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setFloatingTimerVisible(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Hide Timer</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <MiniTimerControls />
       </div>

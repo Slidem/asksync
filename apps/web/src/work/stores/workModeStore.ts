@@ -34,6 +34,9 @@ interface WorkModeState {
   // Floating timer (mobile)
   floatingTimerVisible: boolean;
 
+  // Focus panel
+  focusPanelOpen: boolean;
+
   // Actions
   setActiveSession: (sessionId: Id<"workSessions"> | null) => void;
   setSessionType: (type: SessionType) => void;
@@ -49,6 +52,7 @@ interface WorkModeState {
 
   setSettings: (settings: PomodoroSettings) => void;
   setFloatingTimerVisible: (visible: boolean) => void;
+  setFocusPanelOpen: (open: boolean) => void;
 
   // Helper actions
   tick: () => void;
@@ -107,6 +111,8 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
 
   floatingTimerVisible: getFloatingTimerVisible(),
 
+  focusPanelOpen: false,
+
   // Actions
   setActiveSession: (sessionId) => set({ activeSessionId: sessionId }),
   setSessionType: (type) => set({ sessionType: type }),
@@ -154,6 +160,7 @@ export const useWorkModeStore = create<WorkModeState>((set, get) => ({
     }
     set({ floatingTimerVisible: visible });
   },
+  setFocusPanelOpen: (open) => set({ focusPanelOpen: open }),
 
   tick: () => {
     const { remainingTime, isRunning, isPaused } = get();

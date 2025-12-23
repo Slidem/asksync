@@ -35,10 +35,16 @@ const focusModeLabels: Record<Exclude<FocusMode, "custom">, string> = {
   review: "Review",
 };
 
+interface FocusModeSelectorProps {
+  compact?: boolean;
+}
+
 /**
  * Focus mode selector dropdown component with custom duration support
  */
-export const FocusModeSelector = memo(function FocusModeSelector() {
+export const FocusModeSelector = memo(function FocusModeSelector({
+  compact = false,
+}: FocusModeSelectorProps) {
   const { toast } = useToast();
   const updateSettings = useMutation(
     api.workSessions.mutations.settings.updatePomodoroSettings,
@@ -142,13 +148,13 @@ export const FocusModeSelector = memo(function FocusModeSelector() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
+            variant={compact ? "ghost" : "outline"}
             size="sm"
             disabled={isRunning}
-            className="min-w-[140px]"
+            className={compact ? "h-8 px-2 gap-1" : "min-w-[140px]"}
           >
             {currentMode?.label || "Custom"}
-            <ChevronDown className="ml-2 h-4 w-4" />
+            <ChevronDown className={compact ? "h-3 w-3" : "ml-2 h-4 w-4"} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="w-[200px]">

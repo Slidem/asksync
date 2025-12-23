@@ -5,16 +5,15 @@ import { memo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "@/work/components/pomodoro/CircularProgress";
-import { ControlButtons } from "@/work/components/pomodoro/ControlButtons";
-import { FocusModeSelector } from "@/work/components/pomodoro/FocusModeSelector";
-import { SessionTypeBadge } from "@/work/components/pomodoro/SessionBadgeType";
+import { TimerControlsBar } from "@/work/components/pomodoro/TimerControlsBar";
 import { TimerDisplay } from "@/work/components/pomodoro/TimerDisplay";
+import { TimerInfoBar } from "@/work/components/pomodoro/TimerInfoBar";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * Main Pomodoro Timer Component
- * Reads timer state from global store (SidebarTimer handles tick/completion)
+ * Reads timer state from global store (GlobalTimerProvider handles tick/completion)
  */
 export const PomodoroTimer = memo(function PomodoroTimer() {
   const {
@@ -22,7 +21,6 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     targetDuration,
     remainingTime,
     isRunning,
-    completedWorkSessions,
     settings,
     autoStartCountdown,
     setAutoStartCountdown,
@@ -32,7 +30,6 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
       targetDuration: state.targetDuration,
       remainingTime: state.remainingTime,
       isRunning: state.isRunning,
-      completedWorkSessions: state.completedWorkSessions,
       settings: state.settings,
       autoStartCountdown: state.autoStartCountdown,
       setAutoStartCountdown: state.setAutoStartCountdown,
@@ -45,7 +42,7 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
 
   const progress = ((targetDuration - remainingTime) / targetDuration) * 100;
 
-  // Settings loaded by SidebarTimer, show loading if not ready
+  // Settings loaded by GlobalTimerProvider, show loading if not ready
   if (!settings) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -54,20 +51,10 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
     );
   }
 
-  const sessionsBeforeLongBreak = settings.sessionsBeforeLongBreak || 4;
-
   return (
-    <div className="flex flex-col items-center space-y-8">
-      {/* Session type badge */}
-      <SessionTypeBadge sessionType={sessionType} />
-
-      {/* Session progress indicator */}
-      {sessionType === "work" && (
-        <Badge variant="secondary" className="text-sm px-3 py-1">
-          Session {completedWorkSessions + 1}/{sessionsBeforeLongBreak} before
-          long break
-        </Badge>
-      )}
+    <div className="flex flex-col items-center gap-6">
+      {/* Info bar - session type, count, mode, settings */}
+      <TimerInfoBar />
 
       {/* Circular timer */}
       <CircularProgress
@@ -100,13 +87,8 @@ export const PomodoroTimer = memo(function PomodoroTimer() {
         </Badge>
       )}
 
-      {/* Focus mode selector */}
-      {autoStartCountdown === null && (
-        <>
-          <FocusModeSelector />
-          <ControlButtons />
-        </>
-      )}
+      {/* Controls bar */}
+      {autoStartCountdown === null && <TimerControlsBar />}
     </div>
   );
 });

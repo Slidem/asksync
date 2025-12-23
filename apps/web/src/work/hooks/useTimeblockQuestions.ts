@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 
 export const useTimeblockQuestions = (timeblockIds?: Id<"timeblocks">[]) => {
   const questions = useQuery(
-    api.workSessions.queries.questions.getTimeblockQuestions,
+    api.workSessions.queries.questions.getCurrentFocusQuestions,
     timeblockIds && timeblockIds.length > 0 ? { timeblockIds } : {},
   );
 

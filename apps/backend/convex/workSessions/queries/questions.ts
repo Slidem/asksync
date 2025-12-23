@@ -4,7 +4,7 @@ import { query } from "../../_generated/server";
 import { getUser } from "../../auth/user";
 
 // Get questions for timeblocks (supports multiple)
-export const getTimeblockQuestions = query({
+export const getCurrentFocusQuestions = query({
   args: {
     timeblockIds: v.optional(v.array(v.id("timeblocks"))),
   },
@@ -50,12 +50,35 @@ export const getTimeblockQuestions = query({
       .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
       .collect();
 
-    // Filter: assigned to user + matching ANY timeblock tag + not answered
+    const answerModesByTags = new Map<string, string>();
+
+    await Promise.all(
+      allQuestions.map(async (question) => {
+        const tags = await Promise.all(
+          question.tagIds.map((tagId: string) =>
+            ctx.db.get(tagId as Id<"tags">),
+          ),
+        );
+
+        const filteredTags = tags.filter((tag) => tag !== null);
+
+        // Map answerMode by tag
+        for (const tag of filteredTags) {
+          if (!answerModesByTags.has(tag!._id)) {
+            answerModesByTags.set(tag!._id, tag!.answerMode);
+          }
+        }
+      }),
+    );
+
+    // Filter: assigned to user + matching ANY timeblock tag / on demand tag + not answered
     const questions = allQuestions.filter((q) => {
       const isAssigned = q.assigneeIds.includes(user.id);
-      const hasMatchingTag = q.tagIds.some((tagId) => allTagIds.has(tagId));
+      const hasMatchingTag = q.tagIds.some(
+        (tagId) =>
+          allTagIds.has(tagId) || answerModesByTags.get(tagId) === "on-demand",
+      );
       const notAnswered = q.status !== "answered" && q.status !== "resolved";
-
       return isAssigned && hasMatchingTag && notAnswered;
     });
 
