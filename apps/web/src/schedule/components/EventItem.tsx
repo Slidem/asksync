@@ -129,6 +129,15 @@ export function EventItem({
 }: EventItemProps) {
   const eventColor = event.color;
 
+  const taskCount = useMemo(() => {
+    if (!event.tasks || event.tasks.length === 0) {
+      return { total: 0, completed: 0 };
+    }
+    const total = event.tasks.length;
+    const completed = event.tasks.filter((task) => !!task.completedAt).length;
+    return { total, completed };
+  }, [event.tasks]);
+
   // Use the provided currentTime (for dragging) or the event's actual time
   const displayStart = useMemo(() => {
     return currentTime || new Date(event.start);
@@ -190,7 +199,7 @@ export function EventItem({
               )}
               {event.title}
             </span>
-            {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+            {taskCount.total > 0 && <TaskBadge taskCount={taskCount} />}
           </span>
         )}
       </EventWrapper>
@@ -227,13 +236,13 @@ export function EventItem({
                 </span>
               )}
             </span>
-            {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+            {taskCount.total > 0 && <TaskBadge taskCount={taskCount} />}
           </div>
         ) : (
           <>
             <div className="truncate font-medium flex items-center gap-1">
               <span className="truncate">{event.title}</span>
-              {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+              {taskCount.total > 0 && <TaskBadge taskCount={taskCount} />}
             </div>
             {showTime && (
               <div className="truncate font-normal opacity-70 sm:text-[11px]">
@@ -262,7 +271,7 @@ export function EventItem({
     >
       <div className="text-sm font-medium flex items-center gap-2">
         <span>{event.title}</span>
-        {event.taskCount && <TaskBadge taskCount={event.taskCount} />}
+        {taskCount.total > 0 && <TaskBadge taskCount={taskCount} />}
       </div>
       <div className="text-xs opacity-70">
         {event.allDay ? (

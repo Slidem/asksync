@@ -8,6 +8,7 @@ import {
   sortByStartTime,
 } from "./helpers";
 
+import { decorateResourceWithGrants } from "../permissions/common";
 import { getUserWithGroups } from "../auth/user";
 import { v } from "convex/values";
 
@@ -30,15 +31,22 @@ export const listTimeblocks = query({
     });
 
     // Add task counts to each timeblock
-    const withTaskCounts = await Promise.all(
+    const withTasks = await Promise.all(
       timeblocks.map(async (tb) => {
-        const taskCount = await getTaskCount(ctx, tb._id, tb, authedUserId);
-        return { ...tb, taskCount };
+        const tasks = await getTasksForTimeblock(ctx, tb._id, tb, authedUserId);
+        return { ...tb, tasks };
       }),
     );
 
+    const withPermissions = await decorateResourceWithGrants({
+      ctx,
+      currentUser: user,
+      resourceType: "timeblocks",
+      resources: withTasks,
+    });
+
     return expandRecurringTimeblocks(
-      withTaskCounts,
+      withPermissions,
       args.range.start,
       args.range.end,
     );
@@ -68,12 +76,12 @@ export const getAvailableTimeblocks = query({
   },
 });
 
-async function getTaskCount(
+async function getTasksForTimeblock(
   ctx: BaseQueryCtx,
   timeblockId: string,
   timeblock: Doc<"timeblocks">,
   userId: string,
-): Promise<{ total: number; completed: number } | null> {
+) {
   const isOwner = timeblock.createdBy === userId;
 
   // If not owner and checklists not visible, return null
@@ -81,17 +89,10 @@ async function getTaskCount(
     return null;
   }
 
-  const tasks = await ctx.db
+  return await ctx.db
     .query("tasks")
     .withIndex("by_timeblock", (q) =>
       q.eq("timeblockId", timeblockId as Id<"timeblocks">),
     )
     .collect();
-
-  const completed = tasks.filter((t) => t.completed).length;
-
-  return {
-    total: tasks.length,
-    completed,
-  };
 }

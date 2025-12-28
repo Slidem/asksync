@@ -8,6 +8,7 @@ import {
   Question,
   RecurrenceRule,
   Tag,
+  Task,
   Thread,
   Timeblock,
   UserSettings,
@@ -38,27 +39,33 @@ type TimeblockType = Doc<"timeblocks"> & {
   permissions: PermissionGrant[];
   canEdit?: boolean;
   canManage?: boolean;
+  tasks: Doc<"tasks">[] | null;
 };
 
 export function docToTimeblock(doc: TimeblockType): Timeblock {
-  const { _id, _creationTime, recurrenceRule, exceptionDates, ...rest } = doc;
+  const { _id, _creationTime, recurrenceRule, exceptionDates, tasks, ...rest } =
+    doc;
   return {
     id: _id,
     createdAt: _creationTime,
     recurrenceRule: recurrenceRule as RecurrenceRule,
     exceptionDates: exceptionDates || [],
+    tasks: tasks ? tasks.map(docToTask) : null,
     ...rest,
   };
 }
 
 export function docToCalendarEvent(doc: TimeblockType): CalendarEvent {
-  const { _id, recurrenceRule, startTime, endTime, color, ...rest } = doc;
+  const { _id, recurrenceRule, startTime, endTime, color, tasks, ...rest } =
+    doc;
+
   return {
     id: _id,
     recurrenceRule: recurrenceRule as RecurrenceRule,
     start: new Date(startTime),
     end: new Date(endTime),
     color: color as CalendarEvent["color"],
+    tasks: tasks ? tasks.map(docToTask) : [],
     ...rest,
   };
 }
@@ -96,6 +103,14 @@ export function convertConvexQuestion(
     id: _id,
     createdAt: _creationTime,
     tags: convertedTags,
+    ...rest,
+  };
+}
+
+export function docToTask(doc: Doc<"tasks">): Task {
+  const { _id, ...rest } = doc;
+  return {
+    id: _id,
     ...rest,
   };
 }

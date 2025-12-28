@@ -1,13 +1,7 @@
-import {
-  CalendarEvent,
-  EventColor,
-  RecurrenceRule,
-  Timeblock,
-} from "@asksync/shared";
+import type { CalendarEvent, EventColor, TimeOption } from "@/schedule/types";
 import { END_HOUR, START_HOUR } from "@/schedule/constants";
+import { RecurrenceRule, Timeblock } from "@asksync/shared";
 import { format, isSameDay } from "date-fns";
-
-import type { TimeOption } from "@/schedule/types";
 
 /**
  * Get CSS classes for event colors
@@ -179,7 +173,7 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
     canEditTags: true,
     permissions: timeblock.permissions || [],
     checklistsVisible: timeblock.checklistsVisible ?? false,
-    taskCount: timeblock.taskCount,
+    tasks: timeblock.tasks || [],
   };
 }
 

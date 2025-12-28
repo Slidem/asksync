@@ -250,6 +250,14 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         recurrenceRule: event.recurrenceRule || null,
         permissions: event.permissions || [],
         checklistsVisible: event.checklistsVisible ?? false,
+        draftTasks: event.tasks.map((task, index) => ({
+          id: task.id,
+          title: task.title,
+          completed: task.completed,
+          order: task.order ?? index,
+          currentlyWorkingOn: task.currentlyWorkingOn,
+        })),
+        error: null,
       };
 
       const eventMetadata: EventMetadata = {
@@ -349,6 +357,13 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
       canEditTags: eventMetadata.canEditTags,
       permissions: formFields.permissions,
       checklistsVisible: formFields.checklistsVisible,
+      tasks: formFields.draftTasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        completed: task.completed,
+        order: task.order,
+        currentlyWorkingOn: task.currentlyWorkingOn,
+      })),
     };
 
     set({ formFields: { ...formFields, error: null } });

@@ -2,6 +2,7 @@ import {
   CalendarSource,
   PermissionGrant,
   RecurrenceRule,
+  Task,
 } from "@asksync/shared";
 
 export enum CalendarView {
@@ -30,7 +31,7 @@ export interface CalendarEvent {
   canEditTags?: boolean;
   permissions: PermissionGrant[];
   checklistsVisible?: boolean;
-  taskCount?: { total: number; completed: number } | null;
+  tasks: Task[];
 }
 
 export type EventColor =

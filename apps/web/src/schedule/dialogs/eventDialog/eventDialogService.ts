@@ -52,6 +52,8 @@ export const useOpenCreateEventDialog = () => {
         end: eventEnd,
         allDay: false,
         permissions: getDefaultCreateResourceGrants(user?.id || ""),
+        tagIds: [],
+        tasks: [],
       };
 
       openDialog(newEvent);

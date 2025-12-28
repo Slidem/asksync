@@ -19,7 +19,7 @@
   "dependencies": {
     "@asksync/shared": "workspace:*",
     "@convex-dev/migrations": "^0.3.0",
-    "convex": "^1.31.0"
+    "convex": "^1.31.2"
   },
   "devDependencies": {
     "@asksync/eslint-config": "workspace:*",

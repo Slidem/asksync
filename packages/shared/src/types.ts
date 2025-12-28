@@ -21,6 +21,16 @@ export enum RecurrenceRule {
   WEEKDAYS = "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
 }
 
+export interface Task {
+  id: string;
+  timeblockId?: string;
+  order?: number;
+  title: string;
+  completed: boolean;
+  currentlyWorkingOn: boolean;
+  completedAt?: number;
+}
+
 // === ENTITY TYPES ===
 export interface Tag {
   id: string;
@@ -62,7 +72,7 @@ export interface Timeblock {
   createdAt: number;
   updatedAt: number;
   permissions: PermissionGrant[];
-  taskCount?: { total: number; completed: number } | null;
+  tasks: Task[] | null;
 }
 
 export interface Question {
