@@ -1,7 +1,8 @@
 /* eslint-disable import/order */
-import { internalMutation, mutation } from "../_generated/server";
+import { MutationCtx, internalMutation, mutation } from "../_generated/server";
 
 import { GoogleEventData } from "./types";
+import { Id } from "../_generated/dataModel";
 import { getUser } from "../auth/user";
 import { internal } from "../_generated/api";
 import { mapGoogleEventToTimeblock } from "./helpers";
@@ -109,6 +110,7 @@ export const triggerSync = mutation({
 });
 
 // Internal mutations
+// ----------------------------------------------------------------------------
 
 /**
  * Store OAuth tokens after successful auth (internal only)
@@ -340,42 +342,73 @@ export const deleteGoogleEvent = internalMutation({
       .first();
 
     if (timeblock) {
-      // Delete associated permissions
-      const permissions = await ctx.db
-        .query("permissions")
-        .withIndex("by_resource", (q) =>
-          q.eq("resourceType", "timeblocks").eq("resourceId", timeblock._id),
-        )
-        .collect();
-
-      for (const perm of permissions) {
-        await ctx.db.delete(perm._id);
-      }
-
-      // Delete timeblock
-      await ctx.db.delete(timeblock._id);
+      await deleteTimeblockWithRelations(ctx, timeblock._id);
     }
   },
 });
 
 /**
- * Update Google sync status on timeblock (internal only)
+ * Delete a timeblock and its associated tasks and permissions
  */
-export const updateTimeblockGoogleSync = internalMutation({
+async function deleteTimeblockWithRelations(
+  ctx: MutationCtx,
+  timeblockId: Id<"timeblocks">,
+) {
+  // Delete associated tasks
+  const tasks = await ctx.db
+    .query("tasks")
+    .withIndex("by_timeblock", (q) => q.eq("timeblockId", timeblockId))
+    .collect();
+
+  for (const task of tasks) {
+    await ctx.db.delete(task._id);
+  }
+
+  // Delete associated permissions
+  const permissions = await ctx.db
+    .query("permissions")
+    .withIndex("by_resource", (q) =>
+      q.eq("resourceType", "timeblocks").eq("resourceId", timeblockId),
+    )
+    .collect();
+
+  for (const perm of permissions) {
+    await ctx.db.delete(perm._id);
+  }
+
+  // Delete timeblock
+  await ctx.db.delete(timeblockId);
+}
+
+/**
+ * Cleanup orphaned timeblocks that no longer exist in Google Calendar (internal only)
+ */
+export const cleanupOrphanedTimeblocks = internalMutation({
   args: {
-    timeblockId: v.id("timeblocks"),
-    googleEventId: v.string(),
-    googleSyncStatus: v.union(
-      v.literal("synced"),
-      v.literal("pending"),
-      v.literal("error"),
-    ),
+    connectionId: v.id("googleCalendarConnections"),
+    validExternalIds: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.timeblockId, {
-      googleEventId: args.googleEventId,
-      googleSyncStatus: args.googleSyncStatus,
-      updatedAt: Date.now(),
-    });
+    const connection = await ctx.db.get(args.connectionId);
+    if (!connection) return;
+
+    // Get all Google-sourced timeblocks for this user
+    const localTimeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator_and_source", (q) =>
+        q
+          .eq("orgId", connection.orgId)
+          .eq("createdBy", connection.userId)
+          .eq("source", "google"),
+      )
+      .collect();
+
+    const validIds = new Set(args.validExternalIds);
+
+    for (const tb of localTimeblocks) {
+      if (tb.externalId && !validIds.has(tb.externalId)) {
+        await deleteTimeblockWithRelations(ctx, tb._id);
+      }
+    }
   },
 });

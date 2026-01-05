@@ -31,17 +31,20 @@ const TAB_VALUES = [
 ] as const;
 
 export const EventDialog: React.FC = () => {
-  const { isOpen, close, isExternalEvent, activeTab, setActiveTab, error } =
+  const { isOpen, close, source, activeTab, setActiveTab, error } =
     useEventDialogStore(
       useShallow((state) => ({
         isOpen: state.isOpen,
         close: state.close,
-        isExternalEvent: state.isExternalEvent,
+        source: state.eventMetadata.source,
         activeTab: state.activeTab,
         setActiveTab: state.setActiveTab,
         error: state.formFields.error,
       })),
     );
+
+  // Compute isExternalEvent directly from source for proper reactivity
+  const isExternalEvent = source !== "asksync";
 
   const tabsWithErrors = error ? [1] : [];
 

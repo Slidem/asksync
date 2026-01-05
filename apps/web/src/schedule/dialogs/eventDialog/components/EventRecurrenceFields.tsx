@@ -16,14 +16,14 @@ import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogS
 import { useShallow } from "zustand/react/shallow";
 
 export const EventRecurrenceFields = React.memo(() => {
-  const { recurrenceRule, isExternalEvent, canOnlyEditTags } =
-    useEventDialogStore(
-      useShallow((state) => ({
-        recurrenceRule: state.formFields.recurrenceRule,
-        isExternalEvent: state.isExternalEvent,
-        canOnlyEditTags: state.canOnlyEditTags,
-      })),
-    );
+  const { recurrenceRule, source } = useEventDialogStore(
+    useShallow((state) => ({
+      recurrenceRule: state.formFields.recurrenceRule,
+      source: state.eventMetadata.source,
+    })),
+  );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -53,6 +53,7 @@ export const EventRecurrenceFields = React.memo(() => {
     [updateFields],
   );
 
+  // Hide recurrence options for external events
   if (isExternalEvent) {
     return null;
   }
@@ -64,7 +65,6 @@ export const EventRecurrenceFields = React.memo(() => {
           id="recurring"
           checked={isRecurring || !!recurrenceRule}
           onCheckedChange={handleRecurringChange}
-          disabled={canOnlyEditTags}
         />
         <Label htmlFor="recurring">Recurring event</Label>
       </div>

@@ -1,16 +1,42 @@
+import {
+  ActionCtx,
+  internalAction,
+  internalMutation,
+} from "../_generated/server";
+import { GoogleCalendarVisibility, GoogleEventData } from "./types";
 /* eslint-disable import/order */
 import {
   fetchGoogleEventsImpl,
-  pushEventToGoogleImpl,
   refreshTokensImpl,
   setupWebhookImpl,
   stopWebhookChannelImpl,
 } from "./actions";
-import { internalAction, internalMutation } from "../_generated/server";
 
 import { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
+
+/**
+ * Process a single Google event (upsert or delete based on status)
+ */
+async function processGoogleEvent(
+  ctx: ActionCtx,
+  connectionId: Id<"googleCalendarConnections">,
+  event: GoogleEventData,
+  visibility: GoogleCalendarVisibility,
+): Promise<void> {
+  if (event.status === "cancelled") {
+    await ctx.runMutation(internal.googleCalendar.mutations.deleteGoogleEvent, {
+      externalId: event.id,
+    });
+  } else {
+    await ctx.runMutation(internal.googleCalendar.mutations.upsertGoogleEvent, {
+      connectionId,
+      googleEvent: event,
+      visibility,
+    });
+  }
+}
 
 /**
  * Perform full sync from Google Calendar
@@ -28,6 +54,7 @@ export const performFullSync = internalAction({
     try {
       let pageToken: string | undefined;
       let syncToken: string | undefined;
+      const allGoogleEventIds: string[] = [];
 
       do {
         const result = await fetchGoogleEventsImpl(ctx, {
@@ -35,28 +62,28 @@ export const performFullSync = internalAction({
           pageToken,
         });
 
-        // Process events
         for (const event of result.items || []) {
-          if (event.status === "cancelled") {
-            await ctx.runMutation(
-              internal.googleCalendar.mutations.deleteGoogleEvent,
-              { externalId: event.id },
-            );
-          } else {
-            await ctx.runMutation(
-              internal.googleCalendar.mutations.upsertGoogleEvent,
-              {
-                connectionId: args.connectionId,
-                googleEvent: event,
-                visibility: connection.visibility,
-              },
-            );
-          }
+          allGoogleEventIds.push(event.id);
+          await processGoogleEvent(
+            ctx,
+            args.connectionId,
+            event,
+            connection.visibility,
+          );
         }
 
         pageToken = result.nextPageToken;
         syncToken = result.nextSyncToken;
       } while (pageToken);
+
+      // Cleanup orphaned timeblocks not in the Google response
+      await ctx.runMutation(
+        internal.googleCalendar.mutations.cleanupOrphanedTimeblocks,
+        {
+          connectionId: args.connectionId,
+          validExternalIds: allGoogleEventIds,
+        },
+      );
 
       // Save sync token for incremental syncs
       await ctx.runMutation(internal.googleCalendar.mutations.updateSyncState, {
@@ -94,7 +121,7 @@ export const performIncrementalSync = internalAction({
 
     if (!connection) throw new Error("Connection not found");
 
-    // No sync token - do full sync via scheduler (can't call self directly)
+    // No sync token - do full sync
     if (!connection.syncToken) {
       await ctx.runAction(internal.googleCalendar.sync.performFullSync, {
         connectionId: args.connectionId,
@@ -109,21 +136,12 @@ export const performIncrementalSync = internalAction({
       });
 
       for (const event of result.items || []) {
-        if (event.status === "cancelled") {
-          await ctx.runMutation(
-            internal.googleCalendar.mutations.deleteGoogleEvent,
-            { externalId: event.id },
-          );
-        } else {
-          await ctx.runMutation(
-            internal.googleCalendar.mutations.upsertGoogleEvent,
-            {
-              connectionId: args.connectionId,
-              googleEvent: event,
-              visibility: connection.visibility,
-            },
-          );
-        }
+        await processGoogleEvent(
+          ctx,
+          args.connectionId,
+          event,
+          connection.visibility,
+        );
       }
 
       // Update sync token
@@ -151,43 +169,6 @@ export const performIncrementalSync = internalAction({
         errorMessage,
       });
       throw error;
-    }
-  },
-});
-
-/**
- * Push a timeblock to Google Calendar
- */
-export const pushTimeblockToGoogle = internalAction({
-  args: { timeblockId: v.id("timeblocks") },
-  handler: async (ctx, args): Promise<void> => {
-    const timeblock = await ctx.runQuery(
-      internal.timeblocks.queries.getTimeblockInternal,
-      { id: args.timeblockId },
-    );
-
-    if (!timeblock?.syncToGoogle || !timeblock?.googleConnectionId) return;
-
-    try {
-      await pushEventToGoogleImpl(ctx, {
-        connectionId:
-          timeblock.googleConnectionId as Id<"googleCalendarConnections">,
-        timeblock,
-      });
-    } catch (error) {
-      console.error(
-        `Failed to push timeblock ${args.timeblockId} to Google:`,
-        error,
-      );
-      // Update sync status to error
-      await ctx.runMutation(
-        internal.googleCalendar.mutations.updateTimeblockGoogleSync,
-        {
-          timeblockId: args.timeblockId,
-          googleEventId: timeblock.googleEventId || "",
-          googleSyncStatus: "error",
-        },
-      );
     }
   },
 });
@@ -262,10 +243,7 @@ export const refreshExpiringWebhooks = internalAction({
 
     for (const connection of connections) {
       try {
-        // Stop old webhook
         await stopWebhookChannelImpl(ctx, connection._id);
-
-        // Setup new webhook
         await setupWebhookImpl(ctx, connection._id);
       } catch (error) {
         console.error(

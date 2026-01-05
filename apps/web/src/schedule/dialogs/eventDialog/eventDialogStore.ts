@@ -37,15 +37,13 @@ interface FormFields {
   checklistsVisible: boolean;
   draftTasks: DraftTask[];
   error: string | null;
-  // Google Calendar sync
-  syncToGoogle: boolean;
-  googleConnectionId: string | null;
 }
 
 interface EventMetadata {
   eventId: string | null;
   source: CalendarSource;
   externalId: string | undefined;
+  googleEmail: string | undefined;
   timezone: string;
   canEdit: boolean | undefined;
   canDelete: boolean | undefined;
@@ -109,14 +107,13 @@ const getDefaultFormFieldsState = (): FormFields => ({
   checklistsVisible: false,
   draftTasks: [],
   error: null,
-  syncToGoogle: false,
-  googleConnectionId: null,
 });
 
 const getDefaultEventMetadata = (): EventMetadata => ({
   eventId: null,
   source: "asksync" as const,
   externalId: undefined,
+  googleEmail: undefined,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   canEdit: undefined,
   canDelete: undefined,
@@ -131,18 +128,19 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
   eventMetadata: getDefaultEventMetadata(),
   eventToUpdate: null,
 
-  // Computed values
+  // Computed values - these are functions, not getters, for proper Zustand reactivity
   get isExternalEvent() {
-    const state = get();
-    return state.eventMetadata.source !== "asksync";
+    return get().eventMetadata.source !== "asksync";
   },
   get canOnlyEditTags() {
     const state = get();
-    return state.isExternalEvent && state.eventMetadata.canEditTags === true;
+    const isExternal = state.eventMetadata.source !== "asksync";
+    return isExternal && state.eventMetadata.canEditTags === true;
   },
   get canDeleteEvent() {
     const state = get();
-    return state.eventMetadata.canDelete !== false && !state.isExternalEvent;
+    const isExternal = state.eventMetadata.source !== "asksync";
+    return state.eventMetadata.canDelete !== false && !isExternal;
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -263,14 +261,13 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
           currentlyWorkingOn: task.currentlyWorkingOn,
         })),
         error: null,
-        syncToGoogle: event.syncToGoogle ?? false,
-        googleConnectionId: event.googleConnectionId ?? null,
       };
 
       const eventMetadata: EventMetadata = {
         eventId: event.id,
         source: event.source || "asksync",
         externalId: event.externalId,
+        googleEmail: event.googleEmail,
         timezone:
           event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
         canEdit: event.canEdit,
@@ -371,8 +368,6 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         order: task.order,
         currentlyWorkingOn: task.currentlyWorkingOn,
       })),
-      syncToGoogle: formFields.syncToGoogle,
-      googleConnectionId: formFields.googleConnectionId ?? undefined,
     };
 
     set({ formFields: { ...formFields, error: null } });

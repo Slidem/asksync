@@ -11,7 +11,7 @@ export const EventDateTimeFields = React.memo(() => {
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
 
-  const { startDate, endDate, startTime, endTime, allDay, canOnlyEditTags } =
+  const { startDate, endDate, startTime, endTime, allDay, source } =
     useEventDialogStore(
       useShallow((state) => ({
         startDate: state.formFields.startDate,
@@ -19,9 +19,11 @@ export const EventDateTimeFields = React.memo(() => {
         startTime: state.formFields.startTime,
         endTime: state.formFields.endTime,
         allDay: state.formFields.allDay,
-        canOnlyEditTags: state.canOnlyEditTags,
+        source: state.eventMetadata.source,
       })),
     );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -36,7 +38,7 @@ export const EventDateTimeFields = React.memo(() => {
           onChange={(date) => updateFields({ startDate: date })}
           isOpen={startDateOpen}
           onOpenChange={setStartDateOpen}
-          disabled={canOnlyEditTags}
+          disabled={isExternalEvent}
           className="flex-1"
         />
 
@@ -46,7 +48,7 @@ export const EventDateTimeFields = React.memo(() => {
             label="Start Time"
             value={startTime}
             onChange={(value) => updateFields({ startTime: value })}
-            disabled={canOnlyEditTags}
+            disabled={isExternalEvent}
           />
         )}
       </div>
@@ -59,7 +61,7 @@ export const EventDateTimeFields = React.memo(() => {
           onChange={(date) => updateFields({ endDate: date })}
           isOpen={endDateOpen}
           onOpenChange={setEndDateOpen}
-          disabled={canOnlyEditTags}
+          disabled={isExternalEvent}
           disableBefore={startDate}
           className="flex-1"
         />
@@ -70,7 +72,7 @@ export const EventDateTimeFields = React.memo(() => {
             label="End Time"
             value={endTime}
             onChange={(value) => updateFields({ endTime: value })}
-            disabled={canOnlyEditTags}
+            disabled={isExternalEvent}
           />
         )}
       </div>

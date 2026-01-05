@@ -96,28 +96,3 @@ export function mapGoogleEventToTimeblock(
     updatedAt: Date.now(),
   };
 }
-
-/**
- * Map timeblock to Google event format for API calls
- */
-export function mapTimeblockToGoogleEvent(timeblock: Doc<"timeblocks">): {
-  summary: string;
-  description?: string;
-  location?: string;
-  start: { dateTime: string; timeZone: string };
-  end: { dateTime: string; timeZone: string };
-} {
-  return {
-    summary: timeblock.title,
-    description: timeblock.description,
-    location: timeblock.location,
-    start: {
-      dateTime: new Date(timeblock.startTime).toISOString(),
-      timeZone: timeblock.timezone,
-    },
-    end: {
-      dateTime: new Date(timeblock.endTime).toISOString(),
-      timeZone: timeblock.timezone,
-    },
-  };
-}

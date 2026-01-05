@@ -41,6 +41,7 @@ type TimeblockType = Doc<"timeblocks"> & {
   canManage?: boolean;
   tasks: Doc<"tasks">[] | null;
   isBusy?: boolean;
+  googleEmail?: string;
 };
 
 export function docToTimeblock(doc: TimeblockType): Timeblock {

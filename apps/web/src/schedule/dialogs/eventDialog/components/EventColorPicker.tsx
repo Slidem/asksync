@@ -53,12 +53,14 @@ const colorOptions: Array<{
 ];
 
 export const EventColorPicker = React.memo(() => {
-  const { color, canOnlyEditTags } = useEventDialogStore(
+  const { color, source } = useEventDialogStore(
     useShallow((state) => ({
       color: state.formFields.color,
-      canOnlyEditTags: state.canOnlyEditTags,
+      source: state.eventMetadata.source,
     })),
   );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -79,7 +81,7 @@ export const EventColorPicker = React.memo(() => {
         defaultValue={colorOptions[0]?.value}
         value={color}
         onValueChange={handleColorChange}
-        disabled={canOnlyEditTags}
+        disabled={isExternalEvent}
       >
         {colorOptions.map((colorOption) => (
           <RadioGroupItem

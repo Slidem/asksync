@@ -25,6 +25,7 @@ export interface CalendarEvent {
   recurrenceRule?: RecurrenceRule | null;
   source?: CalendarSource;
   externalId?: string;
+  googleEmail?: string;
   timezone?: string;
   canEdit?: boolean;
   canDelete?: boolean;
@@ -32,11 +33,6 @@ export interface CalendarEvent {
   permissions: PermissionGrant[];
   checklistsVisible?: boolean;
   tasks: Task[];
-  // Google Calendar sync
-  syncToGoogle?: boolean;
-  googleEventId?: string;
-  googleConnectionId?: string;
-  googleSyncStatus?: "synced" | "pending" | "error";
   // Busy block (when user lacks view permission)
   isBusy?: boolean;
 }

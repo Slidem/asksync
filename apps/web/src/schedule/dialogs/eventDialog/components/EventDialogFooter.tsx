@@ -23,8 +23,8 @@ import { useShallow } from "zustand/react/shallow";
 export const EventDialogFooter = React.memo(() => {
   const {
     eventId,
-    canDeleteEvent,
-    canOnlyEditTags,
+    source,
+    canDelete,
     validateAndGetEvent,
     close,
     previousRecurrenceRule,
@@ -32,14 +32,17 @@ export const EventDialogFooter = React.memo(() => {
   } = useEventDialogStore(
     useShallow((state) => ({
       eventId: state.eventMetadata.eventId,
-      canDeleteEvent: state.canDeleteEvent,
-      canOnlyEditTags: state.canOnlyEditTags,
+      source: state.eventMetadata.source,
+      canDelete: state.eventMetadata.canDelete,
       validateAndGetEvent: state.validateAndGetEvent,
       close: state.close,
       previousRecurrenceRule: state.eventToUpdate?.recurrenceRule,
       error: state.formFields.error,
     })),
   );
+
+  const isExternalEvent = source !== "asksync";
+  const canDeleteEvent = canDelete !== false && !isExternalEvent;
 
   const tabsWithErrors = error ? [1] : [];
 
@@ -137,7 +140,7 @@ export const EventDialogFooter = React.memo(() => {
 
   const saveButton = (
     <Button onClick={handleSave} disabled={hasErrors}>
-      {canOnlyEditTags ? "Update Tags" : "Save"}
+      {isExternalEvent ? "Update Tags" : "Save"}
     </Button>
   );
 

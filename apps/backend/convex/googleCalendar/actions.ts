@@ -1,11 +1,7 @@
 /* eslint-disable import/order */
 import { ActionCtx, internalAction } from "../_generated/server";
-import { Doc, Id } from "../_generated/dataModel";
-import {
-  mapTimeblockToGoogleEvent,
-  refreshAccessToken,
-  tokenNeedsRefresh,
-} from "./helpers";
+import { Id } from "../_generated/dataModel";
+import { refreshAccessToken, tokenNeedsRefresh } from "./helpers";
 
 import { GoogleEventsListResponse } from "./types";
 import { internal } from "../_generated/api";
@@ -100,59 +96,6 @@ export async function fetchGoogleEventsImpl(
   }
 
   return await response.json();
-}
-
-/**
- * Push an event to Google Calendar (reusable function)
- */
-export async function pushEventToGoogleImpl(
-  ctx: ActionContext,
-  args: {
-    connectionId: Id<"googleCalendarConnections">;
-    timeblock: Doc<"timeblocks">;
-  },
-): Promise<string> {
-  const accessToken = await getValidAccessToken(ctx, args.connectionId);
-  const { timeblock } = args;
-
-  const googleEvent = mapTimeblockToGoogleEvent(timeblock);
-
-  let url = `${GOOGLE_CALENDAR_API}/calendars/primary/events`;
-  let method = "POST";
-
-  // If already synced, update instead
-  if (timeblock.googleEventId) {
-    url = `${url}/${timeblock.googleEventId}`;
-    method = "PUT";
-  }
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(googleEvent),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to push to Google: ${error}`);
-  }
-
-  const result = await response.json();
-
-  // Update timeblock with Google event ID
-  await ctx.runMutation(
-    internal.googleCalendar.mutations.updateTimeblockGoogleSync,
-    {
-      timeblockId: timeblock._id,
-      googleEventId: result.id,
-      googleSyncStatus: "synced",
-    },
-  );
-
-  return result.id;
 }
 
 /**
@@ -289,49 +232,6 @@ export const fetchGoogleEvents = internalAction({
   },
   handler: async (ctx, args): Promise<GoogleEventsListResponse> => {
     return fetchGoogleEventsImpl(ctx, args);
-  },
-});
-
-export const pushEventToGoogle = internalAction({
-  args: {
-    connectionId: v.id("googleCalendarConnections"),
-    timeblockId: v.id("timeblocks"),
-  },
-  handler: async (ctx, args): Promise<string> => {
-    const timeblock = await ctx.runQuery(
-      internal.timeblocks.queries.getTimeblockInternal,
-      { id: args.timeblockId },
-    );
-    if (!timeblock) throw new Error("Timeblock not found");
-
-    return pushEventToGoogleImpl(ctx, {
-      connectionId: args.connectionId,
-      timeblock,
-    });
-  },
-});
-
-export const deleteEventFromGoogle = internalAction({
-  args: {
-    connectionId: v.id("googleCalendarConnections"),
-    googleEventId: v.string(),
-  },
-  handler: async (ctx, args): Promise<void> => {
-    const accessToken = await getValidAccessToken(ctx, args.connectionId);
-
-    const response = await fetch(
-      `${GOOGLE_CALENDAR_API}/calendars/primary/events/${args.googleEventId}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      },
-    );
-
-    // 404 is ok - event already deleted
-    if (!response.ok && response.status !== 404) {
-      const error = await response.text();
-      throw new Error(`Failed to delete from Google: ${error}`);
-    }
   },
 });
 

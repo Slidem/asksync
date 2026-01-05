@@ -7,12 +7,14 @@ import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogS
 import { useShallow } from "zustand/react/shallow";
 
 export const EventTitleField = React.memo(() => {
-  const { title, canOnlyEditTags } = useEventDialogStore(
+  const { title, source } = useEventDialogStore(
     useShallow((state) => ({
       title: state.formFields.title,
-      canOnlyEditTags: state.canOnlyEditTags,
+      source: state.eventMetadata.source,
     })),
   );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -30,7 +32,7 @@ export const EventTitleField = React.memo(() => {
         id="title"
         value={title}
         onChange={handleChange}
-        disabled={canOnlyEditTags}
+        disabled={isExternalEvent}
       />
     </div>
   );

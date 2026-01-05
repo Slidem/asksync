@@ -66,6 +66,7 @@ export interface Timeblock {
   orgId: string;
   source: CalendarSource;
   externalId?: string; // ID from external calendar
+  googleEmail?: string; // Email of synced Google account (when source is 'google')
   color?: string;
   exceptionDates?: number[]; // UTC midnight timestamps of excluded dates
   checklistsVisible?: boolean; // whether non-owners can see checklists
@@ -73,11 +74,6 @@ export interface Timeblock {
   updatedAt: number;
   permissions: PermissionGrant[];
   tasks: Task[] | null;
-  // Google Calendar sync fields
-  syncToGoogle?: boolean;
-  googleEventId?: string;
-  googleConnectionId?: string;
-  googleSyncStatus?: "synced" | "pending" | "error";
   // Busy block indicator (when user lacks view permission)
   isBusy?: boolean;
 }

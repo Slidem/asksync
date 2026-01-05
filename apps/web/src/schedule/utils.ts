@@ -167,6 +167,7 @@ export function timeblockToCalendarEvent(timeblock: Timeblock): CalendarEvent {
     recurrenceRule: timeblock.recurrenceRule,
     source: timeblock.source,
     externalId: timeblock.externalId,
+    googleEmail: timeblock.googleEmail,
     timezone: timeblock.timezone,
     canEdit: !isExternal,
     canDelete: !isExternal,

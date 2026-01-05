@@ -8,12 +8,14 @@ import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogS
 import { useShallow } from "zustand/react/shallow";
 
 export const EventAllDayToggle = React.memo(() => {
-  const { allDay, canOnlyEditTags } = useEventDialogStore(
+  const { allDay, source } = useEventDialogStore(
     useShallow((state) => ({
       allDay: state.formFields.allDay,
-      canOnlyEditTags: state.canOnlyEditTags,
+      source: state.eventMetadata.source,
     })),
   );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -30,7 +32,7 @@ export const EventAllDayToggle = React.memo(() => {
         id="all-day"
         checked={allDay}
         onCheckedChange={handleChange}
-        disabled={canOnlyEditTags}
+        disabled={isExternalEvent}
       />
       <Label htmlFor="all-day">All day</Label>
     </div>

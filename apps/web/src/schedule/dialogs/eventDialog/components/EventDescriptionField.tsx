@@ -7,12 +7,14 @@ import { useEventDialogStore } from "@/schedule/dialogs/eventDialog/eventDialogS
 import { useShallow } from "zustand/react/shallow";
 
 export const EventDescriptionField = React.memo(() => {
-  const { description, canOnlyEditTags } = useEventDialogStore(
+  const { description, source } = useEventDialogStore(
     useShallow((state) => ({
       description: state.formFields.description,
-      canOnlyEditTags: state.canOnlyEditTags,
+      source: state.eventMetadata.source,
     })),
   );
+
+  const isExternalEvent = source !== "asksync";
 
   const updateFields = useEventDialogStore((state) => state.setFormFields);
 
@@ -31,7 +33,7 @@ export const EventDescriptionField = React.memo(() => {
         value={description}
         onChange={handleChange}
         rows={3}
-        disabled={canOnlyEditTags}
+        disabled={isExternalEvent}
       />
     </div>
   );

@@ -112,7 +112,7 @@ export const IntegrationsDialog = () => {
           Integrations
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Calendar Integrations</DialogTitle>
           <DialogDescription>
@@ -196,15 +196,15 @@ export const IntegrationsDialog = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 mb-3">
-                <Label className="text-sm">Default visibility:</Label>
+              <div className="flex items-center gap-3 mb-3 w-full">
+                <Label className="text-sm w-32">Default visibility:</Label>
                 <Select
                   value={visibility}
                   onValueChange={(v) =>
                     setVisibility(v as GoogleCalendarVisibility)
                   }
                 >
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="flex-1 h-8 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

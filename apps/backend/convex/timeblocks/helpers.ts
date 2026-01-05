@@ -285,6 +285,7 @@ export type BusyTimeblock = {
 /** Full timeblock with view permission */
 export type VisibleTimeblock = DecoratedResource<Doc<"timeblocks">> & {
   isBusy: false;
+  googleEmail?: string;
 };
 
 /** Union type for timeblocks that may or may not be visible */
@@ -412,6 +413,13 @@ export async function getTimeblocksForUser({
     resources: allTimeblocks,
   });
 
+  // Look up Google emails for all Google-sourced timeblocks
+  const googleEmailMap = await getGoogleEmailsForTimeblocks(
+    ctx,
+    orgId,
+    decorated,
+  );
+
   return decorated.map((tb): TimeblockWithVisibility => {
     const isOwner = tb.createdBy === currentUser.id;
     const hasViewPermission =
@@ -419,7 +427,11 @@ export async function getTimeblocksForUser({
       getPermissionLevelFromGrants(currentUser, tb.permissions) !== null;
 
     if (hasViewPermission) {
-      return { ...tb, isBusy: false as const };
+      return {
+        ...tb,
+        isBusy: false as const,
+        googleEmail: googleEmailMap.get(tb.createdBy),
+      };
     }
 
     // Return minimal "busy" block without details
@@ -468,4 +480,45 @@ export async function filterPermittedResources(
   );
 
   return timeblocks.filter((tb) => accessibleTimeblockIds.includes(tb._id));
+}
+
+/**
+ * Look up Google Calendar connection emails for timeblocks with source="google"
+ * Returns a Map of userId -> googleEmail
+ */
+async function getGoogleEmailsForTimeblocks(
+  ctx: BaseQueryCtx,
+  orgId: string,
+  timeblocks: { source: Doc<"timeblocks">["source"]; createdBy: string }[],
+): Promise<Map<string, string>> {
+  const googleEmailMap = new Map<string, string>();
+
+  // Get unique userIds for google-sourced timeblocks
+  const googleUserIds = [
+    ...new Set(
+      timeblocks
+        .filter((tb) => tb.source === "google")
+        .map((tb) => tb.createdBy),
+    ),
+  ];
+
+  if (googleUserIds.length === 0) {
+    return googleEmailMap;
+  }
+
+  // Look up connections for each user
+  for (const userId of googleUserIds) {
+    const connection = await ctx.db
+      .query("googleCalendarConnections")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", userId).eq("orgId", orgId),
+      )
+      .first();
+
+    if (connection?.googleEmail) {
+      googleEmailMap.set(userId, connection.googleEmail);
+    }
+  }
+
+  return googleEmailMap;
 }

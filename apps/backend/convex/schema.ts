@@ -47,13 +47,6 @@ export default defineSchema({
     exceptionDates: v.optional(v.array(v.number())), // UTC midnight timestamps of excluded dates
     checklistsVisible: v.optional(v.boolean()), // whether non-owners can see checklists
     updatedAt: v.number(),
-    // Google Calendar sync fields
-    syncToGoogle: v.optional(v.boolean()), // whether to sync this event to Google
-    googleEventId: v.optional(v.string()), // ID of corresponding Google Calendar event
-    googleConnectionId: v.optional(v.string()), // which Google account to sync to
-    googleSyncStatus: v.optional(
-      v.union(v.literal("synced"), v.literal("pending"), v.literal("error")),
-    ),
   })
     .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_creator_and_startTime_and_endTime", [
@@ -62,8 +55,8 @@ export default defineSchema({
       "startTime",
       "endTime",
     ])
-    .index("by_external_id", ["externalId"])
-    .index("by_google_connection", ["googleConnectionId"]),
+    .index("by_org_and_creator_and_source", ["orgId", "createdBy", "source"])
+    .index("by_external_id", ["externalId"]),
 
   // Tasks - checklist items for timeblocks
   tasks: defineTable({
