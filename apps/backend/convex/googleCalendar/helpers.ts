@@ -71,6 +71,7 @@ export function mapGoogleEventToTimeblock(
   timezone: string;
   source: "google";
   externalId: string;
+  googleConnectionId: Doc<"googleCalendarConnections">["_id"];
   createdBy: string;
   orgId: string;
   tagIds: string[];
@@ -90,6 +91,7 @@ export function mapGoogleEventToTimeblock(
     timezone,
     source: "google",
     externalId: googleEvent.id,
+    googleConnectionId: connection._id,
     createdBy: connection.userId,
     orgId: connection.orgId,
     tagIds: [], // Google events don't have tags initially

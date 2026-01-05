@@ -43,6 +43,7 @@ export default defineSchema({
       v.literal("outlook"),
     ),
     externalId: v.optional(v.string()),
+    googleConnectionId: v.optional(v.id("googleCalendarConnections")), // tracks which Google account synced this event
     color: v.optional(v.string()),
     exceptionDates: v.optional(v.array(v.number())), // UTC midnight timestamps of excluded dates
     checklistsVisible: v.optional(v.boolean()), // whether non-owners can see checklists
@@ -56,7 +57,8 @@ export default defineSchema({
       "endTime",
     ])
     .index("by_org_and_creator_and_source", ["orgId", "createdBy", "source"])
-    .index("by_external_id", ["externalId"]),
+    .index("by_external_id", ["externalId"])
+    .index("by_google_connection", ["googleConnectionId"]),
 
   // Tasks - checklist items for timeblocks
   tasks: defineTable({

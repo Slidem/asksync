@@ -295,6 +295,19 @@ export const upsertGoogleEvent = internalMutation({
     } else {
       // Create new
       timeblockId = await ctx.db.insert("timeblocks", timeblockData);
+
+      // Grant manage permission to owner (same pattern as createTimeblock)
+      await ctx.db.insert("permissions", {
+        all: false,
+        userId: connection.userId,
+        orgId: connection.orgId,
+        resourceType: "timeblocks",
+        resourceId: timeblockId,
+        permission: "manage",
+        createdBy: connection.userId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
     }
 
     // Handle permissions based on visibility
@@ -382,6 +395,7 @@ async function deleteTimeblockWithRelations(
 
 /**
  * Cleanup orphaned timeblocks that no longer exist in Google Calendar (internal only)
+ * Only deletes events from the specific Google connection being synced
  */
 export const cleanupOrphanedTimeblocks = internalMutation({
   args: {
@@ -389,17 +403,11 @@ export const cleanupOrphanedTimeblocks = internalMutation({
     validExternalIds: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    const connection = await ctx.db.get(args.connectionId);
-    if (!connection) return;
-
-    // Get all Google-sourced timeblocks for this user
+    // Get timeblocks for this specific Google connection only
     const localTimeblocks = await ctx.db
       .query("timeblocks")
-      .withIndex("by_org_and_creator_and_source", (q) =>
-        q
-          .eq("orgId", connection.orgId)
-          .eq("createdBy", connection.userId)
-          .eq("source", "google"),
+      .withIndex("by_google_connection", (q) =>
+        q.eq("googleConnectionId", args.connectionId),
       )
       .collect();
 

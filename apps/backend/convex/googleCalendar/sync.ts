@@ -185,13 +185,12 @@ export const updateEventPermissions = internalMutation({
     const connection = await ctx.db.get(args.connectionId);
     if (!connection) return;
 
-    // Find all timeblocks from this connection (by userId and source=google)
+    // Find all timeblocks from this specific Google connection
     const timeblocks = await ctx.db
       .query("timeblocks")
-      .withIndex("by_org_and_creator", (q) =>
-        q.eq("orgId", connection.orgId).eq("createdBy", connection.userId),
+      .withIndex("by_google_connection", (q) =>
+        q.eq("googleConnectionId", args.connectionId),
       )
-      .filter((q) => q.eq(q.field("source"), "google"))
       .collect();
 
     for (const timeblock of timeblocks) {
