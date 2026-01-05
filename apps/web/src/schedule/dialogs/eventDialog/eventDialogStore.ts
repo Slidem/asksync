@@ -37,6 +37,9 @@ interface FormFields {
   checklistsVisible: boolean;
   draftTasks: DraftTask[];
   error: string | null;
+  // Google Calendar sync
+  syncToGoogle: boolean;
+  googleConnectionId: string | null;
 }
 
 interface EventMetadata {
@@ -106,6 +109,8 @@ const getDefaultFormFieldsState = (): FormFields => ({
   checklistsVisible: false,
   draftTasks: [],
   error: null,
+  syncToGoogle: false,
+  googleConnectionId: null,
 });
 
 const getDefaultEventMetadata = (): EventMetadata => ({
@@ -258,6 +263,8 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
           currentlyWorkingOn: task.currentlyWorkingOn,
         })),
         error: null,
+        syncToGoogle: event.syncToGoogle ?? false,
+        googleConnectionId: event.googleConnectionId ?? null,
       };
 
       const eventMetadata: EventMetadata = {
@@ -364,6 +371,8 @@ export const useEventDialogStore = create<EventDialogState>((set, get) => ({
         order: task.order,
         currentlyWorkingOn: task.currentlyWorkingOn,
       })),
+      syncToGoogle: formFields.syncToGoogle,
+      googleConnectionId: formFields.googleConnectionId ?? undefined,
     };
 
     set({ formFields: { ...formFields, error: null } });

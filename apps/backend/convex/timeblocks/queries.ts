@@ -1,4 +1,8 @@
-import { QueryCtx as BaseQueryCtx, query } from "../_generated/server";
+import {
+  QueryCtx as BaseQueryCtx,
+  internalQuery,
+  query,
+} from "../_generated/server";
 /* eslint-disable import/order */
 import { Doc, Id } from "../_generated/dataModel";
 import {
@@ -8,7 +12,6 @@ import {
   sortByStartTime,
 } from "./helpers";
 
-import { decorateResourceWithGrants } from "../permissions/common";
 import { getUserWithGroups } from "../auth/user";
 import { v } from "convex/values";
 
@@ -22,31 +25,29 @@ export const listTimeblocks = query({
     const { orgId, id: authedUserId } = user;
     const userId = args.userId || authedUserId;
 
+    // Get timeblocks with busy block masking for non-permitted ones
     const timeblocks = await getTimeblocksForUser({
       ctx,
       orgId,
+      retrievalMode: "hide_not_allowed_details",
       forUserId: userId,
       currentUser: user,
       range: args.range,
     });
 
-    // Add task counts to each timeblock
+    // Add tasks to visible timeblocks
     const withTasks = await Promise.all(
       timeblocks.map(async (tb) => {
+        if (tb.isBusy) {
+          return { ...tb, tasks: null };
+        }
         const tasks = await getTasksForTimeblock(ctx, tb._id, tb, authedUserId);
         return { ...tb, tasks };
       }),
     );
 
-    const withPermissions = await decorateResourceWithGrants({
-      ctx,
-      currentUser: user,
-      resourceType: "timeblocks",
-      resources: withTasks,
-    });
-
     return expandRecurringTimeblocks(
-      withPermissions,
+      withTasks,
       args.range.start,
       args.range.end,
     );
@@ -96,3 +97,11 @@ async function getTasksForTimeblock(
     )
     .collect();
 }
+
+// Internal query for actions to get full timeblock data
+export const getTimeblockInternal = internalQuery({
+  args: { id: v.id("timeblocks") },
+  handler: async (ctx, args): Promise<Doc<"timeblocks"> | null> => {
+    return await ctx.db.get(args.id);
+  },
+});

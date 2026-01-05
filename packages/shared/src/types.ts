@@ -73,6 +73,13 @@ export interface Timeblock {
   updatedAt: number;
   permissions: PermissionGrant[];
   tasks: Task[] | null;
+  // Google Calendar sync fields
+  syncToGoogle?: boolean;
+  googleEventId?: string;
+  googleConnectionId?: string;
+  googleSyncStatus?: "synced" | "pending" | "error";
+  // Busy block indicator (when user lacks view permission)
+  isBusy?: boolean;
 }
 
 export interface Question {
@@ -147,6 +154,22 @@ export interface CalendarIntegration {
     autoCreateTimeblocks: boolean;
     defaultTagIds: string[];
   };
+}
+
+export type GoogleCalendarVisibility = "public" | "hidden";
+export type GoogleSyncStatus = "active" | "error" | "disconnected";
+
+export interface GoogleCalendarConnection {
+  id: string;
+  googleAccountId: string;
+  googleEmail: string;
+  visibility: GoogleCalendarVisibility;
+  syncStatus: GoogleSyncStatus;
+  lastSyncedAt?: number;
+  lastErrorMessage?: string;
+  isEnabled: boolean;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface UserSettings {

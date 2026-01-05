@@ -27,7 +27,7 @@ export function useAvailableTimeblocksForUserAndTags({
 
   return useMemo(() => {
     const calendarEvents = (rawTimeblocks || []).map((tb) =>
-      docToCalendarEvent({ ...tb, permissions: [] }),
+      docToCalendarEvent({ ...tb, permissions: [], tasks: null }),
     );
 
     const currentDate = new Date();

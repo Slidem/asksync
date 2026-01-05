@@ -47,6 +47,13 @@ export default defineSchema({
     exceptionDates: v.optional(v.array(v.number())), // UTC midnight timestamps of excluded dates
     checklistsVisible: v.optional(v.boolean()), // whether non-owners can see checklists
     updatedAt: v.number(),
+    // Google Calendar sync fields
+    syncToGoogle: v.optional(v.boolean()), // whether to sync this event to Google
+    googleEventId: v.optional(v.string()), // ID of corresponding Google Calendar event
+    googleConnectionId: v.optional(v.string()), // which Google account to sync to
+    googleSyncStatus: v.optional(
+      v.union(v.literal("synced"), v.literal("pending"), v.literal("error")),
+    ),
   })
     .index("by_org_and_creator", ["orgId", "createdBy"])
     .index("by_org_and_creator_and_startTime_and_endTime", [
@@ -55,7 +62,8 @@ export default defineSchema({
       "startTime",
       "endTime",
     ])
-    .index("by_external_id", ["externalId"]),
+    .index("by_external_id", ["externalId"])
+    .index("by_google_connection", ["googleConnectionId"]),
 
   // Tasks - checklist items for timeblocks
   tasks: defineTable({
@@ -418,4 +426,47 @@ export default defineSchema({
       "resourceId",
     ])
     .index("by_user_and_org", ["userId", "orgId"]),
+
+  // Google Calendar Connections - OAuth tokens and sync state per account
+  googleCalendarConnections: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+
+    // Google account info
+    googleAccountId: v.string(), // Google's unique user ID
+    googleEmail: v.string(), // email for display
+
+    // OAuth tokens
+    accessToken: v.string(),
+    refreshToken: v.string(),
+    tokenExpiresAt: v.number(), // timestamp when access token expires
+
+    // Visibility setting
+    visibility: v.union(v.literal("public"), v.literal("hidden")),
+
+    // Sync state
+    syncToken: v.optional(v.string()), // Google incremental sync token
+    lastSyncedAt: v.optional(v.number()), // last successful sync timestamp
+    syncStatus: v.union(
+      v.literal("active"),
+      v.literal("error"),
+      v.literal("disconnected"),
+    ),
+    lastErrorMessage: v.optional(v.string()),
+
+    // Webhook state
+    webhookChannelId: v.optional(v.string()),
+    webhookResourceId: v.optional(v.string()),
+    webhookExpiresAt: v.optional(v.number()),
+
+    // Metadata
+    isEnabled: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"])
+    .index("by_google_account", ["googleAccountId"])
+    .index("by_webhook_channel", ["webhookChannelId"])
+    .index("by_sync_status", ["syncStatus"]),
 });

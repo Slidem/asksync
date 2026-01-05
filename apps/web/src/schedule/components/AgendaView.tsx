@@ -4,6 +4,7 @@ import { addDays, format, isToday } from "date-fns";
 
 import { AGENDA_DAYS_TO_SHOW } from "@/schedule/constants";
 import { EventItem } from "@/schedule/components/EventItem";
+import { BusyEventItem } from "@/schedule/components/BusyEventItem";
 import { RiCalendarEventLine } from "@remixicon/react";
 import { createEventClickHandler } from "../utils";
 import { getEventsForDay } from "@/schedule/utils";
@@ -61,14 +62,23 @@ export function AgendaView() {
                 {format(day, "d MMM, EEEE")}
               </span>
               <div className="mt-6 space-y-2">
-                {dayEvents.map((event) => (
-                  <EventItem
-                    key={event.id}
-                    event={event}
-                    view="agenda"
-                    onClick={(e) => handleEventClick(event, e)}
-                  />
-                ))}
+                {dayEvents.map((event) =>
+                  event.isBusy ? (
+                    <BusyEventItem
+                      key={event.id}
+                      start={event.start}
+                      end={event.end}
+                      view="agenda"
+                    />
+                  ) : (
+                    <EventItem
+                      key={event.id}
+                      event={event}
+                      view="agenda"
+                      onClick={(e) => handleEventClick(event, e)}
+                    />
+                  ),
+                )}
               </div>
             </div>
           );

@@ -3,7 +3,9 @@ import { Doc } from "../_generated/dataModel";
 import { QueryCtx as BaseQueryCtx } from "../_generated/server";
 import { PatchValue, UserWithGroups } from "../common/types";
 import {
+  DecoratedResource,
   decorateResourceWithGrants,
+  getPermissionLevelFromGrants,
   getPermittedResourcesForType,
 } from "../permissions/common";
 
@@ -238,23 +240,85 @@ export function doesRecurringTimeblockMatchRange(
   return false;
 }
 
-export async function getTimeblocksForUser({
-  ctx,
-  orgId,
-  isInAuthContext = true,
-  forUserId,
-  currentUser,
-  currentDate,
-  range,
-}: {
+/**
+ * Retrieval mode for getTimeblocksForUser:
+ * - "all": Return all timeblocks without filtering (for internal/system use)
+ * - "filter_not_allowed": Filter out timeblocks user can't view (for auth contexts)
+ * - "hide_not_allowed_details": Return all, mask non-permitted as "busy" blocks
+ */
+export type RetrievalMode =
+  | "all"
+  | "filter_not_allowed"
+  | "hide_not_allowed_details";
+
+type GetTimeblocksParams = {
   ctx: BaseQueryCtx;
-  isInAuthContext?: boolean;
   orgId: string;
   forUserId: string;
   currentUser: UserWithGroups;
   range?: { start: number; end: number };
   currentDate?: number;
-}) {
+};
+
+/** Minimal "busy" block returned when user lacks view permission */
+export type BusyTimeblock = {
+  _id: Doc<"timeblocks">["_id"];
+  _creationTime: number;
+  startTime: number;
+  endTime: number;
+  timezone: string;
+  orgId: string;
+  createdBy: string;
+  source: Doc<"timeblocks">["source"];
+  recurrenceRule?: Doc<"timeblocks">["recurrenceRule"];
+  exceptionDates?: number[];
+  updatedAt: number;
+  isBusy: true;
+  // Empty/masked fields
+  title: "";
+  tagIds: [];
+  permissions: [];
+  canEdit: false;
+  canManage: false;
+};
+
+/** Full timeblock with view permission */
+export type VisibleTimeblock = DecoratedResource<Doc<"timeblocks">> & {
+  isBusy: false;
+};
+
+/** Union type for timeblocks that may or may not be visible */
+export type TimeblockWithVisibility = BusyTimeblock | VisibleTimeblock;
+
+// Overload: "all" returns raw Doc<"timeblocks">[]
+export async function getTimeblocksForUser(
+  params: GetTimeblocksParams & { retrievalMode: "all" },
+): Promise<Doc<"timeblocks">[]>;
+
+// Overload: "filter_not_allowed" returns decorated (user has view permission)
+export async function getTimeblocksForUser(
+  params: GetTimeblocksParams & { retrievalMode?: "filter_not_allowed" },
+): Promise<DecoratedResource<Doc<"timeblocks">>[]>;
+
+// Overload: "hide_not_allowed_details" returns mix of visible/busy
+export async function getTimeblocksForUser(
+  params: GetTimeblocksParams & { retrievalMode: "hide_not_allowed_details" },
+): Promise<TimeblockWithVisibility[]>;
+
+// Implementation
+export async function getTimeblocksForUser({
+  ctx,
+  orgId,
+  retrievalMode = "filter_not_allowed",
+  forUserId,
+  currentUser,
+  currentDate,
+  range,
+}: GetTimeblocksParams & { retrievalMode?: RetrievalMode }): Promise<
+  | Doc<"timeblocks">[]
+  | DecoratedResource<Doc<"timeblocks">>[]
+  | TimeblockWithVisibility[]
+> {
   if (!range && !currentDate) {
     throw new Error("Either range or currentDate must be provided");
   }
@@ -322,7 +386,11 @@ export async function getTimeblocksForUser({
 
   const allTimeblocks = [...nonRecurringTimeblocks, ...recurringTimeblocks];
 
-  if (isInAuthContext) {
+  if (retrievalMode === "all") {
+    return allTimeblocks;
+  }
+
+  if (retrievalMode === "filter_not_allowed") {
     const filteredTimeblocks = await filterPermittedResources(
       allTimeblocks,
       ctx,
@@ -336,7 +404,45 @@ export async function getTimeblocksForUser({
     });
   }
 
-  return allTimeblocks;
+  // "hide_not_allowed_details": return all timeblocks, mask non-permitted as busy
+  const decorated = await decorateResourceWithGrants({
+    ctx,
+    currentUser,
+    resourceType: "timeblocks",
+    resources: allTimeblocks,
+  });
+
+  return decorated.map((tb): TimeblockWithVisibility => {
+    const isOwner = tb.createdBy === currentUser.id;
+    const hasViewPermission =
+      isOwner ||
+      getPermissionLevelFromGrants(currentUser, tb.permissions) !== null;
+
+    if (hasViewPermission) {
+      return { ...tb, isBusy: false as const };
+    }
+
+    // Return minimal "busy" block without details
+    return {
+      _id: tb._id,
+      _creationTime: tb._creationTime,
+      startTime: tb.startTime,
+      endTime: tb.endTime,
+      timezone: tb.timezone,
+      orgId: tb.orgId,
+      createdBy: tb.createdBy,
+      source: tb.source,
+      recurrenceRule: tb.recurrenceRule,
+      exceptionDates: tb.exceptionDates,
+      updatedAt: tb.updatedAt,
+      isBusy: true as const,
+      title: "" as const,
+      tagIds: [] as const,
+      permissions: [] as const,
+      canEdit: false as const,
+      canManage: false as const,
+    };
+  });
 }
 
 export function getStartOfDayTimestamp(epochMillis: number): number {

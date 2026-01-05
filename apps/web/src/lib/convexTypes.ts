@@ -40,6 +40,7 @@ type TimeblockType = Doc<"timeblocks"> & {
   canEdit?: boolean;
   canManage?: boolean;
   tasks: Doc<"tasks">[] | null;
+  isBusy?: boolean;
 };
 
 export function docToTimeblock(doc: TimeblockType): Timeblock {
@@ -56,8 +57,16 @@ export function docToTimeblock(doc: TimeblockType): Timeblock {
 }
 
 export function docToCalendarEvent(doc: TimeblockType): CalendarEvent {
-  const { _id, recurrenceRule, startTime, endTime, color, tasks, ...rest } =
-    doc;
+  const {
+    _id,
+    recurrenceRule,
+    startTime,
+    endTime,
+    color,
+    tasks,
+    isBusy,
+    ...rest
+  } = doc;
 
   return {
     id: _id,
@@ -66,6 +75,7 @@ export function docToCalendarEvent(doc: TimeblockType): CalendarEvent {
     end: new Date(endTime),
     color: color as CalendarEvent["color"],
     tasks: tasks ? tasks.map(docToTask) : [],
+    isBusy: isBusy ?? false,
     ...rest,
   };
 }

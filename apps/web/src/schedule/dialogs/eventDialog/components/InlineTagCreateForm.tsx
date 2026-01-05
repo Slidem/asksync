@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import React from "react";
+import { TAG_COLORS } from "@asksync/shared";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateTag } from "@/tags/hooks/mutations";
-import { TAG_COLORS } from "@asksync/shared";
-import React from "react";
 
 interface InlineTagCreateFormProps {
   initialName: string;
@@ -20,7 +20,9 @@ export const InlineTagCreateForm: React.FC<InlineTagCreateFormProps> = ({
   onCancel,
 }) => {
   const [name, setName] = React.useState(initialName);
-  const [color, setColor] = React.useState(TAG_COLORS[0]);
+  const [color, setColor] = React.useState<(typeof TAG_COLORS)[number]>(
+    TAG_COLORS[0],
+  );
   const [description, setDescription] = React.useState("");
 
   const { createTag, isCreating } = useCreateTag();
@@ -38,6 +40,7 @@ export const InlineTagCreateForm: React.FC<InlineTagCreateFormProps> = ({
 
       onSuccess(tagId);
     } catch (error) {
+      console.warn("Failed to create tag:", error);
       // Error is already handled by useCreateTag hook with toast
       // Keep form open for user to correct
     }

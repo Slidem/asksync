@@ -32,6 +32,13 @@ export interface CalendarEvent {
   permissions: PermissionGrant[];
   checklistsVisible?: boolean;
   tasks: Task[];
+  // Google Calendar sync
+  syncToGoogle?: boolean;
+  googleEventId?: string;
+  googleConnectionId?: string;
+  googleSyncStatus?: "synced" | "pending" | "error";
+  // Busy block (when user lacks view permission)
+  isBusy?: boolean;
 }
 
 export type EventColor =

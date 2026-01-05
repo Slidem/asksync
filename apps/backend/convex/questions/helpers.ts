@@ -78,7 +78,7 @@ async function findNextAvailableTimeblock(
     const currentAvailableTimeblocks = await getTimeblocksForUser({
       ctx,
       orgId,
-      isInAuthContext: false,
+      retrievalMode: "all",
       forUserId: assigneeId,
       currentUser: ctx.user,
       currentDate: currentTime,
@@ -90,7 +90,7 @@ async function findNextAvailableTimeblock(
       const futureTimeblocks = await getTimeblocksForUser({
         ctx,
         orgId,
-        isInAuthContext: false,
+        retrievalMode: "all",
         forUserId: assigneeId,
         currentUser: ctx.user,
         range: { start: currentTime, end: endDate },
