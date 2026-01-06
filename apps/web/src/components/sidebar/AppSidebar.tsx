@@ -5,6 +5,7 @@ import * as React from "react";
 import {
   BarChart3,
   Calendar1,
+  Mail,
   MessageCircleQuestionMark,
   Settings,
   SquareTerminal,
@@ -43,6 +44,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Work Mode", url: "/work", icon: Timer },
       { title: "Schedule", url: "/schedule", icon: Calendar1 },
+      { title: "Emails", url: "/emails", icon: Mail },
       { title: "Tags", url: "/tags", icon: TagIcon },
     ],
   },

@@ -14,7 +14,7 @@ crons.interval(
 
 // Google Calendar: Refresh expiring webhooks (every 6 days, webhooks expire in 7)
 crons.interval(
-  "refresh-google-webhooks",
+  "refresh-calendar-webhooks",
   { hours: 144 }, // 6 days
   internal.googleCalendar.sync.refreshExpiringWebhooks,
   {},
@@ -30,9 +30,25 @@ crons.daily(
 
 // Google Calendar: Refresh expiring tokens (every 30 minutes)
 crons.interval(
-  "refresh-google-tokens",
+  "refresh-calendar-tokens",
   { minutes: 30 },
   internal.googleCalendar.sync.refreshExpiringTokens,
+  {},
+);
+
+// Gmail: Sync all connections (every 10 minutes)
+crons.interval(
+  "gmail-sync",
+  { minutes: 10 },
+  internal.gmail.sync.performSync,
+  {},
+);
+
+// Gmail: Refresh expiring tokens (every 30 minutes)
+crons.interval(
+  "gmail-refresh-tokens",
+  { minutes: 30 },
+  internal.gmail.sync.refreshExpiringTokens,
   {},
 );
 

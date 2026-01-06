@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Calendar1,
+  Mail,
   MessageCircleQuestionMark,
   Settings,
   SquareTerminal,
@@ -19,6 +20,7 @@ export const sidebarItems: SidebarItem[] = [
   { title: "Dashboard", path: "/", icon: SquareTerminal },
   { title: "Work Mode", path: "/work", icon: Timer },
   { title: "Schedule", path: "/schedule", icon: Calendar1 },
+  { title: "Emails", path: "/emails", icon: Mail },
   { title: "Tags", path: "/tags", icon: TagIcon },
   { title: "Members", path: "/members", icon: Users },
   { title: "Questions", path: "/questions", icon: MessageCircleQuestionMark },

@@ -8,45 +8,6 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
 /**
- * Webhook handler for Google Calendar push notifications
- */
-export const handleWebhook = httpAction(async (ctx, request) => {
-  // Get headers from Google
-  const channelId = request.headers.get("X-Goog-Channel-ID");
-  const resourceState = request.headers.get("X-Goog-Resource-State");
-  const resourceId = request.headers.get("X-Goog-Resource-ID");
-
-  if (!channelId || !resourceId) {
-    return new Response("Missing headers", { status: 400 });
-  }
-
-  // "sync" is the initial verification - just acknowledge
-  if (resourceState === "sync") {
-    return new Response(null, { status: 200 });
-  }
-
-  // Find connection by webhook channel ID
-  const connection = await ctx.runQuery(
-    internal.googleCalendar.queries.getConnectionByWebhookChannel,
-    { channelId },
-  );
-
-  if (!connection) {
-    // Unknown channel - might be stale, just return 200 to stop retries
-    return new Response(null, { status: 200 });
-  }
-
-  // Schedule incremental sync
-  await ctx.scheduler.runAfter(
-    0,
-    internal.googleCalendar.sync.performIncrementalSync,
-    { connectionId: connection._id },
-  );
-
-  return new Response(null, { status: 200 });
-});
-
-/**
  * OAuth callback handler - exchanges code for tokens
  */
 export const handleOAuthCallback = httpAction(async (ctx, request) => {
@@ -63,7 +24,7 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `${frontendUrl}/schedule?error=${encodeURIComponent(error)}`,
+        Location: `${frontendUrl}/emails?error=${encodeURIComponent(error)}`,
       },
     });
   }
@@ -72,7 +33,7 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `${frontendUrl}/schedule?error=missing_params`,
+        Location: `${frontendUrl}/emails?error=missing_params`,
       },
     });
   }
@@ -81,7 +42,6 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
   let stateData: {
     userId: string;
     orgId: string;
-    visibility: "public" | "hidden";
   };
   try {
     stateData = JSON.parse(atob(state));
@@ -89,20 +49,20 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `${frontendUrl}/schedule?error=invalid_state`,
+        Location: `${frontendUrl}/emails?error=invalid_state`,
       },
     });
   }
 
   // Exchange code for tokens
-  const redirectUri = `${process.env.CONVEX_SITE_URL}/google-calendar/oauth/callback`;
+  const redirectUri = `${process.env.CONVEX_SITE_URL}/gmail/oauth/callback`;
 
   const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CALENDAR_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET!,
+      client_id: process.env.GMAIL_CLIENT_ID!,
+      client_secret: process.env.GMAIL_CLIENT_SECRET!,
       code,
       grant_type: "authorization_code",
       redirect_uri: redirectUri,
@@ -115,7 +75,7 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `${frontendUrl}/schedule?error=token_exchange_failed`,
+        Location: `${frontendUrl}/emails?error=token_exchange_failed`,
       },
     });
   }
@@ -131,7 +91,7 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `${frontendUrl}/schedule?error=userinfo_failed`,
+        Location: `${frontendUrl}/emails?error=userinfo_failed`,
       },
     });
   }
@@ -139,7 +99,7 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
   const userInfo = (await userInfoResponse.json()) as GoogleUserInfo;
 
   // Store connection
-  await ctx.runMutation(internal.googleCalendar.mutations.storeConnection, {
+  await ctx.runMutation(internal.gmail.mutations.storeConnection, {
     userId: stateData.userId,
     orgId: stateData.orgId,
     googleAccountId: userInfo.id,
@@ -147,14 +107,13 @@ export const handleOAuthCallback = httpAction(async (ctx, request) => {
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token || "",
     tokenExpiresAt: Date.now() + tokens.expires_in * 1000,
-    visibility: stateData.visibility,
   });
 
   // Redirect back to app with success
   return new Response(null, {
     status: 302,
     headers: {
-      Location: `${frontendUrl}/schedule?connected=google`,
+      Location: `${frontendUrl}/emails?connected=gmail`,
     },
   });
 });

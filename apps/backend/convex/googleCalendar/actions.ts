@@ -1,9 +1,9 @@
 /* eslint-disable import/order */
 import { ActionCtx, internalAction } from "../_generated/server";
-import { Id } from "../_generated/dataModel";
 import { refreshAccessToken, tokenNeedsRefresh } from "./helpers";
 
 import { GoogleEventsListResponse } from "./types";
+import { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
 
@@ -95,7 +95,7 @@ export async function fetchGoogleEventsImpl(
     throw new Error(`Google API error: ${error}`);
   }
 
-  return await response.json();
+  return (await response.json()) as GoogleEventsListResponse;
 }
 
 /**
@@ -134,7 +134,7 @@ export async function setupWebhookImpl(
     throw new Error(`Failed to setup webhook: ${error}`);
   }
 
-  const result = await response.json();
+  const result = (await response.json()) as { resourceId: string };
 
   await ctx.runMutation(internal.googleCalendar.mutations.updateWebhookInfo, {
     connectionId,

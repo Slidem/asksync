@@ -422,6 +422,106 @@ export default defineSchema({
     ])
     .index("by_user_and_org", ["userId", "orgId"]),
 
+  // Gmail Connections - OAuth tokens and sync state per Gmail account
+  gmailConnections: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+
+    // Google account info
+    googleAccountId: v.string(),
+    googleEmail: v.string(),
+
+    // OAuth tokens
+    accessToken: v.string(),
+    refreshToken: v.string(),
+    tokenExpiresAt: v.number(),
+
+    // Sync state
+    lastHistoryId: v.optional(v.string()), // Gmail incremental sync marker
+    lastSyncedAt: v.optional(v.number()),
+    syncStatus: v.union(
+      v.literal("active"),
+      v.literal("error"),
+      v.literal("disconnected"),
+    ),
+    lastErrorMessage: v.optional(v.string()),
+
+    // Metadata
+    isEnabled: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"])
+    .index("by_google_account", ["googleAccountId"])
+    .index("by_sync_status", ["syncStatus"]),
+
+  // Email Conversion Rules - user-specific rules for email->attention item
+  emailConversionRules: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+    gmailConnectionId: v.id("gmailConnections"),
+
+    // Rule name for display
+    name: v.string(),
+
+    // Match criteria (all optional, at least one required)
+    senderPattern: v.optional(v.string()), // regex pattern
+    subjectPattern: v.optional(v.string()), // regex pattern
+    contentPattern: v.optional(v.string()), // regex pattern
+
+    // Actions when rule matches
+    autoTagIds: v.array(v.string()),
+
+    // State
+    isEnabled: v.boolean(),
+    priority: v.number(), // higher = checked first
+
+    // Stats
+    matchCount: v.optional(v.number()),
+    lastMatchedAt: v.optional(v.number()),
+
+    // Metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_gmail_connection", ["gmailConnectionId"])
+    .index("by_org", ["orgId"]),
+
+  // Email Attention Items - converted emails needing attention
+  emailAttentionItems: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+    gmailConnectionId: v.id("gmailConnections"),
+    matchedRuleIds: v.array(v.id("emailConversionRules")),
+
+    // Email info (denormalized for display)
+    gmailMessageId: v.string(),
+    gmailThreadId: v.string(),
+    senderEmail: v.string(),
+    senderName: v.optional(v.string()),
+    subject: v.string(),
+    snippet: v.string(),
+    receivedAt: v.number(),
+
+    // State
+    status: v.union(v.literal("pending"), v.literal("resolved")),
+    resolvedAt: v.optional(v.number()),
+
+    // Categorization
+    tagIds: v.array(v.string()), // merged from all matching rules
+
+    // Metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_and_org", ["userId", "orgId"])
+    .index("by_user_and_status", ["userId", "status"])
+    .index("by_gmail_message", ["gmailMessageId"])
+    .index("by_gmail_connection", ["gmailConnectionId"])
+    .index("by_org", ["orgId"]),
+
   // Google Calendar Connections - OAuth tokens and sync state per account
   googleCalendarConnections: defineTable({
     userId: v.string(),

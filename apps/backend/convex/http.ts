@@ -3,6 +3,7 @@ import {
   handleOAuthCallback,
   handleWebhook,
 } from "./googleCalendar/httpActions";
+import { handleOAuthCallback as handleGmailOAuthCallback } from "./gmail/httpActions";
 
 import { httpRouter } from "convex/server";
 
@@ -20,6 +21,13 @@ http.route({
   path: "/google-calendar/oauth/callback",
   method: "GET",
   handler: handleOAuthCallback,
+});
+
+// Gmail OAuth callback
+http.route({
+  path: "/gmail/oauth/callback",
+  method: "GET",
+  handler: handleGmailOAuthCallback,
 });
 
 export default http;
