@@ -1,14 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import {
-  AlertCircle,
-  Check,
-  Loader2,
-  Mail,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { AlertCircle, Check, Loader2, Mail, Plus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,14 +9,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useOrganization, useUser } from "@clerk/nextjs";
-import { formatDistanceToNow } from "date-fns";
-
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { initiateGmailOAuth, isGmailOAuthConfigured } from "@/lib/gmailOAuth";
-import { useGmailConnections } from "@/emails/hooks/queries";
+import { useOrganization, useUser } from "@clerk/nextjs";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
 import { useDisconnectGmail } from "@/emails/hooks/mutations";
+import { useGmailConnections } from "@/emails/hooks/queries";
+import { useState } from "react";
 
 export function GmailConnectionsSection() {
   const { user } = useUser();
