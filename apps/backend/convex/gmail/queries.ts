@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { internalQuery, query } from "../_generated/server";
 
-import { Doc } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 import { getUser } from "../auth/user";
 import { v } from "convex/values";
 
@@ -114,9 +114,20 @@ export const listAttentionItems = query({
     // Sort by receivedAt descending
     items.sort((a, b) => b.receivedAt - a.receivedAt);
 
+    // Get all tags for display
+    const allTagIds = [...new Set(items.flatMap((i) => i.tagIds))];
+    const tagDocs = await Promise.all(
+      allTagIds.map((id) => ctx.db.get(id as Id<"tags">)),
+    );
+    const tagMap = new Map(tagDocs.filter(Boolean).map((t) => [t!._id, t!]));
+
     return items.map((item) => ({
       ...item,
       sourceEmail: connectionEmailMap.get(item.gmailConnectionId) || "Unknown",
+      tags: item.tagIds
+        .map((id) => tagMap.get(id as Id<"tags">))
+        .filter(Boolean)
+        .map((t) => ({ _id: t!._id, name: t!.name, color: t!.color })),
     }));
   },
 });
@@ -141,6 +152,233 @@ export const getAttentionItemCounts = query({
       resolved: items.filter((i) => i.status === "resolved").length,
       total: items.length,
     };
+  },
+});
+
+/**
+ * Get urgent attention items for dashboard
+ */
+export const getUrgentAttentionItems = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const { id: userId, orgId } = await getUser(ctx);
+    const limit = args.limit || 5;
+
+    // Get pending attention items
+    const items = await ctx.db
+      .query("emailAttentionItems")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", userId).eq("orgId", orgId),
+      )
+      .collect();
+
+    const pendingItems = items.filter((i) => i.status === "pending");
+
+    // Get current timeblock tags
+    const now = Date.now();
+    const timeblocks = await ctx.db
+      .query("timeblocks")
+      .withIndex("by_org_and_creator", (q) =>
+        q.eq("orgId", orgId).eq("createdBy", userId),
+      )
+      .collect();
+
+    const currentTimeblock = timeblocks.find(
+      (tb) => tb.startTime <= now && tb.endTime >= now,
+    );
+    const currentTags = currentTimeblock?.tagIds || [];
+
+    // Get all tags to calculate urgency
+    const allTagIds = [...new Set(pendingItems.flatMap((i) => i.tagIds))];
+    const tagDocs = await Promise.all(
+      allTagIds.map((id) => ctx.db.get(id as Id<"tags">)),
+    );
+    const tagMap = new Map(tagDocs.filter(Boolean).map((t) => [t!._id, t!]));
+
+    // Calculate urgency based on tag responseTimeMinutes
+    const itemsWithUrgency = pendingItems.map((item) => {
+      const matchesCurrentBlock = item.tagIds.some((id) =>
+        currentTags.includes(id),
+      );
+
+      // Find fastest responseTimeMinutes from tags
+      const responseTimes = item.tagIds
+        .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
+        .filter((t): t is number => t !== undefined);
+
+      const fastestResponse =
+        responseTimes.length > 0 ? Math.min(...responseTimes) : 60; // default 1 hour
+
+      const expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
+      const isOverdue = expectedAnswerTime < now;
+
+      return {
+        ...item,
+        matchesCurrentBlock,
+        expectedAnswerTime,
+        isOverdue,
+        urgencyScore: isOverdue ? -1 : expectedAnswerTime - now,
+      };
+    });
+
+    // Sort by urgency (overdue first, then by expected time)
+    itemsWithUrgency.sort((a, b) => a.urgencyScore - b.urgencyScore);
+
+    // Get connection emails and return top items
+    const connectionIds = [
+      ...new Set(
+        itemsWithUrgency.slice(0, limit).map((i) => i.gmailConnectionId),
+      ),
+    ];
+    const connections = await Promise.all(
+      connectionIds.map((id) => ctx.db.get(id)),
+    );
+    const connectionEmailMap = new Map(
+      connections.filter(Boolean).map((c) => [c!._id, c!.googleEmail]),
+    );
+
+    return itemsWithUrgency.slice(0, limit).map((item) => ({
+      _id: item._id,
+      senderEmail: item.senderEmail,
+      senderName: item.senderName,
+      subject: item.subject,
+      snippet: item.snippet,
+      htmlBody: item.htmlBody,
+      receivedAt: item.receivedAt,
+      expectedAnswerTime: item.expectedAnswerTime,
+      isOverdue: item.isOverdue,
+      matchesCurrentBlock: item.matchesCurrentBlock,
+      status: item.status,
+      sourceEmail: connectionEmailMap.get(item.gmailConnectionId) || "Unknown",
+      tags: item.tagIds
+        .map((id) => tagMap.get(id as Id<"tags">))
+        .filter(Boolean)
+        .map((t) => ({ _id: t!._id, name: t!.name, color: t!.color })),
+    }));
+  },
+});
+
+/**
+ * Get attention items for current focus panel
+ */
+export const getCurrentFocusAttentionItems = query({
+  args: {
+    timeblockIds: v.optional(v.array(v.id("timeblocks"))),
+  },
+  handler: async (ctx, args) => {
+    const { id: userId, orgId } = await getUser(ctx);
+
+    // Get timeblock tags
+    const allTagIds = new Set<string>();
+    if (args.timeblockIds && args.timeblockIds.length > 0) {
+      const timeblocks = await Promise.all(
+        args.timeblockIds.map((id) => ctx.db.get(id)),
+      );
+      for (const tb of timeblocks.filter(Boolean)) {
+        for (const tagId of tb!.tagIds) {
+          allTagIds.add(tagId);
+        }
+      }
+    } else {
+      // Find current timeblocks
+      const now = Date.now();
+      const timeblocks = await ctx.db
+        .query("timeblocks")
+        .withIndex("by_org_and_creator", (q) =>
+          q.eq("orgId", orgId).eq("createdBy", userId),
+        )
+        .collect();
+
+      const current = timeblocks.filter(
+        (tb) => tb.startTime <= now && tb.endTime >= now,
+      );
+      for (const tb of current) {
+        for (const tagId of tb.tagIds) {
+          allTagIds.add(tagId);
+        }
+      }
+    }
+
+    if (allTagIds.size === 0) return [];
+
+    // Get pending attention items
+    const items = await ctx.db
+      .query("emailAttentionItems")
+      .withIndex("by_user_and_org", (q) =>
+        q.eq("userId", userId).eq("orgId", orgId),
+      )
+      .collect();
+
+    // Get all tags for filtering and urgency
+    const allItemTagIds = [...new Set(items.flatMap((i) => i.tagIds))];
+    const tagDocs = await Promise.all(
+      allItemTagIds.map((id) => ctx.db.get(id as Id<"tags">)),
+    );
+    const tagMap = new Map(tagDocs.filter(Boolean).map((t) => [t!._id, t!]));
+
+    // Filter pending items matching tags or on-demand
+    const filtered = items.filter((item) => {
+      if (item.status !== "pending") return false;
+
+      return item.tagIds.some((tagId) => {
+        if (allTagIds.has(tagId)) return true;
+        const tag = tagMap.get(tagId as Id<"tags">);
+        return tag?.answerMode === "on-demand";
+      });
+    });
+
+    // Calculate urgency and sort
+    const now = Date.now();
+    const withUrgency = filtered.map((item) => {
+      const responseTimes = item.tagIds
+        .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
+        .filter((t): t is number => t !== undefined);
+
+      const fastestResponse =
+        responseTimes.length > 0 ? Math.min(...responseTimes) : 60;
+
+      const expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
+      const isOverdue = expectedAnswerTime < now;
+
+      return { ...item, expectedAnswerTime, isOverdue };
+    });
+
+    withUrgency.sort((a, b) => {
+      if (a.isOverdue && !b.isOverdue) return -1;
+      if (!a.isOverdue && b.isOverdue) return 1;
+      return a.expectedAnswerTime - b.expectedAnswerTime;
+    });
+
+    // Get connection emails
+    const connectionIds = [
+      ...new Set(withUrgency.map((i) => i.gmailConnectionId)),
+    ];
+    const connections = await Promise.all(
+      connectionIds.map((id) => ctx.db.get(id)),
+    );
+    const connectionEmailMap = new Map(
+      connections.filter(Boolean).map((c) => [c!._id, c!.googleEmail]),
+    );
+
+    return withUrgency.map((item) => ({
+      _id: item._id,
+      senderEmail: item.senderEmail,
+      senderName: item.senderName,
+      subject: item.subject,
+      snippet: item.snippet,
+      htmlBody: item.htmlBody,
+      receivedAt: item.receivedAt,
+      expectedAnswerTime: item.expectedAnswerTime,
+      isOverdue: item.isOverdue,
+      status: item.status,
+      sourceEmail: connectionEmailMap.get(item.gmailConnectionId) || "Unknown",
+      tags: item.tagIds
+        .map((id) => tagMap.get(id as Id<"tags">))
+        .filter(Boolean)
+        .map((t) => ({ _id: t!._id, name: t!.name, color: t!.color })),
+    }));
   },
 });
 

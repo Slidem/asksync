@@ -1,20 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, Pencil, Power, PowerOff, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  AlignLeft,
+  FileText,
+  Mail,
+  MoreVertical,
+  Pencil,
+  Power,
+  PowerOff,
+  Trash2,
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Id } from "@convex/dataModel";
+import { EditRuleDialog } from "@/emails/components/EditRuleDialog";
 import { useDeleteRule, useUpdateRule } from "@/emails/hooks/mutations";
-import { EditRuleDialog } from "./EditRuleDialog";
+import { useTags } from "@/tags/hooks/queries";
+import { Id } from "@convex/dataModel";
 
 interface RuleCardProps {
   rule: {
@@ -36,12 +46,7 @@ export function RuleCard({ rule, connectionEmail }: RuleCardProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { deleteRule } = useDeleteRule();
   const { updateRule } = useUpdateRule();
-
-  const patterns = [
-    rule.senderPattern && `From: ${rule.senderPattern}`,
-    rule.subjectPattern && `Subject: ${rule.subjectPattern}`,
-    rule.contentPattern && `Content: ${rule.contentPattern}`,
-  ].filter(Boolean);
+  const { tags } = useTags({});
 
   const handleToggleEnabled = async () => {
     await updateRule({
@@ -49,6 +54,11 @@ export function RuleCard({ rule, connectionEmail }: RuleCardProps) {
       isEnabled: !rule.isEnabled,
     });
   };
+
+  // Get tag objects for display
+  const ruleTags = rule.autoTagIds
+    .map((tagId) => tags.find((t) => t.id === tagId))
+    .filter(Boolean);
 
   return (
     <>
@@ -72,14 +82,51 @@ export function RuleCard({ rule, connectionEmail }: RuleCardProps) {
               </p>
             )}
 
-            <div className="space-y-1">
-              {patterns.map((pattern, i) => (
-                <p key={i} className="text-sm text-muted-foreground font-mono">
-                  {pattern}
-                </p>
-              ))}
+            {/* Pattern filters with icons */}
+            <div className="space-y-1.5 mt-2">
+              {rule.senderPattern && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-mono truncate">
+                    {rule.senderPattern}
+                  </span>
+                </div>
+              )}
+              {rule.subjectPattern && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-mono truncate">
+                    {rule.subjectPattern}
+                  </span>
+                </div>
+              )}
+              {rule.contentPattern && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <AlignLeft className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-mono truncate">
+                    {rule.contentPattern}
+                  </span>
+                </div>
+              )}
             </div>
 
+            {/* Tags */}
+            {ruleTags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                {ruleTags.map((tag) => (
+                  <Badge
+                    key={tag!.id}
+                    variant="outline"
+                    className="text-xs"
+                    style={{ borderColor: tag!.color, color: tag!.color }}
+                  >
+                    {tag!.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Stats */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span>
                 {rule.matchCount || 0} match{rule.matchCount !== 1 && "es"}

@@ -122,17 +122,7 @@ export function PendingTasksWidget({
   const router = useRouter();
 
   if (!urgentQuestions || urgentQuestions.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-4 mb-4">
-          <Clock className="h-8 w-8 text-green-600 dark:text-green-400" />
-        </div>
-        <h3 className="text-lg font-medium mb-1">All caught up!</h3>
-        <p className="text-sm text-muted-foreground">
-          No pending questions to answer
-        </p>
-      </div>
-    );
+    return null;
   }
 
   // Separate into current timeblock and upcoming

@@ -54,6 +54,7 @@ async function processMessage(
     senderName: parsed.senderName,
     subject: parsed.subject,
     snippet: message.snippet,
+    htmlBody: parsed.htmlBody,
     receivedAt: parsed.receivedAt,
     tagIds,
   });

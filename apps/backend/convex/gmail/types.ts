@@ -85,6 +85,7 @@ export interface ParsedEmail {
   senderName?: string;
   subject: string;
   body: string;
+  htmlBody?: string;
   receivedAt: number;
 }
 

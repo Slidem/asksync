@@ -1,20 +1,22 @@
 "use client";
 
+import { memo, useMemo } from "react";
+
 import {
   UnderlineTabs,
   UnderlineTabsContent,
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { memo, useMemo } from "react";
-
-import { EmptyState } from "./EmptyState";
+import { useTimeblockAttentionItems } from "@/emails/hooks/useTimeblockAttentionItems";
+import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
+import { useTimeblockQuestions } from "@/work/hooks/useTimeblockQuestions";
+import { EmptyState } from "@/work/components/focusPanel/EmptyState";
+import { FocusPanelEmails } from "@/work/components/focusPanel/FocusPanelEmails";
 import { FocusPanelQuestions } from "@/work/components/focusPanel/FocusPanelQuestions";
 import { FocusPanelTasks } from "@/work/components/focusPanel/FocusPanelTasks";
 import { FocusPanelTimeblocks } from "@/work/components/focusPanel/FocusPanelTimeblocks";
-import { LoadingState } from "./LoadingState";
-import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
-import { useTimeblockQuestions } from "@/work/hooks/useTimeblockQuestions";
+import { LoadingState } from "@/work/components/focusPanel/LoadingState";
 
 export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
   const { timeblockData, isLoading } = useCurrentTimeblock();
@@ -23,6 +25,7 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
     [timeblockData?.timeblocks],
   );
   const { questions } = useTimeblockQuestions(timeblockIds);
+  const { items: emailItems } = useTimeblockAttentionItems(timeblockIds);
 
   if (isLoading) {
     return <LoadingState />;
@@ -47,6 +50,9 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
             <UnderlineTabsTrigger value="questions" badge={questions.length}>
               Questions
             </UnderlineTabsTrigger>
+            <UnderlineTabsTrigger value="emails" badge={emailItems.length}>
+              Emails
+            </UnderlineTabsTrigger>
           </UnderlineTabsList>
 
           <UnderlineTabsContent
@@ -61,6 +67,13 @@ export const CurrentFocusPanel = memo(function CurrentFocusPanel() {
             className="flex-1 flex flex-col mt-0"
           >
             <FocusPanelQuestions />
+          </UnderlineTabsContent>
+
+          <UnderlineTabsContent
+            value="emails"
+            className="flex-1 flex flex-col mt-0"
+          >
+            <FocusPanelEmails />
           </UnderlineTabsContent>
         </UnderlineTabs>
       </div>

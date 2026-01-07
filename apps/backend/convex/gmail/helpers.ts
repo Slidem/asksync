@@ -63,6 +63,7 @@ export function parseGmailMessage(raw: GmailMessage): ParsedEmail {
     senderName: match ? match[1].trim().replace(/^"|"$/g, "") : undefined,
     subject: getHeader("Subject"),
     body: decodeMessageBody(raw),
+    htmlBody: extractHtmlBody(raw),
     receivedAt: parseInt(raw.internalDate, 10),
   };
 }
@@ -95,6 +96,28 @@ function decodeMessageBody(message: GmailMessage): string {
 
   // Use snippet as fallback
   return message.snippet || "";
+}
+
+/**
+ * Extract raw HTML body from Gmail message for email viewer
+ */
+function extractHtmlBody(message: GmailMessage): string | undefined {
+  const payload = message.payload;
+
+  // Check if main body is HTML
+  if (payload.mimeType === "text/html" && payload.body?.data) {
+    return base64UrlDecode(payload.body.data);
+  }
+
+  // Multipart message - look for text/html
+  if (payload.parts) {
+    const htmlPart = findPartByMimeType(payload.parts, "text/html");
+    if (htmlPart?.body?.data) {
+      return base64UrlDecode(htmlPart.body.data);
+    }
+  }
+
+  return undefined;
 }
 
 /**

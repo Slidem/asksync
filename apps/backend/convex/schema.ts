@@ -503,6 +503,7 @@ export default defineSchema({
     senderName: v.optional(v.string()),
     subject: v.string(),
     snippet: v.string(),
+    htmlBody: v.optional(v.string()), // full HTML content for email viewer
     receivedAt: v.number(),
 
     // State

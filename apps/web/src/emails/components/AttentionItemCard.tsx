@@ -1,6 +1,17 @@
 "use client";
 
-import { Check, MoreVertical, RotateCcw, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import {
+  Check,
+  Mail,
+  MoreVertical,
+  RotateCcw,
+  Trash2,
+  User,
+} from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,11 +19,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteItem, useResolveItem } from "@/emails/hooks/mutations";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Id } from "@convex/dataModel";
-import { formatDistanceToNow } from "date-fns";
+
+interface EmailTag {
+  _id: string;
+  name: string;
+  color: string;
+}
 
 interface AttentionItemCardProps {
   item: {
@@ -21,20 +34,23 @@ interface AttentionItemCardProps {
     senderName?: string;
     subject: string;
     snippet: string;
+    htmlBody?: string;
     receivedAt: number;
     status: "pending" | "resolved";
     sourceEmail: string;
-    tagIds: string[];
+    tags: EmailTag[];
   };
+  onClick?: () => void;
 }
 
-export function AttentionItemCard({ item }: AttentionItemCardProps) {
+export function AttentionItemCard({ item, onClick }: AttentionItemCardProps) {
   const { resolveItem, unresolveItem } = useResolveItem();
   const { deleteItem } = useDeleteItem();
 
   const isResolved = item.status === "resolved";
 
-  const handleToggleStatus = () => {
+  const handleToggleStatus = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isResolved) {
       unresolveItem(item._id);
     } else {
@@ -42,15 +58,36 @@ export function AttentionItemCard({ item }: AttentionItemCardProps) {
     }
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteItem(item._id);
+  };
+
   return (
     <div
-      className={`p-4 border rounded-lg ${isResolved ? "opacity-60 bg-muted/30" : ""}`}
+      className={`p-4 border rounded-lg transition-colors ${
+        isResolved ? "opacity-60 bg-muted/30" : ""
+      } ${onClick ? "cursor-pointer hover:bg-muted/50" : ""}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
       <div className="flex items-start gap-4">
         {/* Main content */}
         <div className="flex-1 min-w-0">
           {/* Sender and time */}
           <div className="flex items-center gap-2 mb-1">
+            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="font-medium truncate">
               {item.senderName || item.senderEmail}
             </span>
@@ -72,14 +109,40 @@ export function AttentionItemCard({ item }: AttentionItemCardProps) {
             {item.snippet}
           </p>
 
+          {/* Tags */}
+          {item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {item.tags.slice(0, 3).map((tag) => (
+                <Badge
+                  key={tag._id}
+                  variant="outline"
+                  className="text-xs"
+                  style={{ borderColor: tag.color, color: tag.color }}
+                >
+                  {tag.name}
+                </Badge>
+              ))}
+              {item.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{item.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Source account */}
-          <p className="text-xs text-muted-foreground mt-2">
-            From: {item.sourceEmail}
-          </p>
+          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+            <Mail className="h-3 w-3" />
+            <span>{item.sourceEmail}</span>
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Actions - prevent click from bubbling to card */}
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div
+          className="flex items-center gap-1 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button
             variant={isResolved ? "outline" : "default"}
             size="sm"
@@ -108,7 +171,7 @@ export function AttentionItemCard({ item }: AttentionItemCardProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => deleteItem(item._id)}
+                onClick={handleDelete}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
