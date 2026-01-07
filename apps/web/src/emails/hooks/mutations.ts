@@ -1,10 +1,30 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { toast } from "sonner";
-
-import { api } from "@convex/api";
 import { Id } from "@convex/dataModel";
+import { api } from "@convex/api";
 import { confirmDialog } from "@/components/shared/ConfirmDialog";
+import { toast } from "sonner";
+import { useMutation } from "convex/react";
+import { useState } from "react";
+
+export const useTriggerGmailSync = () => {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const triggerSyncMutation = useMutation(api.gmail.mutations.triggerSync);
+
+  const triggerSync = async (connectionId: Id<"gmailConnections">) => {
+    try {
+      setIsSyncing(true);
+      await triggerSyncMutation({ connectionId });
+      toast.success("Sync started");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to trigger sync",
+      );
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  return { triggerSync, isSyncing };
+};
 
 export const useDisconnectGmail = () => {
   const [isDisconnecting, setIsDisconnecting] = useState(false);

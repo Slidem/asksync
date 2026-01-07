@@ -7,6 +7,7 @@ import {
   Loader2,
   Mail,
   Plus,
+  RefreshCw,
   Trash2,
 } from "lucide-react";
 import { useOrganization, useUser } from "@clerk/nextjs";
@@ -16,7 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { initiateGmailOAuth, isGmailOAuthConfigured } from "@/lib/gmailOAuth";
 import { useGmailConnections } from "@/emails/hooks/queries";
-import { useDisconnectGmail } from "@/emails/hooks/mutations";
+import {
+  useDisconnectGmail,
+  useTriggerGmailSync,
+} from "@/emails/hooks/mutations";
 
 export function EmailAccountsTab() {
   const { user } = useUser();
@@ -25,6 +29,7 @@ export function EmailAccountsTab() {
 
   const { connections, isLoading } = useGmailConnections();
   const { disconnectAccount, isDisconnecting } = useDisconnectGmail();
+  const { triggerSync, isSyncing } = useTriggerGmailSync();
 
   const oauthConfigured = isGmailOAuthConfigured();
 
@@ -86,16 +91,30 @@ export function EmailAccountsTab() {
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => disconnectAccount(conn._id, conn.googleEmail)}
-            disabled={isDisconnecting}
-            title="Disconnect"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => triggerSync(conn._id)}
+              disabled={isSyncing}
+              title="Sync now"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              onClick={() => disconnectAccount(conn._id, conn.googleEmail)}
+              disabled={isDisconnecting}
+              title="Disconnect"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ))}
 

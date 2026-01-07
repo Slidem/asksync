@@ -2,6 +2,7 @@
 import { internalMutation, mutation } from "../_generated/server";
 
 import { getUser } from "../auth/user";
+import { internal } from "../_generated/api";
 import { v } from "convex/values";
 
 /**
@@ -53,6 +54,33 @@ export const disconnectAccount = mutation({
     for (const item of items) {
       await ctx.db.delete(item._id);
     }
+  },
+});
+
+/**
+ * Trigger a manual sync for a Gmail connection
+ */
+export const triggerSync = mutation({
+  args: { connectionId: v.id("gmailConnections") },
+  handler: async (ctx, args) => {
+    const { id: userId, orgId } = await getUser(ctx);
+    const connection = await ctx.db.get(args.connectionId);
+
+    if (
+      !connection ||
+      connection.userId !== userId ||
+      connection.orgId !== orgId
+    ) {
+      throw new Error("Connection not found");
+    }
+
+    if (connection.syncStatus === "disconnected") {
+      throw new Error("Connection is disconnected");
+    }
+
+    await ctx.scheduler.runAfter(0, internal.gmail.sync.syncSingleConnection, {
+      connectionId: args.connectionId,
+    });
   },
 });
 

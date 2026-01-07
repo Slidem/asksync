@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,11 +12,13 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Id } from "@convex/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { useUpdateRule } from "@/emails/hooks/mutations";
+import { useTags } from "@/tags/hooks/queries";
 
 interface EditRuleDialogProps {
   open: boolean;
@@ -25,6 +29,7 @@ interface EditRuleDialogProps {
     senderPattern?: string;
     subjectPattern?: string;
     contentPattern?: string;
+    autoTagIds: string[];
   };
 }
 
@@ -41,8 +46,24 @@ export function EditRuleDialog({
   const [contentPattern, setContentPattern] = useState(
     rule.contentPattern || "",
   );
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    rule.autoTagIds || [],
+  );
 
   const { updateRule, isUpdating } = useUpdateRule();
+  const { tags } = useTags({});
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId],
+    );
+  };
+
+  const removeTag = (tagId: string) => {
+    setSelectedTagIds((prev) => prev.filter((id) => id !== tagId));
+  };
 
   const hasPattern = senderPattern || subjectPattern || contentPattern;
   const isValid = name.trim() && hasPattern;
@@ -58,6 +79,7 @@ export function EditRuleDialog({
         senderPattern: senderPattern.trim() || undefined,
         subjectPattern: subjectPattern.trim() || undefined,
         contentPattern: contentPattern.trim() || undefined,
+        autoTagIds: selectedTagIds,
       });
       onOpenChange(false);
     } catch {
@@ -72,6 +94,7 @@ export function EditRuleDialog({
       setSenderPattern(rule.senderPattern || "");
       setSubjectPattern(rule.subjectPattern || "");
       setContentPattern(rule.contentPattern || "");
+      setSelectedTagIds(rule.autoTagIds || []);
     }
     onOpenChange(o);
   };
@@ -143,6 +166,68 @@ export function EditRuleDialog({
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Auto-add Tags */}
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-3">
+                Auto-add Tags{" "}
+                <span className="font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </p>
+
+              {/* Selected tags */}
+              {selectedTagIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {selectedTagIds.map((tagId) => {
+                    const tag = tags.find((t) => t.id === tagId);
+                    if (!tag) return null;
+                    return (
+                      <Badge
+                        key={tagId}
+                        variant="secondary"
+                        className="gap-1 pr-1"
+                      >
+                        {tag.name}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tagId)}
+                          className="ml-1 rounded-full hover:bg-muted-foreground/20"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Tag selection list */}
+              <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1">
+                {tags.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-2 text-center">
+                    No tags available
+                  </p>
+                ) : (
+                  tags.map((tag) => (
+                    <label
+                      key={tag.id}
+                      className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedTagIds.includes(tag.id)}
+                        onCheckedChange={() => toggleTag(tag.id)}
+                      />
+                      <span className="text-sm">{tag.name}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Tags will be automatically added to attention items created by
+                this rule
+              </p>
             </div>
           </div>
 
