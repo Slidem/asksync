@@ -197,28 +197,31 @@ export const getUrgentAttentionItems = query({
     );
     const tagMap = new Map(tagDocs.filter(Boolean).map((t) => [t!._id, t!]));
 
-    // Calculate urgency based on tag responseTimeMinutes
+    // Use stored expectedAnswerTime and isOverdue (calculated on creation/recalc)
+    // For items without stored values (legacy), calculate on-the-fly
     const itemsWithUrgency = pendingItems.map((item) => {
       const matchesCurrentBlock = item.tagIds.some((id) =>
         currentTags.includes(id),
       );
 
-      // Find fastest responseTimeMinutes from tags
-      const responseTimes = item.tagIds
-        .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
-        .filter((t): t is number => t !== undefined);
-
-      const fastestResponse =
-        responseTimes.length > 0 ? Math.min(...responseTimes) : 60; // default 1 hour
-
-      const expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
-      const isOverdue = expectedAnswerTime < now;
+      // Fall back to on-the-fly calculation for legacy items
+      let expectedAnswerTime = item.expectedAnswerTime;
+      let isOverdue = item.isOverdue;
+      if (expectedAnswerTime === undefined) {
+        const responseTimes = item.tagIds
+          .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
+          .filter((t): t is number => t !== undefined);
+        const fastestResponse =
+          responseTimes.length > 0 ? Math.min(...responseTimes) : 60;
+        expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
+        isOverdue = expectedAnswerTime < now;
+      }
 
       return {
         ...item,
         matchesCurrentBlock,
         expectedAnswerTime,
-        isOverdue,
+        isOverdue: isOverdue ?? false,
         urgencyScore: isOverdue ? -1 : expectedAnswerTime - now,
       };
     });
@@ -329,20 +332,21 @@ export const getCurrentFocusAttentionItems = query({
       });
     });
 
-    // Calculate urgency and sort
+    // Calculate urgency with fallback for legacy items
     const now = Date.now();
     const withUrgency = filtered.map((item) => {
-      const responseTimes = item.tagIds
-        .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
-        .filter((t): t is number => t !== undefined);
-
-      const fastestResponse =
-        responseTimes.length > 0 ? Math.min(...responseTimes) : 60;
-
-      const expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
-      const isOverdue = expectedAnswerTime < now;
-
-      return { ...item, expectedAnswerTime, isOverdue };
+      let expectedAnswerTime = item.expectedAnswerTime;
+      let isOverdue = item.isOverdue;
+      if (expectedAnswerTime === undefined) {
+        const responseTimes = item.tagIds
+          .map((id) => tagMap.get(id as Id<"tags">)?.responseTimeMinutes)
+          .filter((t): t is number => t !== undefined);
+        const fastestResponse =
+          responseTimes.length > 0 ? Math.min(...responseTimes) : 60;
+        expectedAnswerTime = item.receivedAt + fastestResponse * 60 * 1000;
+        isOverdue = expectedAnswerTime < now;
+      }
+      return { ...item, expectedAnswerTime, isOverdue: isOverdue ?? false };
     });
 
     withUrgency.sort((a, b) => {

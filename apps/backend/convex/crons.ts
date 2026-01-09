@@ -3,12 +3,12 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Recalculate expected answer times hourly for all pending/assigned questions
+// Recalculate expected answer times hourly for all pending items (questions + emails)
 // This serves as a safety net to catch any missed updates from mutation triggers
 crons.interval(
   "recalculate-expected-times",
   { hours: 1 },
-  internal.questions.recalculation.recalculateAllPendingQuestions,
+  internal.common.recalculation.recalculateAllPendingItems,
   {},
 );
 

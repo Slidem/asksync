@@ -513,6 +513,10 @@ export default defineSchema({
     // Categorization
     tagIds: v.array(v.string()), // merged from all matching rules
 
+    // Timing and urgency (same as questions)
+    expectedAnswerTime: v.optional(v.number()),
+    isOverdue: v.optional(v.boolean()),
+
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -521,7 +525,8 @@ export default defineSchema({
     .index("by_user_and_status", ["userId", "status"])
     .index("by_gmail_message", ["gmailMessageId"])
     .index("by_gmail_connection", ["gmailConnectionId"])
-    .index("by_org", ["orgId"]),
+    .index("by_org", ["orgId"])
+    .index("by_org_and_expected_time", ["orgId", "expectedAnswerTime"]),
 
   // Google Calendar Connections - OAuth tokens and sync state per account
   googleCalendarConnections: defineTable({

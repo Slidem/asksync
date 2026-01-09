@@ -70,14 +70,16 @@ export const createTimeblock = mutation({
       updatedAt: Date.now(),
     });
 
-    // // Schedule recalculation for affected questions
+    // Schedule recalculation for affected questions and attention items
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTags,
-      {
-        tagIds: args.tagIds,
-        assigneeId: userId,
-      },
+      { tagIds: args.tagIds, assigneeId: userId },
+    );
+    await ctx.scheduler.runAfter(
+      0,
+      internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+      { tagIds: args.tagIds },
     );
 
     return timeblockId;
@@ -154,14 +156,16 @@ export const updateTimeblock = mutation({
       const newTagIds = args.tagIds ?? oldTagIds;
       const allTagIds = Array.from(new Set([...oldTagIds, ...newTagIds]));
 
-      // Schedule recalculation for affected questions
+      // Schedule recalculation for affected questions and attention items
       await ctx.scheduler.runAfter(
         0,
         internal.questions.recalculation.recalculateQuestionsWithTags,
-        {
-          tagIds: allTagIds,
-          assigneeId: existingTimeblock.createdBy,
-        },
+        { tagIds: allTagIds, assigneeId: existingTimeblock.createdBy },
+      );
+      await ctx.scheduler.runAfter(
+        0,
+        internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+        { tagIds: allTagIds },
       );
     }
 
@@ -187,14 +191,16 @@ export const deleteTimeblock = mutation({
 
     await ctx.db.delete(args.id);
 
-    // Schedule recalculation for affected questions
+    // Schedule recalculation for affected questions and attention items
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTags,
-      {
-        tagIds: timeblock.tagIds,
-        assigneeId: timeblock.createdBy,
-      },
+      { tagIds: timeblock.tagIds, assigneeId: timeblock.createdBy },
+    );
+    await ctx.scheduler.runAfter(
+      0,
+      internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+      { tagIds: timeblock.tagIds },
     );
 
     return args.id;
@@ -226,14 +232,16 @@ export const addTimeblockException = mutation({
       updatedAt: Date.now(),
     });
 
-    // Schedule recalculation for affected questions
+    // Schedule recalculation for affected questions and attention items
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTags,
-      {
-        tagIds: timeblock.tagIds,
-        assigneeId: timeblock.createdBy,
-      },
+      { tagIds: timeblock.tagIds, assigneeId: timeblock.createdBy },
+    );
+    await ctx.scheduler.runAfter(
+      0,
+      internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+      { tagIds: timeblock.tagIds },
     );
 
     return timeblock._id;

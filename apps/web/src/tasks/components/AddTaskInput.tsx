@@ -15,13 +15,11 @@ export const AddTaskInput = () => {
   const handleTaskAdded = (e: React.FormEvent) => {
     e.preventDefault();
     if (onTaskAdded) {
-      const form = e.target as HTMLFormElement;
-      const input = form.elements.namedItem("taskTitle") as HTMLInputElement;
-      const title = input.value.trim();
+      const title = newTaskTitle.trim();
       if (title) {
         onTaskAdded(title);
-        input.value = "";
-        setIsAddingTask(false);
+        setNewTaskTitle("");
+        inputRef.current?.focus();
       }
     }
   };
@@ -43,7 +41,7 @@ export const AddTaskInput = () => {
     }
   };
 
-  const handleBur = () => {
+  const handleBlur = () => {
     if (!newTaskTitle.trim()) {
       handleToggleAddingTask(false);
     }
@@ -69,12 +67,13 @@ export const AddTaskInput = () => {
       {isAddingTask ? (
         <form onSubmit={handleTaskAdded} className="flex-1">
           <Input
+            ref={inputRef}
             name="taskTitle"
             value={newTaskTitle}
             onChange={handleNewTaskTitleChange}
             placeholder="Enter task title and press Enter..."
             className="h-7 text-sm border-0 p-0 focus-visible:ring-0"
-            onBlur={handleBur}
+            onBlur={handleBlur}
             onKeyDown={handleKeyPressed}
           />
         </form>

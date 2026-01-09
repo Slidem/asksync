@@ -131,13 +131,16 @@ export const updateTag = mutation({
       args.answerMode !== undefined || args.responseTimeMinutes !== undefined;
 
     if (affectsCalculation) {
-      // // Synchronous recalculation for tag changes (critical path)
+      // Recalculate questions and attention items with this tag
       await ctx.scheduler.runAfter(
         0,
         internal.questions.recalculation.recalculateQuestionsWithTag,
-        {
-          tagId: args.id,
-        },
+        { tagId: args.id },
+      );
+      await ctx.scheduler.runAfter(
+        0,
+        internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+        { tagIds: [args.id] },
       );
     }
 
@@ -197,13 +200,16 @@ export const deleteTag = mutation({
     // Delete the tag
     await ctx.db.delete(args.id);
 
-    // // Recalculate questions that had this tag (they'll fall back to defaults)
+    // Recalculate questions and attention items that had this tag
     await ctx.scheduler.runAfter(
       0,
       internal.questions.recalculation.recalculateQuestionsWithTag,
-      {
-        tagId: args.id,
-      },
+      { tagId: args.id },
+    );
+    await ctx.scheduler.runAfter(
+      0,
+      internal.gmail.recalculation.recalculateAttentionItemsWithTags,
+      { tagIds: [args.id] },
     );
 
     return { success: true };

@@ -1,6 +1,7 @@
 /* eslint-disable import/order */
 import { internalMutation, mutation } from "../_generated/server";
 
+import { calculateExpectedAnswerTime } from "../common/expectedTime";
 import { getUser } from "../auth/user";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
@@ -427,6 +428,17 @@ export const createAttentionItem = internalMutation({
       return existing._id;
     }
 
+    // Calculate expected answer time using shared logic
+    const now = Date.now();
+    const expectedAnswerTime = await calculateExpectedAnswerTime(
+      ctx,
+      args.orgId,
+      args.tagIds,
+      [args.userId], // user as single "assignee" for emails
+      now,
+    );
+    const isOverdue = expectedAnswerTime < now;
+
     const itemId = await ctx.db.insert("emailAttentionItems", {
       userId: args.userId,
       orgId: args.orgId,
@@ -442,6 +454,8 @@ export const createAttentionItem = internalMutation({
       receivedAt: args.receivedAt,
       status: "pending",
       tagIds: args.tagIds,
+      expectedAnswerTime,
+      isOverdue,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
