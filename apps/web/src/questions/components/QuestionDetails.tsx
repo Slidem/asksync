@@ -145,7 +145,7 @@ export function QuestionDetails({
       )}
 
       {/* Participants & Created Date */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <ParticipantsDisplay participants={participants || []} />
         <div className="text-sm text-muted-foreground">
           Created {new Date(createdAt).toLocaleDateString()}

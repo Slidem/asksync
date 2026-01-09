@@ -18,10 +18,12 @@ export function ParticipantsDisplay({
   if (!participants || participants.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <Users className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm font-medium">Participants:</span>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
       <div className="flex items-center gap-2">
+        <Users className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">Participants:</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
         {participants.map((participant) => (
           <div key={participant.id} className="flex items-center gap-1">
             <MemberAvatar id={participant.id} />

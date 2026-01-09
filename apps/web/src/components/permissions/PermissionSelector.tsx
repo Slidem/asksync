@@ -33,7 +33,7 @@ export function PermissionSelector({
 }: PermissionSelectorProps) {
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger className="w-auto min-w-[120px]">
+      <SelectTrigger className="w-auto min-w-[100px]">
         <SelectValue>
           <span>{PERMISSION_LABELS[value]}</span>
         </SelectValue>

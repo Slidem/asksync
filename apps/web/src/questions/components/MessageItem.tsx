@@ -102,7 +102,7 @@ export function MessageItem({
                   setEditContent(html);
                   setEditContentPlaintext(plaintext);
                 }}
-                placeholder="Edit message... (Ctrl+Enter to save)"
+                placeholder="Edit message..."
                 minHeight={80}
                 onSubmit={handleSaveEdit}
               />

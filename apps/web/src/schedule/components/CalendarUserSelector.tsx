@@ -105,10 +105,10 @@ export function CalendarUserSelector() {
             variant="outline"
             size="sm"
             onClick={handleBackToMyCalendar}
-            className="gap-2"
+            className="gap-2 max-sm:p-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            My Calendar
+            <span className="max-sm:sr-only">My Calendar</span>
           </Button>
         )}
       </div>

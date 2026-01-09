@@ -79,13 +79,13 @@ export const EventDialog: React.FC = () => {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <UnderlineTabsList className="grid w-full grid-cols-5">
+          <UnderlineTabsList className="flex w-full sm:grid sm:grid-cols-5">
             <UnderlineTabsTrigger
               value="details"
               className={cn("font-semibold")}
               icon={<FileText className="h-4 w-4" />}
             >
-              Details
+              <span className="max-sm:sr-only">Details</span>
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="datetime"
@@ -93,28 +93,28 @@ export const EventDialog: React.FC = () => {
               hasError={tabsWithErrors.includes(1)}
               icon={<Calendar className="h-4 w-4" />}
             >
-              Date & Time
+              <span className="max-sm:sr-only">Date & Time</span>
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="tags"
               className={cn("font-semibold")}
               icon={<Tag className="h-4 w-4" />}
             >
-              Tags
+              <span className="max-sm:sr-only">Tags</span>
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="checklists"
               className={cn("font-semibold")}
               icon={<CheckSquare className="h-4 w-4" />}
             >
-              Checklists
+              <span className="max-sm:sr-only">Checklists</span>
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="permissions"
               className={cn("font-semibold")}
               icon={<Shield className="h-4 w-4" />}
             >
-              Permissions
+              <span className="max-sm:sr-only">Permissions</span>
             </UnderlineTabsTrigger>
           </UnderlineTabsList>
 

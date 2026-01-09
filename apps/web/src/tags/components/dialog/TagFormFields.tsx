@@ -112,12 +112,8 @@ export const AnswerMode = ({ form }: { form: UseFormReturn<TagFormData> }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="scheduled">
-                Scheduled - Answer during timeblocks
-              </SelectItem>
-              <SelectItem value="on-demand">
-                On-demand - Answer within specified time
-              </SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="on-demand">On-demand</SelectItem>
             </SelectContent>
           </Select>
           <FormDescription>

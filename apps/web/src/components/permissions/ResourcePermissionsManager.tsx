@@ -82,7 +82,7 @@ export function ResourcePermissionsManager({
   const otherGrants = grants.filter((g) => !g.isCreator);
 
   return (
-    <Card className="border-primary/20">
+    <Card className="border-primary/20 overflow-hidden">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

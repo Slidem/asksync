@@ -15,9 +15,9 @@ export function QuestionsPageHeader({
         <MessageCircleQuestionMark className="h-6 w-6" />
         <h1 className="text-2xl font-bold">Questions</h1>
       </div>
-      <Button onClick={onAskQuestion}>
-        <Plus className="h-4 w-4 mr-2" />
-        Ask Question
+      <Button onClick={onAskQuestion} size="icon" className="sm:w-auto sm:px-4">
+        <Plus className="h-4 w-4 sm:mr-2" />
+        <span className="hidden sm:inline">Ask Question</span>
       </Button>
     </div>
   );

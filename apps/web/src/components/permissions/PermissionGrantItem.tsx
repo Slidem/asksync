@@ -66,7 +66,7 @@ export function PermissionGrantItem({
   };
 
   return (
-    <div className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 px-3 rounded-md hover:bg-muted/50">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {grant.type === "user" ? (
           <Avatar className="h-8 w-8">
@@ -95,7 +95,7 @@ export function PermissionGrantItem({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 self-end sm:self-auto">
         <PermissionSelector
           value={grant.permission}
           onChange={(permission) => onUpdate(grant.id, permission)}

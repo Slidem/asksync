@@ -73,14 +73,16 @@ export function EmailAccountsTab() {
       {activeConnections.map((conn) => (
         <div
           key={conn._id}
-          className="flex items-center justify-between p-4 border rounded-lg"
+          className="flex flex-col gap-3 p-4 border rounded-lg sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-red-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded bg-red-100 flex items-center justify-center shrink-0">
               <Mail className="h-4 w-4 text-red-600" />
             </div>
-            <div>
-              <h4 className="font-medium text-sm">{conn.googleEmail}</h4>
+            <div className="min-w-0">
+              <h4 className="font-medium text-sm truncate">
+                {conn.googleEmail}
+              </h4>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {getSyncStatusIcon(conn.syncStatus)}
                 <span>

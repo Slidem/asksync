@@ -238,6 +238,7 @@ export const addTimeblockException = mutation({
       internal.questions.recalculation.recalculateQuestionsWithTags,
       { tagIds: timeblock.tagIds, assigneeId: timeblock.createdBy },
     );
+
     await ctx.scheduler.runAfter(
       0,
       internal.gmail.recalculation.recalculateAttentionItemsWithTags,

@@ -167,7 +167,7 @@ export function DiscussionThread({
                   setNewMessage(html);
                   setNewMessagePlaintext(plaintext);
                 }}
-                placeholder="Type your message... (Ctrl+Enter to send)"
+                placeholder="Type your message..."
                 minHeight={40}
                 onSubmit={handleSendMessage}
               />

@@ -35,7 +35,7 @@ const UnderlineTabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "relative inline-flex items-center justify-center whitespace-nowrap rounded-none border-0 border-b-2 border-transparent",
-      "py-3 px-4 text-sm font-medium ring-offset-background transition-colors",
+      "py-2 px-3 sm:py-3 sm:px-4 text-sm font-medium ring-offset-background transition-colors",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:pointer-events-none disabled:opacity-50",
       "data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground",
@@ -45,7 +45,7 @@ const UnderlineTabsTrigger = React.forwardRef<
     )}
     {...props}
   >
-    {icon && <span className="mr-2">{icon}</span>}
+    {icon && <span className="sm:mr-2">{icon}</span>}
     {children}
     {badge !== undefined && badge > 0 && (
       <span className="ml-2 px-1.5 py-0.5 text-xs rounded-md bg-muted text-muted-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary">

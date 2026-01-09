@@ -3,6 +3,7 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
+import { MessageSquarePlus, UserCheck, Users } from "lucide-react";
 
 import { TabType } from "@/questions/stores/questionsPageStore";
 
@@ -31,18 +32,27 @@ export function QuestionsTabs({
       onValueChange={(value) => onTabChange(value as TabType)}
       className="space-y-6"
     >
-      <UnderlineTabsList className="grid w-full grid-cols-3">
-        <UnderlineTabsTrigger value="assigned" badge={stats?.assigned}>
-          Assigned to me
+      <UnderlineTabsList className="flex w-full sm:grid sm:grid-cols-3">
+        <UnderlineTabsTrigger
+          value="assigned"
+          badge={stats?.assigned}
+          icon={<UserCheck className="h-4 w-4" />}
+        >
+          <span className="max-sm:sr-only">Assigned to me</span>
         </UnderlineTabsTrigger>
-        <UnderlineTabsTrigger value="created" badge={stats?.created}>
-          Asked by me
+        <UnderlineTabsTrigger
+          value="created"
+          badge={stats?.created}
+          icon={<MessageSquarePlus className="h-4 w-4" />}
+        >
+          <span className="max-sm:sr-only">Asked by me</span>
         </UnderlineTabsTrigger>
         <UnderlineTabsTrigger
           value="participating"
           badge={stats?.participating}
+          icon={<Users className="h-4 w-4" />}
         >
-          Participating in
+          <span className="max-sm:sr-only">Participating in</span>
         </UnderlineTabsTrigger>
       </UnderlineTabsList>
       {children}

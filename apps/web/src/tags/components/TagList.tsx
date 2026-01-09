@@ -17,9 +17,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { List, Search, User, Users } from "lucide-react";
 import { NewTagButton } from "@/tags/components/cards/NewTagButton";
 import { NewTagCard } from "@/tags/components/cards/NewTagCard";
-import { Search } from "lucide-react";
 import { TagCard } from "./cards/TagCard";
 import { TagOwnerFilter } from "./TagOwnerFilter";
 import { useMemberships } from "@/members/queries/queries";
@@ -129,14 +129,26 @@ export function TagList() {
       {/* Tabs */}
       <UnderlineTabs value={activeTab} onValueChange={handleTabChange}>
         <UnderlineTabsList>
-          <UnderlineTabsTrigger value="my-tags" badge={myTagsCount}>
-            My Tags
+          <UnderlineTabsTrigger
+            value="my-tags"
+            badge={myTagsCount}
+            icon={<User className="h-4 w-4" />}
+          >
+            <span className="max-sm:sr-only">My Tags</span>
           </UnderlineTabsTrigger>
-          <UnderlineTabsTrigger value="others-tags" badge={othersTagsCount}>
-            Other People&apos;s Tags
+          <UnderlineTabsTrigger
+            value="others-tags"
+            badge={othersTagsCount}
+            icon={<Users className="h-4 w-4" />}
+          >
+            <span className="max-sm:sr-only">Other People&apos;s Tags</span>
           </UnderlineTabsTrigger>
-          <UnderlineTabsTrigger value="all" badge={allTagsCount}>
-            All
+          <UnderlineTabsTrigger
+            value="all"
+            badge={allTagsCount}
+            icon={<List className="h-4 w-4" />}
+          >
+            <span className="max-sm:sr-only">All</span>
           </UnderlineTabsTrigger>
         </UnderlineTabsList>
 

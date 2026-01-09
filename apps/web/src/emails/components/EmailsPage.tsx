@@ -12,6 +12,8 @@ import {
   useGmailConnections,
 } from "@/emails/hooks/queries";
 
+import { AlertCircle, Mail, Settings2 } from "lucide-react";
+
 import { AttentionItemsList } from "./AttentionItemsList";
 import { EmailAccountsTab } from "./EmailAccountsTab";
 import { RulesList } from "./RulesList";
@@ -43,17 +45,26 @@ export function EmailsPage() {
       >
         <div className="flex justify-center">
           <UnderlineTabsList>
-            <UnderlineTabsTrigger value="attention" badge={counts.pending}>
-              Needs Your Attention
+            <UnderlineTabsTrigger
+              value="attention"
+              badge={counts.pending}
+              icon={<AlertCircle className="h-4 w-4" />}
+            >
+              <span className="max-sm:sr-only">Needs Your Attention</span>
             </UnderlineTabsTrigger>
-            <UnderlineTabsTrigger value="rules" badge={rules.length}>
-              Conversion Rules
+            <UnderlineTabsTrigger
+              value="rules"
+              badge={rules.length}
+              icon={<Settings2 className="h-4 w-4" />}
+            >
+              <span className="max-sm:sr-only">Conversion Rules</span>
             </UnderlineTabsTrigger>
             <UnderlineTabsTrigger
               value="accounts"
               badge={activeConnectionsCount}
+              icon={<Mail className="h-4 w-4" />}
             >
-              Email Accounts
+              <span className="max-sm:sr-only">Email Accounts</span>
             </UnderlineTabsTrigger>
           </UnderlineTabsList>
         </div>
