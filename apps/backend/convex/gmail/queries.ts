@@ -1,7 +1,7 @@
+import { Doc, Id } from "../_generated/dataModel";
 /* eslint-disable import/order */
 import { internalQuery, query } from "../_generated/server";
 
-import { Doc, Id } from "../_generated/dataModel";
 import { getUser } from "../auth/user";
 import { v } from "convex/values";
 

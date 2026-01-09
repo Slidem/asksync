@@ -108,6 +108,12 @@ async function findNextAvailableTimeblock(
       endDate,
     );
 
+    console.log(
+      "Expanded timeblocks for assignee",
+      assigneeId,
+      expandedTimeblocks,
+    );
+
     // Find earliest timeblock after current time
     const nextTimeblock = expandedTimeblocks
       .filter((tb) => tb.startTime > currentTime || tb.endTime > currentTime)

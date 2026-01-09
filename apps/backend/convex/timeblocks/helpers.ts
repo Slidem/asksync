@@ -111,7 +111,7 @@ function generateRecurringInstances<T extends Doc<"timeblocks">>(
         shouldInclude = day >= 1 && day <= 5; // Monday to Friday
       }
 
-      if (shouldInclude && instanceStart >= startDate) {
+      if (shouldInclude && instanceEnd >= startDate) {
         instances.push({
           ...timeblock,
           startTime: instanceStart,

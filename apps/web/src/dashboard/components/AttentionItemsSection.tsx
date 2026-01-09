@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AlertTriangle, ChevronRight, Clock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmailViewerDialog } from "@/emails/components/EmailViewerDialog";
-import { cn } from "@/lib/utils";
 import { Id } from "@convex/dataModel";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface EmailTag {
   _id: string;
