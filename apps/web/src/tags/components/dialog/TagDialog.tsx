@@ -3,6 +3,7 @@ import {
   Color,
   Description,
   Name,
+  NotificationSettings,
   ResponseTime,
 } from "@/tags/components/dialog/TagFormFields";
 import {
@@ -43,6 +44,8 @@ interface TagFormDialogProps {
     | "color"
     | "answerMode"
     | "responseTimeMinutes"
+    | "browserNotificationEnabled"
+    | "soundNotificationEnabled"
     | "permissions"
   >;
 }
@@ -104,6 +107,16 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
             <Color form={form} />
             <AnswerMode form={form} />
             <ResponseTime form={form} />
+
+            <Separator className="my-4" />
+
+            <div>
+              <h3 className="text-sm font-medium mb-3">Notifications</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Get alerted when new items with this tag need attention
+              </p>
+              <NotificationSettings form={form} />
+            </div>
 
             <Separator className="my-4" />
 

@@ -3,16 +3,23 @@
 import { Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AutomationSettings } from "@/settings/components/AutomationSettings";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 import { PomodoroSettings } from "@/work/types";
-import { PresetEditor } from "@/settings/components/PresetEditor";
+import { TimerNotificationSettings } from "@/settings/components/NotificationSettings";
 import { api } from "@convex/api";
 import { useMutation } from "convex/react";
 import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
 import { useToast } from "@/hooks/use-toast";
 
-export function WorkModeSettings() {
+export function NotificationsTab() {
   const { toast } = useToast();
   const settings = usePomodoroSettings();
   const updateSettings = useMutation(
@@ -43,7 +50,6 @@ export function WorkModeSettings() {
 
     setIsSaving(true);
     try {
-      // Filter out Convex system fields before sending
       const {
         defaultWorkDuration,
         defaultShortBreak,
@@ -73,7 +79,7 @@ export function WorkModeSettings() {
       setHasChanges(false);
       toast({
         title: "Settings saved",
-        description: "Your work mode settings have been updated.",
+        description: "Your notification settings have been updated.",
       });
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -106,9 +112,9 @@ export function WorkModeSettings() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Work Mode Preferences</h2>
+          <h2 className="text-xl font-semibold">Notification Settings</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Customize your focus timer durations and automation
+            Configure how and when you receive alerts
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -143,8 +149,32 @@ export function WorkModeSettings() {
       </div>
 
       <div className="space-y-6">
-        <PresetEditor settings={localSettings} onUpdate={handleUpdate} />
-        <AutomationSettings settings={localSettings} onUpdate={handleUpdate} />
+        {/* Timer Notifications */}
+        <TimerNotificationSettings
+          settings={localSettings}
+          onUpdate={handleUpdate}
+        />
+
+        {/* Tag-based Notifications Info Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tag Notifications</CardTitle>
+            <CardDescription>
+              Alerts for new questions or emails based on their tags
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Enable notifications on specific tags to be alerted when new
+              pending items arrive. For scheduled tags, notifications only
+              trigger during active timeblocks. For on-demand tags, you&apos;ll
+              be notified immediately.
+            </p>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/tags">Configure Tags</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

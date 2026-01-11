@@ -4,6 +4,14 @@ import { useMemo } from "react";
 import { useOneWeekDateRange } from "@/lib/date";
 import { useQuery } from "convex/react";
 
+export const useUnreadQuestionCount = () => {
+  const result = useQuery(api.questions.queries.getUnreadQuestionCount);
+  return {
+    unread: result?.unread ?? 0,
+    isLoading: result === undefined,
+  };
+};
+
 interface UseAvailableTimeblocksParams {
   userId: string;
   tagIds: string[];

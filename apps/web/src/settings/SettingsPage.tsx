@@ -6,7 +6,8 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { Timer } from "lucide-react";
+import { Bell, Timer } from "lucide-react";
+import { NotificationsTab } from "./components/NotificationsTab";
 import { WorkModeSettings } from "./components/WorkModeSettings";
 
 export function SettingsPage() {
@@ -20,7 +21,7 @@ export function SettingsPage() {
       </div>
 
       <UnderlineTabs defaultValue="work-mode" className="w-full">
-        <UnderlineTabsList className="grid w-full max-w-md grid-cols-1">
+        <UnderlineTabsList className="grid w-full max-w-md grid-cols-2">
           <UnderlineTabsTrigger
             value="work-mode"
             className="gap-2"
@@ -28,10 +29,21 @@ export function SettingsPage() {
           >
             Work Mode
           </UnderlineTabsTrigger>
+          <UnderlineTabsTrigger
+            value="notifications"
+            className="gap-2"
+            icon={<Bell className="h-4 w-4" />}
+          >
+            Notifications
+          </UnderlineTabsTrigger>
         </UnderlineTabsList>
 
         <UnderlineTabsContent value="work-mode" className="mt-6">
           <WorkModeSettings />
+        </UnderlineTabsContent>
+
+        <UnderlineTabsContent value="notifications" className="mt-6">
+          <NotificationsTab />
         </UnderlineTabsContent>
       </UnderlineTabs>
     </div>

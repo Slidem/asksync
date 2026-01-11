@@ -3,6 +3,7 @@ import {
   Color,
   Description,
   Name,
+  NotificationSettings,
   ResponseTime,
 } from "./TagFormFields";
 import {
@@ -126,6 +127,16 @@ export const TagViewDialog: React.FC<TagViewDialogProps> = ({
 
                   <Separator className="my-4" />
 
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Notifications</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Get alerted when new items with this tag need attention
+                    </p>
+                    <NotificationSettings form={form} />
+                  </div>
+
+                  <Separator className="my-4" />
+
                   <ResourcePermissionsManager
                     grants={form.watch("permissions") || []}
                     canEdit={true}
@@ -181,6 +192,16 @@ export const TagViewDialog: React.FC<TagViewDialogProps> = ({
             <Color form={form} />
             <AnswerMode form={form} />
             <ResponseTime form={form} />
+
+            <Separator className="my-4" />
+
+            <div>
+              <h3 className="text-sm font-medium mb-3">Notifications</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Get alerted when new items with this tag need attention
+              </p>
+              <NotificationSettings form={form} />
+            </div>
 
             <Separator className="my-4" />
 

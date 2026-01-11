@@ -299,6 +299,32 @@ export const markQuestionAsRead = mutation({
   },
 });
 
+// Mark questions as notified for current user
+export const markAsNotified = mutation({
+  args: { questionIds: v.array(v.id("questions")) },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const { orgId } = identity;
+    if (!orgId || typeof orgId !== "string") {
+      throw new ConvexError("Not in an organization");
+    }
+
+    const now = Date.now();
+    for (const questionId of args.questionIds) {
+      const question = await ctx.db.get(questionId);
+      if (question && question.orgId === orgId) {
+        await ctx.db.patch(questionId, { notifiedAt: now });
+      }
+    }
+
+    return true;
+  },
+});
+
 // Delete question (soft delete for now)
 export const deleteQuestion = mutation({
   args: { questionId: v.id("questions") },

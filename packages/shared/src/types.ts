@@ -39,6 +39,8 @@ export interface Tag {
   color: string;
   answerMode: AnswerMode;
   responseTimeMinutes?: number;
+  browserNotificationEnabled?: boolean;
+  soundNotificationEnabled?: boolean;
   fastestAnswerMinutes?: number;
   availableTimeblockCount?: number;
   questionCount?: number;
@@ -190,6 +192,8 @@ export interface CreateTagForm {
   color: string;
   answerMode: AnswerMode;
   responseTimeMinutes?: number;
+  browserNotificationEnabled?: boolean;
+  soundNotificationEnabled?: boolean;
 }
 
 export interface UpdateTagForm {
@@ -198,6 +202,8 @@ export interface UpdateTagForm {
   color?: string;
   answerMode?: AnswerMode;
   responseTimeMinutes?: number;
+  browserNotificationEnabled?: boolean;
+  soundNotificationEnabled?: boolean;
 }
 
 export interface CreateQuestionForm {

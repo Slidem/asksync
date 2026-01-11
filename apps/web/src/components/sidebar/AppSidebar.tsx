@@ -30,6 +30,7 @@ import { NavMain, type NavGroup } from "@/components/sidebar/NavMain";
 import { SidebarTimer } from "@/work/components/sidebar/SidebarTimer";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 const navGroups: NavGroup[] = [
   {
@@ -44,7 +45,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Work Mode", url: "/work", icon: Timer },
       { title: "Schedule", url: "/schedule", icon: Calendar1 },
-      { title: "Emails", url: "/emails", icon: Mail },
+      { title: "Emails", url: "/emails", icon: Mail, badgeKey: "emails" },
       { title: "Tags", url: "/tags", icon: TagIcon },
     ],
   },
@@ -55,6 +56,7 @@ const navGroups: NavGroup[] = [
         title: "Questions",
         url: "/questions",
         icon: MessageCircleQuestionMark,
+        badgeKey: "questions",
       },
     ],
   },
@@ -76,8 +78,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex flex-col gap-8">
           {/* App branding */}
           <div className="flex items-center gap-3 px-1 py-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+              <Image
+                src="/logo_no_bg_no_text.png"
+                alt="AskSync Logo"
+                width={40}
+                height={40}
+              />
             </div>
             <div className="flex flex-col">
               <h1 className="text-base font-bold tracking-tight">AskSync</h1>

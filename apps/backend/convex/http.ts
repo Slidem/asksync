@@ -3,8 +3,8 @@ import {
   handleOAuthCallback,
   handleWebhook,
 } from "./googleCalendar/httpActions";
-import { handleOAuthCallback as handleGmailOAuthCallback } from "./gmail/httpActions";
 
+import { handleOAuthCallback as handleGmailOAuthCallback } from "./gmail/httpActions";
 import { httpRouter } from "convex/server";
 
 const http = httpRouter();

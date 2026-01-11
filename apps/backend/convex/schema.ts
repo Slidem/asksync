@@ -13,6 +13,8 @@ export default defineSchema({
     orgId: v.string(),
     createdBy: v.string(),
     isPublic: v.optional(v.boolean()), // Deprecated: use permissions instead
+    browserNotificationEnabled: v.optional(v.boolean()),
+    soundNotificationEnabled: v.optional(v.boolean()),
     updatedAt: v.number(),
   })
     .index("by_org", ["orgId"])
@@ -113,6 +115,7 @@ export default defineSchema({
 
     // Read status tracking
     unreadBy: v.array(v.string()), // userIds who haven't seen latest updates
+    notifiedAt: v.optional(v.number()), // timestamp when notification was sent
 
     // Denormalized data
     messageCount: v.optional(v.number()), // total messages in thread (for performance)
@@ -516,6 +519,7 @@ export default defineSchema({
     // Timing and urgency (same as questions)
     expectedAnswerTime: v.optional(v.number()),
     isOverdue: v.optional(v.boolean()),
+    notifiedAt: v.optional(v.number()), // timestamp when notification was sent
 
     // Metadata
     createdAt: v.number(),

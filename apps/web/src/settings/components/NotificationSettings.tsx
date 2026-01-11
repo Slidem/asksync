@@ -21,15 +21,18 @@ import { Label } from "@/components/ui/label";
 import { PomodoroSettings } from "@/work/types";
 import { Switch } from "@/components/ui/switch";
 
-interface NotificationSettingsProps {
+interface TimerNotificationSettingsProps {
   settings: PomodoroSettings;
   onUpdate: (settings: Partial<PomodoroSettings>) => void;
 }
 
-export function NotificationSettings({
+/**
+ * Timer notification settings - browser/sound alerts for work timer completion
+ */
+export function TimerNotificationSettings({
   settings,
   onUpdate,
-}: NotificationSettingsProps) {
+}: TimerNotificationSettingsProps) {
   const [notificationPermission, setNotificationPermission] =
     useState<string>("default");
 
@@ -61,9 +64,9 @@ export function NotificationSettings({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notifications</CardTitle>
+        <CardTitle>Timer Notifications</CardTitle>
         <CardDescription>
-          Configure how you receive timer completion alerts
+          Alerts when your focus timer completes
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

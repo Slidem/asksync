@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { BreadcrumbsNav } from "@/components/breadcrumbs/BreadcrumbsNav";
 import { FloatingTimer } from "@/work/components/FloatingTimer";
 import { GlobalTimerProvider } from "@/work/components/GlobalTimerProvider";
+import { NotificationProvider } from "@/notifications/NotificationProvider";
 import { Separator } from "@/components/ui/separator";
 import Spinner from "@/components/ui/spinner";
 
@@ -67,18 +68,20 @@ function OrganizationRouter({ children }: OrganizationRouterProps) {
     return (
       <SidebarProvider>
         <GlobalTimerProvider />
-        <FloatingTimer />
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-6" />
-              <BreadcrumbsNav />
-            </div>
-          </header>
-          {children}
-        </SidebarInset>
+        <NotificationProvider>
+          <FloatingTimer />
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-2">
+              <div className="flex items-center gap-2 px-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="h-6" />
+                <BreadcrumbsNav />
+              </div>
+            </header>
+            {children}
+          </SidebarInset>
+        </NotificationProvider>
       </SidebarProvider>
     );
   }

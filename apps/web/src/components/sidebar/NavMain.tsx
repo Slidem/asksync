@@ -14,14 +14,17 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSidebarBadgeCounts } from "@/components/sidebar/useSidebarBadgeCounts";
 
 export type NavItem = {
   title: string;
   url: string;
   icon: LucideIcon;
+  badgeKey?: "questions" | "emails";
 };
 
 export type NavGroup = {
@@ -31,6 +34,7 @@ export type NavGroup = {
 
 export function NavMain({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
+  const badgeCounts = useSidebarBadgeCounts();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     // All groups open by default
     return groups.reduce(
@@ -38,7 +42,7 @@ export function NavMain({ groups }: { groups: NavGroup[] }) {
         acc[group.label] = true;
         return acc;
       },
-      {} as Record<string, boolean>
+      {} as Record<string, boolean>,
     );
   });
 
@@ -84,6 +88,11 @@ export function NavMain({ groups }: { groups: NavGroup[] }) {
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
+                      {item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
+                        <SidebarMenuBadge className="!top-1/2 !-translate-y-1/2 right-2 bg-destructive/70 text-destructive-foreground rounded-full">
+                          {badgeCounts[item.badgeKey]}
+                        </SidebarMenuBadge>
+                      )}
                     </SidebarMenuItem>
                   );
                 })}

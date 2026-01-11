@@ -13,6 +13,8 @@ export const createTag = mutation({
     color: v.string(),
     answerMode: v.union(v.literal("on-demand"), v.literal("scheduled")),
     responseTimeMinutes: v.optional(v.number()),
+    browserNotificationEnabled: v.optional(v.boolean()),
+    soundNotificationEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { orgId, id: userId } = await getUser(ctx);
@@ -40,6 +42,8 @@ export const createTag = mutation({
       color: args.color,
       answerMode: args.answerMode,
       responseTimeMinutes: args.responseTimeMinutes,
+      browserNotificationEnabled: args.browserNotificationEnabled,
+      soundNotificationEnabled: args.soundNotificationEnabled,
       createdBy: userId,
       updatedAt: Date.now(),
     });
@@ -70,6 +74,8 @@ export const updateTag = mutation({
       v.union(v.literal("on-demand"), v.literal("scheduled")),
     ),
     responseTimeMinutes: v.optional(v.number()),
+    browserNotificationEnabled: v.optional(v.boolean()),
+    soundNotificationEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Get the user identity
@@ -122,6 +128,10 @@ export const updateTag = mutation({
       color: args.color ?? existingTag.color,
       answerMode: newAnswerMode,
       responseTimeMinutes: newResponseTime,
+      browserNotificationEnabled:
+        args.browserNotificationEnabled ?? existingTag.browserNotificationEnabled,
+      soundNotificationEnabled:
+        args.soundNotificationEnabled ?? existingTag.soundNotificationEnabled,
     };
 
     await ctx.db.patch(args.id, update);

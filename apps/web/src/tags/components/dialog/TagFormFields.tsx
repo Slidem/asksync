@@ -15,7 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { Bell, Volume2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { TagFormData } from "@/tags/model";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
@@ -168,5 +170,67 @@ export const ResponseTime = ({
         </FormItem>
       )}
     />
+  );
+};
+
+export const NotificationSettings = ({
+  form,
+}: {
+  form: UseFormReturn<TagFormData>;
+}) => {
+  return (
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="browserNotificationEnabled"
+        render={({ field }) => (
+          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                <FormLabel className="text-sm font-medium">
+                  Browser Notifications
+                </FormLabel>
+              </div>
+              <FormDescription className="text-xs">
+                Show desktop notification for new items
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value ?? false}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="soundNotificationEnabled"
+        render={({ field }) => (
+          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-4 w-4" />
+                <FormLabel className="text-sm font-medium">
+                  Sound Notifications
+                </FormLabel>
+              </div>
+              <FormDescription className="text-xs">
+                Play sound for new items
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value ?? false}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };

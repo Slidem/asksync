@@ -294,6 +294,26 @@ export const deleteItem = mutation({
   },
 });
 
+/**
+ * Mark attention items as notified
+ */
+export const markItemsAsNotified = mutation({
+  args: { itemIds: v.array(v.id("emailAttentionItems")) },
+  handler: async (ctx, args) => {
+    const { id: userId, orgId } = await getUser(ctx);
+    const now = Date.now();
+
+    for (const itemId of args.itemIds) {
+      const item = await ctx.db.get(itemId);
+      if (item && item.userId === userId && item.orgId === orgId) {
+        await ctx.db.patch(itemId, { notifiedAt: now });
+      }
+    }
+
+    return true;
+  },
+});
+
 // Internal mutations
 
 /**

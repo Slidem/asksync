@@ -429,3 +429,24 @@ export const getQuestionById = query({
     };
   },
 });
+
+// Get count of unread questions for sidebar badge
+export const getUnreadQuestionCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getUserWithGroups(ctx);
+
+    const questions = await ctx.db
+      .query("questions")
+      .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
+      .collect();
+
+    const unread = questions.filter(
+      (q) =>
+        q.unreadBy.includes(user.id) &&
+        (q.assigneeIds.includes(user.id) || q.participantIds.includes(user.id)),
+    ).length;
+
+    return { unread };
+  },
+});
