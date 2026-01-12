@@ -31,7 +31,7 @@ const features = [
   },
 ];
 
-const iconMap: Record<string, JSX.Element> = {
+const iconMap: Record<string, React.ReactNode> = {
   MessageSquare: (
     <svg
       xmlns="http://www.w3.org/2000/svg"
