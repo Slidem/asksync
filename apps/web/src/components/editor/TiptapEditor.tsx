@@ -1,15 +1,16 @@
 "use client";
 
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
-import Underline from "@tiptap/extension-underline";
-import Typography from "@tiptap/extension-typography";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { EditorContent, useEditor } from "@tiptap/react";
 import { common, createLowlight } from "lowlight";
-import { useEffect } from "react";
+
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { FloatingToolbar } from "./FloatingToolbar";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import StarterKit from "@tiptap/starter-kit";
+import Typography from "@tiptap/extension-typography";
+import Underline from "@tiptap/extension-underline";
+import { useEffect } from "react";
 
 const lowlight = createLowlight(common);
 

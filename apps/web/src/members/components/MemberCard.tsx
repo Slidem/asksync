@@ -1,23 +1,23 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
 import {
+  Calendar,
+  CheckSquare,
+  Clock,
   Mail,
+  MessageCircle,
   Shield,
   User,
-  Clock,
-  CheckSquare,
-  MessageCircle,
-  Calendar,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
+import { MemberWithWorkStatus } from "@/members/hooks/useMembersWithWorkStatus";
+import { WorkStatusIndicator } from "@/members/components/WorkStatusIndicator";
 import { cn } from "@/lib/utils";
 import { formatMillisecondsToTimeDuration } from "@/lib/date";
-import { WorkStatusIndicator } from "@/members/components/WorkStatusIndicator";
 import { useTeamMemberTimer } from "@/members/hooks/useTeamMemberTimer";
-import { MemberWithWorkStatus } from "@/members/hooks/useMembersWithWorkStatus";
 
 interface MemberCardProps {
   member: MemberWithWorkStatus;
@@ -45,7 +45,10 @@ const sessionTypeLabels = {
   longBreak: "Long Break",
 };
 
-export function MemberCard({ member, canManage }: MemberCardProps) {
+export const MemberCard: React.FC<MemberCardProps> = ({
+  member,
+  canManage,
+}) => {
   const timeRemaining = useTeamMemberTimer({
     expectedEndAt: member.expectedEndAt,
     status: member.status,
@@ -72,9 +75,7 @@ export function MemberCard({ member, canManage }: MemberCardProps) {
     <Card
       className={cn(
         "group hover:shadow-md transition-all border-l-4",
-        showWorkStatus
-          ? borderColors[member.status]
-          : "border-l-primary/30",
+        showWorkStatus ? borderColors[member.status] : "border-l-primary/30",
       )}
     >
       <CardContent className="p-5">
@@ -87,7 +88,9 @@ export function MemberCard({ member, canManage }: MemberCardProps) {
           <div className="flex-1 min-w-0">
             {/* Name + badges */}
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-base truncate">{displayName}</h3>
+              <h3 className="font-semibold text-base truncate">
+                {displayName}
+              </h3>
               {member.isCurrentUser && (
                 <Badge variant="outline" className="text-xs">
                   You
@@ -128,7 +131,8 @@ export function MemberCard({ member, canManage }: MemberCardProps) {
                       <>
                         <span className="text-muted-foreground/50">·</span>
                         <span className="text-xs">
-                          {focusModeLabels[member.focusMode] || member.focusMode}
+                          {focusModeLabels[member.focusMode] ||
+                            member.focusMode}
                         </span>
                       </>
                     )}
@@ -156,7 +160,9 @@ export function MemberCard({ member, canManage }: MemberCardProps) {
                 {member.timeblockTitle && (
                   <div className="flex items-start gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 shrink-0 mt-0.5" />
-                    <span className="line-clamp-1">{member.timeblockTitle}</span>
+                    <span className="line-clamp-1">
+                      {member.timeblockTitle}
+                    </span>
                   </div>
                 )}
               </div>
@@ -194,4 +200,4 @@ export function MemberCard({ member, canManage }: MemberCardProps) {
       </CardContent>
     </Card>
   );
-}
+};

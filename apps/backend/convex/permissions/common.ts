@@ -1,10 +1,12 @@
-import { PermissionGrant } from "@asksync/shared";
-import { Doc } from "../_generated/dataModel";
-import { QueryCtx as BaseQueryCtx } from "../_generated/server";
-import { getUserWithGroups } from "../auth/user";
+/* eslint-disable import/order */
 import { Permission, PermissionLevels, UserWithGroups } from "../common/types";
-import { getResourceById } from "../resources/common";
 import { ResourceIdType, ResourceType } from "../resources/model";
+
+import { QueryCtx as BaseQueryCtx } from "../_generated/server";
+import { Doc } from "../_generated/dataModel";
+import { PermissionGrant } from "@asksync/shared";
+import { getResourceById } from "../resources/common";
+import { getUserWithGroups } from "../auth/user";
 
 export type DecoratedResource<T> = T & {
   permissions: PermissionGrant[];

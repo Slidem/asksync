@@ -4,10 +4,10 @@ import {} from "@/schedule/components/EventCalendar";
 
 import { useRef, useState } from "react";
 
+import { BusyEventItem } from "@/schedule/components/BusyEventItem";
 import { CSS } from "@dnd-kit/utilities";
 import { CalendarEvent } from "@/schedule/types";
 import { EventItem } from "@/schedule/components/EventItem";
-import { BusyEventItem } from "@/schedule/components/BusyEventItem";
 import { differenceInDays } from "date-fns";
 import { useCalendarDnd } from "@/schedule/components/CalendarDndContext";
 import { useDraggable } from "@dnd-kit/core";
@@ -25,7 +25,7 @@ interface DraggableEventProps {
   "aria-hidden"?: boolean | "true" | "false";
 }
 
-export function DraggableEvent({
+export const DraggableEvent: React.FC<DraggableEventProps> = ({
   event,
   view,
   showTime,
@@ -36,19 +36,8 @@ export function DraggableEvent({
   isFirstDay = true,
   isLastDay = true,
   "aria-hidden": ariaHidden,
-}: DraggableEventProps) {
+}) => {
   // Busy events: not draggable, not clickable
-  if (event.isBusy) {
-    return (
-      <BusyEventItem
-        start={event.start}
-        end={event.end}
-        view={view}
-        isFirstDay={isFirstDay}
-        isLastDay={isLastDay}
-      />
-    );
-  }
 
   const { activeId } = useCalendarDnd();
   const elementRef = useRef<HTMLDivElement>(null);
@@ -127,6 +116,18 @@ export function DraggableEvent({
     }
   };
 
+  if (event.isBusy) {
+    return (
+      <BusyEventItem
+        start={event.start}
+        end={event.end}
+        view={view}
+        isFirstDay={isFirstDay}
+        isLastDay={isLastDay}
+      />
+    );
+  }
+
   return (
     <div
       ref={(node) => {
@@ -152,4 +153,4 @@ export function DraggableEvent({
       />
     </div>
   );
-}
+};

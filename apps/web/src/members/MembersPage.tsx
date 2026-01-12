@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Mail, UserPlus, Users, UsersRound } from "lucide-react";
 import {
   UnderlineTabs,
   UnderlineTabsContent,
@@ -8,16 +8,16 @@ import {
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
 
-import { GroupDialog } from "@/members/dialogs/groupDialog/GroupDialog";
-import { InviteDialog } from "@/members/dialogs/InviteDialog";
-import { GroupManager } from "@/members/components/GroupManager";
-import { MembersList } from "@/members/components/MembersList";
-import { InvitationsList } from "@/members/components/InvitationsList";
-import { useOrganization } from "@clerk/nextjs";
-import { Users, UsersRound, Mail, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GroupDialog } from "@/members/dialogs/groupDialog/GroupDialog";
+import { GroupManager } from "@/members/components/GroupManager";
+import { InvitationsList } from "@/members/components/InvitationsList";
+import { InviteDialog } from "@/members/dialogs/InviteDialog";
+import { MembersList } from "@/members/components/MembersList";
+import { useOrganization } from "@clerk/nextjs";
+import { useState } from "react";
 
-export function MembersPage() {
+export const MembersPage: React.FC = () => {
   const { membership, memberships, invitations } = useOrganization({
     memberships: { infinite: true },
     invitations: { infinite: true },
@@ -48,7 +48,9 @@ export function MembersPage() {
 
       <UnderlineTabs defaultValue="members" className="w-full">
         <UnderlineTabsList
-          className={`grid w-full max-w-md ${canManage ? "grid-cols-3" : "grid-cols-2"}`}
+          className={`grid w-full max-w-md ${
+            canManage ? "grid-cols-3" : "grid-cols-2"
+          }`}
         >
           <UnderlineTabsTrigger
             value="members"
@@ -93,7 +95,10 @@ export function MembersPage() {
       </UnderlineTabs>
 
       <GroupDialog />
-      <InviteDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+      <InviteDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
+      />
     </div>
   );
-}
+};

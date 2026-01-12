@@ -1,26 +1,27 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
 import { GripVertical, X } from "lucide-react";
-import { MiniTimerDisplay } from "@/work/components/sidebar/MiniTimerDisplay";
-import { MiniTimerControls } from "@/work/components/sidebar/MiniTimerControls";
-import { useWorkModeStore } from "@/work/stores/workModeStore";
-import { useShallow } from "zustand/react/shallow";
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { MiniTimerControls } from "@/work/components/sidebar/MiniTimerControls";
+import { MiniTimerDisplay } from "@/work/components/sidebar/MiniTimerDisplay";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { useShallow } from "zustand/react/shallow";
+import { useWorkModeStore } from "@/work/stores/workModeStore";
 
 /**
  * FloatingTimer - Mobile-only draggable timer
  * Can be hidden with localStorage persistence
  */
-export const FloatingTimer = memo(function FloatingTimer() {
+export const FloatingTimer: React.FC = memo(function FloatingTimer() {
   const pathname = usePathname();
   const isWorkPage = pathname.includes("/work");
 
@@ -46,7 +47,10 @@ export const FloatingTimer = memo(function FloatingTimer() {
         const parsed = JSON.parse(stored);
         setPosition(parsed);
       } catch (e) {
-        // Ignore parse errors
+        console.warn(
+          "Failed to parse floating timer position from localStorage",
+          e,
+        );
       }
     }
   }, []);
@@ -63,29 +67,32 @@ export const FloatingTimer = memo(function FloatingTimer() {
   };
 
   // Handle touch/mouse move
-  const handleDragMove = (clientX: number, clientY: number) => {
-    if (!isDragging) return;
+  const handleDragMove = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!isDragging) return;
 
-    const newX = clientX - dragOffset.x;
-    const newY = clientY - dragOffset.y;
+      const newX = clientX - dragOffset.x;
+      const newY = clientY - dragOffset.y;
 
-    // Keep within viewport bounds
-    const maxX = window.innerWidth - (timerRef.current?.offsetWidth || 0);
-    const maxY = window.innerHeight - (timerRef.current?.offsetHeight || 0);
+      // Keep within viewport bounds
+      const maxX = window.innerWidth - (timerRef.current?.offsetWidth || 0);
+      const maxY = window.innerHeight - (timerRef.current?.offsetHeight || 0);
 
-    const boundedX = Math.max(0, Math.min(newX, maxX));
-    const boundedY = Math.max(0, Math.min(newY, maxY));
+      const boundedX = Math.max(0, Math.min(newX, maxX));
+      const boundedY = Math.max(0, Math.min(newY, maxY));
 
-    setPosition({ x: boundedX, y: boundedY });
-  };
+      setPosition({ x: boundedX, y: boundedY });
+    },
+    [isDragging, dragOffset],
+  );
 
   // Handle drag end
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     if (isDragging) {
       setIsDragging(false);
       localStorage.setItem("floatingTimerPosition", JSON.stringify(position));
     }
-  };
+  }, [isDragging, position]);
 
   // Touch events
   useEffect(() => {
@@ -110,7 +117,7 @@ export const FloatingTimer = memo(function FloatingTimer() {
         document.removeEventListener("touchend", handleTouchEnd);
       };
     }
-  }, [isDragging, dragOffset, position]);
+  }, [isDragging, dragOffset, position, handleDragMove, handleDragEnd]);
 
   // Mouse events
   useEffect(() => {
@@ -130,7 +137,7 @@ export const FloatingTimer = memo(function FloatingTimer() {
         document.removeEventListener("mouseup", handleMouseUp);
       };
     }
-  }, [isDragging, dragOffset, position]);
+  }, [isDragging, dragOffset, position, handleDragMove, handleDragEnd]);
 
   // Don't render until settings loaded
   if (!settings) return null;
@@ -159,16 +166,17 @@ export const FloatingTimer = memo(function FloatingTimer() {
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-4">
-          <div
-            className="cursor-grab active:cursor-grabbing touch-none"
+          <button
+            className="cursor-grab active:cursor-grabbing touch-none bg-transparent border-0 p-0 h-fit"
             onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
             onTouchStart={(e) => {
               const touch = e.touches[0];
               handleDragStart(touch.clientX, touch.clientY);
             }}
+            aria-label="Drag to move timer"
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </div>
+          </button>
           <MiniTimerDisplay />
           <TooltipProvider delayDuration={300}>
             <Tooltip>

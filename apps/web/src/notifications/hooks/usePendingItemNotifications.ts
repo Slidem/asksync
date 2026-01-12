@@ -1,10 +1,13 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import {
+  canShowNotifications,
+  showNotification,
+} from "@/work/utils/notifications";
 import { useCallback, useRef } from "react";
+import { useMutation, useQuery } from "convex/react";
 
 import { api } from "@convex/api";
-import { canShowNotifications, showNotification } from "@/work/utils/notifications";
 import { playAlarmSound } from "@/work/sound";
 
 /**
@@ -12,9 +15,15 @@ import { playAlarmSound } from "@/work/sound";
  * Uses Convex reactive queries to detect new items.
  */
 export function usePendingItemNotifications() {
-  const pendingItems = useQuery(api.notifications.queries.getPendingItemsForNotification);
-  const markQuestionsNotified = useMutation(api.questions.mutations.markAsNotified);
-  const markEmailItemsNotified = useMutation(api.gmail.mutations.markItemsAsNotified);
+  const pendingItems = useQuery(
+    api.notifications.queries.getPendingItemsForNotification,
+  );
+  const markQuestionsNotified = useMutation(
+    api.questions.mutations.markAsNotified,
+  );
+  const markEmailItemsNotified = useMutation(
+    api.gmail.mutations.markItemsAsNotified,
+  );
 
   // Track previous item IDs to detect truly new items
   const prevItemIdsRef = useRef<Set<string>>(new Set());
@@ -77,8 +86,12 @@ export function usePendingItemNotifications() {
         } else {
           title = `${newItems.length} Items Need Attention`;
           const parts: string[] = [];
-          if (questionCount > 0) parts.push(`${questionCount} question${questionCount > 1 ? "s" : ""}`);
-          if (emailCount > 0) parts.push(`${emailCount} email${emailCount > 1 ? "s" : ""}`);
+          if (questionCount > 0)
+            parts.push(
+              `${questionCount} question${questionCount > 1 ? "s" : ""}`,
+            );
+          if (emailCount > 0)
+            parts.push(`${emailCount} email${emailCount > 1 ? "s" : ""}`);
           body = parts.join(", ");
         }
 

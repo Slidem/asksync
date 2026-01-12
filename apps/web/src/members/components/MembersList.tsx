@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useOrganization } from "@clerk/nextjs";
+import { useMemo, useState } from "react";
+
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/members/components/MemberCard";
 import { Search } from "lucide-react";
 import { useMembersWithWorkStatus } from "@/members/hooks/useMembersWithWorkStatus";
+import { useOrganization } from "@clerk/nextjs";
 
-export function MembersList() {
+export const MembersList: React.FC = () => {
   const { membership } = useOrganization();
   const { members, isLoading, memberCount } = useMembersWithWorkStatus();
 
@@ -85,14 +86,10 @@ export function MembersList() {
       ) : (
         <div className="grid gap-3">
           {filteredMembers.map((member) => (
-            <MemberCard
-              key={member.id}
-              member={member}
-              canManage={canManage}
-            />
+            <MemberCard key={member.id} member={member} canManage={canManage} />
           ))}
         </div>
       )}
     </div>
   );
-}
+};

@@ -1,24 +1,25 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import {
   Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Link as LinkIcon,
-  List,
-  ListOrdered,
   Code,
   FileCode,
-  Quote,
   Heading1,
   Heading2,
   Heading3,
+  Italic,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  Quote,
+  Strikethrough,
+  Underline,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Editor } from "@tiptap/react";
+import { createPortal } from "react-dom";
 
 interface FloatingToolbarProps {
   editor: Editor;
@@ -108,6 +109,7 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
 
   const toolbar = (
     <div
+      role="toolbar"
       className="fixed z-[9999] flex items-center gap-1 rounded-lg border bg-background p-1 shadow-xl"
       style={{
         top: `${position.top}px`,
