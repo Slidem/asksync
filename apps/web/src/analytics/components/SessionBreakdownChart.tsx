@@ -25,9 +25,9 @@ interface SessionBreakdownChartProps {
   }> | null;
 }
 
-export function SessionBreakdownChart({
+export const SessionBreakdownChart: React.FC<SessionBreakdownChartProps> = ({
   sessionsByFocusMode,
-}: SessionBreakdownChartProps) {
+}) => {
   const focusModeLabels: Record<string, string> = {
     deep: "Deep Focus",
     normal: "Normal",
@@ -79,4 +79,4 @@ export function SessionBreakdownChart({
       </CardContent>
     </Card>
   );
-}
+};

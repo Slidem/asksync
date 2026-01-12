@@ -5,7 +5,7 @@ import { useCreateQuestionDialogStore } from "./createQuestionDialogStore";
 import { useMemberships } from "@/members/queries/queries";
 import { useUser } from "@clerk/nextjs";
 
-export function SelectUserStep() {
+export function SelectUserStep(): React.ReactNode {
   const memberships = useMemberships();
   const { user } = useUser();
   const { selectedUserIds, setSelectedUserIds, canProceedFromStep1, nextStep } =

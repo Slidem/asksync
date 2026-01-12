@@ -17,7 +17,7 @@ interface QuestionsSortDropdownProps {
 export function QuestionsSortDropdown({
   value,
   onChange,
-}: QuestionsSortDropdownProps) {
+}: QuestionsSortDropdownProps): React.ReactNode {
   return (
     <Select
       value={value || "expectedTime"}

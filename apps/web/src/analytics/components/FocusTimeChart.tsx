@@ -30,11 +30,11 @@ interface FocusTimeChartProps {
   onDaysChange: (days: number) => void;
 }
 
-export function FocusTimeChart({
+export const FocusTimeChart: React.FC<FocusTimeChartProps> = ({
   sessionHistory,
   days,
   onDaysChange,
-}: FocusTimeChartProps) {
+}) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -121,4 +121,4 @@ export function FocusTimeChart({
       </CardContent>
     </Card>
   );
-}
+};

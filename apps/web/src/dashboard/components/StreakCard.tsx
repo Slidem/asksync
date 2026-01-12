@@ -10,7 +10,7 @@ interface StreakCardProps {
   } | null;
 }
 
-export function StreakCard({ sessionStats }: StreakCardProps) {
+export function StreakCard({ sessionStats }: StreakCardProps): React.ReactNode {
   const streak = sessionStats?.currentStreak || 0;
 
   return (

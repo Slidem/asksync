@@ -61,7 +61,7 @@ export function AddPermissionDialog({
   existingGroupIds,
   hasEveryonePermission,
   onAdd,
-}: AddPermissionDialogProps) {
+}: AddPermissionDialogProps): React.ReactNode {
   const [selectedTab, setSelectedTab] = useState<"user" | "group" | "all">(
     "user",
   );

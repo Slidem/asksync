@@ -30,7 +30,7 @@ export function BusyEventItem({
   isFirstDay = true,
   isLastDay = true,
   className,
-}: BusyEventItemProps) {
+}: BusyEventItemProps): React.ReactNode {
   const isEventInPast = isPast(end);
 
   const durationMinutes = useMemo(() => {

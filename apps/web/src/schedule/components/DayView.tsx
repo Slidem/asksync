@@ -26,7 +26,7 @@ import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQues
  * Day view calendar component
  * Uses extracted hooks and components for maintainability
  */
-export function DayView() {
+export function DayView(): React.ReactNode {
   const openSelectEventInDialog = useSelectEventInDialog();
   const openAskQuestionDialog = useOpenAskQuestionDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();

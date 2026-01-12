@@ -1,12 +1,13 @@
 "use client";
 
 import { FocusTimeChart } from "@/analytics/components/FocusTimeChart";
+import { JSX } from "react";
 import { OverviewStats } from "@/analytics/components/OverviewStats";
 import { ProductivityMetrics } from "@/analytics/components/ProductivityMetrics";
 import { SessionBreakdownChart } from "@/analytics/components/SessionBreakdownChart";
 import { useAnalyticsData } from "@/analytics/hooks/useAnalyticsData";
 
-export default function AnalyticsPage() {
+export default function AnalyticsPage(): JSX.Element {
   const {
     sessionHistory,
     weeklyStats,

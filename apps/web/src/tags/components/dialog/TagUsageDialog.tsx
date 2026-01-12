@@ -37,7 +37,7 @@ export function TagUsageDialog({
   onOpenChange,
   tagName,
   usage,
-}: TagUsageDialogProps) {
+}: TagUsageDialogProps): React.ReactNode {
   const hasQuestions = usage.totalQuestions > 0;
   const hasTimeblocks = usage.totalTimeblocks > 0;
 

@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export function QuestionPageHeader() {
+export function QuestionPageHeader(): React.ReactNode {
   return (
     <div className="flex items-center gap-4 mb-6">
       <Link href="/questions">

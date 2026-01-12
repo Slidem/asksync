@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { api } from "@convex/api";
 import { toGroupId } from "@/lib/convexTypes";
+import { toast } from "sonner";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 import { useMutation } from "convex/react";
 import { useShallow } from "zustand/react/shallow";
-import { toast } from "sonner";
 
-export function GroupDialogActions() {
+export function GroupDialogActions(): React.ReactNode {
   const {
     close,
     reset,

@@ -1,7 +1,8 @@
+import { Minus, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Minus, Plus } from "lucide-react";
 
 interface DurationControlProps {
   label: string;
@@ -19,7 +20,7 @@ export function DurationControl({
   min = 1,
   max = 180,
   description,
-}: DurationControlProps) {
+}: DurationControlProps): React.ReactNode {
   const handleIncrement = () => {
     if (value < max) {
       onChange(value + 1);

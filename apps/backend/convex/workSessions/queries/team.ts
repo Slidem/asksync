@@ -1,8 +1,10 @@
-import { query } from "../../_generated/server";
+/* eslint-disable import/order */
 import { getUser } from "../../auth/user";
+import { query } from "../../_generated/server";
 
 // Get team work status
 export const getTeamWorkStatus = query({
+  args: {},
   handler: async (ctx) => {
     const user = await getUser(ctx);
     if (!user) return [];

@@ -19,7 +19,7 @@ export function TagOwnerFilter({
   selectedOwnerIds,
   availableOwnerIds,
   onChange,
-}: TagOwnerFilterProps) {
+}: TagOwnerFilterProps): React.ReactNode {
   const memberships = useMemberships();
 
   // Filter memberships to only show owners who have tags

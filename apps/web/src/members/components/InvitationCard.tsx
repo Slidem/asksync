@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Loader2, Mail, Shield, User, X } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
-import { Mail, Shield, User, X, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface InvitationCardProps {
   invitation: {
@@ -18,7 +19,10 @@ interface InvitationCardProps {
   canManage: boolean;
 }
 
-export function InvitationCard({ invitation, canManage }: InvitationCardProps) {
+export function InvitationCard({
+  invitation,
+  canManage,
+}: InvitationCardProps): React.ReactNode {
   const [isRevoking, setIsRevoking] = useState(false);
 
   const isAdmin = invitation.role === "org:admin";

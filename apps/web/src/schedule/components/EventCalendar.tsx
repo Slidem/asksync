@@ -16,7 +16,7 @@ import { MonthView } from "@/schedule/components/MonthView";
 import { WeekView } from "@/schedule/components/WeekView";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 
-export function EventCalendar() {
+export function EventCalendar(): React.ReactNode {
   const view = useCalendarViewStore((state) => state.calendarView);
 
   return (

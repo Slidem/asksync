@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function QuickStartButton() {
+export function QuickStartButton(): React.ReactNode {
   const router = useRouter();
 
   return (

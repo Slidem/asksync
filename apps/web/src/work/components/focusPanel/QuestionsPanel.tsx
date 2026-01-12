@@ -24,10 +24,10 @@ interface QuestionsPanelProps {
   onViewThread: (questionId: string) => void;
 }
 
-export function QuestionsPanel({
+export const QuestionsPanel: React.FC<QuestionsPanelProps> = ({
   questions,
   onViewThread,
-}: QuestionsPanelProps) {
+}) => {
   const activeSession = useQuery(
     api.workSessions.queries.analytics.getActiveSessionId,
     {},
@@ -65,4 +65,4 @@ export function QuestionsPanel({
       </ScrollArea>
     </div>
   );
-}
+};

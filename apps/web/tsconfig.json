@@ -3,6 +3,8 @@
   "display": "Next.js",
   "extends": "@asksync/typescript-config/base.json",
   "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "ESNext"],
     "noEmit": true,

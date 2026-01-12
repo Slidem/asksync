@@ -14,7 +14,7 @@ interface ParticipantsDisplayProps {
 
 export function ParticipantsDisplay({
   participants,
-}: ParticipantsDisplayProps) {
+}: ParticipantsDisplayProps): React.ReactNode {
   if (!participants || participants.length === 0) return null;
 
   return (

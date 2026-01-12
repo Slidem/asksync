@@ -19,7 +19,7 @@ export function MemberListItem({
   identifier,
   actionType,
   onAction,
-}: MemberListItemProps) {
+}: MemberListItemProps): React.ReactNode {
   const initials =
     displayName
       .split(" ")

@@ -10,7 +10,7 @@ import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useMemberships } from "@/members/queries/queries";
 import { useUser } from "@clerk/nextjs";
 
-export function CalendarUserSelector() {
+export function CalendarUserSelector(): React.ReactNode {
   const { user } = useUser();
   const members = useMemberships();
   const selectedUserId = useCalendarViewStore((state) => state.selectedUserId);

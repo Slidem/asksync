@@ -10,7 +10,7 @@ export function NotificationProvider({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.ReactNode {
   usePendingItemNotifications();
   return <>{children}</>;
 }

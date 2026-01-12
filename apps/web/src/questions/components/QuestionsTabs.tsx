@@ -1,9 +1,9 @@
+import { MessageSquarePlus, UserCheck, Users } from "lucide-react";
 import {
   UnderlineTabs,
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { MessageSquarePlus, UserCheck, Users } from "lucide-react";
 
 import { TabType } from "@/questions/stores/questionsPageStore";
 
@@ -25,7 +25,7 @@ export function QuestionsTabs({
   onTabChange,
   stats,
   children,
-}: QuestionsTabsProps) {
+}: QuestionsTabsProps): React.ReactNode {
   return (
     <UnderlineTabs
       value={activeTab}

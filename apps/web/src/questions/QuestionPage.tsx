@@ -24,7 +24,7 @@ export function QuestionPage({
 }: {
   questionId: string;
   mode?: "full" | "compact";
-}) {
+}): React.ReactNode {
   const { user } = useUser();
   const router = useRouter();
   const { question, isLoading, isAssignee, isParticipant, isCreator } =

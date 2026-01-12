@@ -1,10 +1,10 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { InvitationCard } from "@/members/components/InvitationCard";
 import { Mail } from "lucide-react";
+import { useOrganization } from "@clerk/nextjs";
 
-export function InvitationsList() {
+export function InvitationsList(): React.ReactNode {
   const { invitations, membership } = useOrganization({
     invitations: { infinite: true },
   });

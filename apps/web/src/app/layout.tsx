@@ -1,5 +1,5 @@
-import "./globals.css";
 import "@/components/editor/editor.css";
+import "./globals.css";
 
 import {
   Montserrat,
@@ -8,10 +8,10 @@ import {
 } from "next/font/google";
 
 import { ClerkProvider } from "@clerk/nextjs";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ConvexProvider } from "@/auth/components/ConvexProvider";
 import { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -36,11 +36,7 @@ const sourceCodePro = Source_Code_Pro({
   display: "swap",
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <html lang="en">
       <body
@@ -54,4 +50,6 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

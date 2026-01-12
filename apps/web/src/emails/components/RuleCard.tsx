@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
 import {
   AlignLeft,
   FileText,
@@ -12,19 +10,21 @@ import {
   PowerOff,
   Trash2,
 } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EditRuleDialog } from "@/emails/components/EditRuleDialog";
 import { useDeleteRule, useUpdateRule } from "@/emails/hooks/mutations";
-import { useTags } from "@/tags/hooks/queries";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EditRuleDialog } from "@/emails/components/EditRuleDialog";
 import { Id } from "@convex/dataModel";
+import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
+import { useTags } from "@/tags/hooks/queries";
 
 interface RuleCardProps {
   rule: {
@@ -42,7 +42,10 @@ interface RuleCardProps {
   connectionEmail?: string;
 }
 
-export function RuleCard({ rule, connectionEmail }: RuleCardProps) {
+export function RuleCard({
+  rule,
+  connectionEmail,
+}: RuleCardProps): React.ReactNode {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { deleteRule } = useDeleteRule();
   const { updateRule } = useUpdateRule();

@@ -117,7 +117,9 @@ function AttentionItemRow({
   );
 }
 
-export function AttentionItemsSection({ items }: AttentionItemsSectionProps) {
+export function AttentionItemsSection({
+  items,
+}: AttentionItemsSectionProps): React.ReactNode {
   const [selectedItem, setSelectedItem] = useState<AttentionItem | null>(null);
   const router = useRouter();
 

@@ -1,15 +1,15 @@
 "use client";
 
+import { useInitializeWorkMode } from "@/work/hooks/useInitializeWorkMode";
 import { useTimerCompletion } from "@/work/hooks/useTimerCompletion";
 import { useTimerTick } from "@/work/hooks/timer";
 import { useTimerWarning } from "@/work/hooks/useTimerWarning";
-import { useInitializeWorkMode } from "@/work/hooks/useInitializeWorkMode";
 
 /**
  * GlobalTimerProvider - Always mounted component that runs timer hooks
  * Ensures timer continues running even when sidebar is closed on mobile
  */
-export function GlobalTimerProvider() {
+export function GlobalTimerProvider(): React.ReactNode {
   // Initialize settings and restore active session
   useInitializeWorkMode();
 

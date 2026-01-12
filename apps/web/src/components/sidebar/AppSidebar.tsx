@@ -65,7 +65,9 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>): React.ReactNode {
   const { user } = useUser();
   const pathname = usePathname();
   const isWorkPage = pathname.includes("/work");

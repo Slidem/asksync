@@ -3,8 +3,8 @@
 import { addDays, format, isToday } from "date-fns";
 
 import { AGENDA_DAYS_TO_SHOW } from "@/schedule/constants";
-import { EventItem } from "@/schedule/components/EventItem";
 import { BusyEventItem } from "@/schedule/components/BusyEventItem";
+import { EventItem } from "@/schedule/components/EventItem";
 import { RiCalendarEventLine } from "@remixicon/react";
 import { createEventClickHandler } from "../utils";
 import { getEventsForDay } from "@/schedule/utils";
@@ -13,7 +13,7 @@ import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurre
 import { useMemo } from "react";
 import { useSelectEventInDialog } from "@/schedule/dialogs/eventDialog/eventDialogService";
 
-export function AgendaView() {
+export function AgendaView(): React.ReactNode {
   const openSelectEventInDialog = useSelectEventInDialog();
 
   const currentDate = useCalendarViewStore((state) => state.currentDate);

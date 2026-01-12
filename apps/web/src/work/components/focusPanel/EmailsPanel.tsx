@@ -3,28 +3,13 @@
 import { AlertTriangle, Clock, Mail } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { EmailItem } from "@/work/types";
 import { cn } from "@/lib/utils";
-import { Id } from "@convex/dataModel";
 
-interface EmailTag {
+export interface EmailTag {
   _id: string;
   name: string;
   color: string;
-}
-
-interface EmailItem {
-  _id: Id<"emailAttentionItems">;
-  senderEmail: string;
-  senderName?: string;
-  subject: string;
-  snippet: string;
-  htmlBody?: string;
-  receivedAt: number;
-  expectedAnswerTime: number;
-  isOverdue: boolean;
-  status: "pending" | "resolved";
-  sourceEmail: string;
-  tags: EmailTag[];
 }
 
 interface EmailsPanelProps {
@@ -32,7 +17,10 @@ interface EmailsPanelProps {
   onViewEmail: (item: EmailItem) => void;
 }
 
-export function EmailsPanel({ items, onViewEmail }: EmailsPanelProps) {
+export function EmailsPanel({
+  items,
+  onViewEmail,
+}: EmailsPanelProps): React.ReactNode {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">

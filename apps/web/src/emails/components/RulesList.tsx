@@ -11,7 +11,7 @@ import { Plus } from "lucide-react";
 import { RuleCard } from "./RuleCard";
 import { useState } from "react";
 
-export function RulesList() {
+export function RulesList(): React.ReactNode {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const { connections } = useGmailConnections();
   const { rules, isLoading } = useConversionRules();

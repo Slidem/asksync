@@ -19,7 +19,7 @@ interface AutomationSettingsProps {
 export function AutomationSettings({
   settings,
   onUpdate,
-}: AutomationSettingsProps) {
+}: AutomationSettingsProps): React.ReactNode {
   return (
     <Card>
       <CardHeader>

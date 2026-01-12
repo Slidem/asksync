@@ -32,7 +32,7 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-export function NavMain({ groups }: { groups: NavGroup[] }) {
+export function NavMain({ groups }: { groups: NavGroup[] }): React.ReactNode {
   const pathname = usePathname();
   const badgeCounts = useSidebarBadgeCounts();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {

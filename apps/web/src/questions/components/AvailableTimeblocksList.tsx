@@ -17,7 +17,7 @@ interface AvailableTimeblocksListProps {
 
 export function AvailableTimeblocksList({
   timeblocks,
-}: AvailableTimeblocksListProps) {
+}: AvailableTimeblocksListProps): React.ReactNode {
   const { tags } = useTags({
     sorting: { sortBy: TagSortBy.NAME, sortOrder: SortOrder.ASC },
   });

@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, Mail, Settings2 } from "lucide-react";
 import {
   UnderlineTabs,
   UnderlineTabsContent,
@@ -12,8 +13,6 @@ import {
   useGmailConnections,
 } from "@/emails/hooks/queries";
 
-import { AlertCircle, Mail, Settings2 } from "lucide-react";
-
 import { AttentionItemsList } from "./AttentionItemsList";
 import { EmailAccountsTab } from "./EmailAccountsTab";
 import { RulesList } from "./RulesList";
@@ -21,7 +20,7 @@ import { useState } from "react";
 
 type TabValue = "attention" | "rules" | "accounts";
 
-export function EmailsPage() {
+export function EmailsPage(): React.ReactNode {
   const [activeTab, setActiveTab] = useState<TabValue>("attention");
   const { counts } = useAttentionItemCounts();
   const { rules } = useConversionRules();

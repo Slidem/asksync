@@ -6,8 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { QuestionPage } from "@/questions/QuestionPage";
+
 import { Id } from "@/../../backend/convex/_generated/dataModel";
+import { QuestionPage } from "@/questions/QuestionPage";
 
 interface QuestionThreadModalProps {
   questionId: Id<"questions"> | null;
@@ -19,7 +20,7 @@ export function QuestionThreadModal({
   questionId,
   open,
   onOpenChange,
-}: QuestionThreadModalProps) {
+}: QuestionThreadModalProps): React.ReactNode {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl sm:max-w-4xl overflow-y-auto">

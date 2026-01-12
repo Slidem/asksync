@@ -1,6 +1,5 @@
 "use client";
 
-import { create } from "zustand";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+import { create } from "zustand";
 
 interface ConfirmDialogState {
   isOpen: boolean;
@@ -35,7 +36,7 @@ export const useConfirmDialogStore = create<ConfirmDialogState>((set) => ({
   hide: () => set({ isOpen: false }),
 }));
 
-export function ConfirmDialog() {
+export function ConfirmDialog(): React.ReactNode {
   const { isOpen, title, description, onConfirm, hide } =
     useConfirmDialogStore();
 

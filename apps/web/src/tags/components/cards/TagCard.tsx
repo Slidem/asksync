@@ -46,7 +46,7 @@ export function TagCard({
   tag,
   showActions = true,
   isOwner = false,
-}: TagCardProps) {
+}: TagCardProps): React.ReactNode {
   const { deleteTag, usageDialogState, closeUsageDialog } = useDeleteTag();
   const { openDialog: openEditDialog } = useEditTagDialog();
   const { openDialog: openViewDialog } = useViewTagDialog();

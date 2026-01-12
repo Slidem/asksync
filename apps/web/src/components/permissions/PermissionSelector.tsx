@@ -30,7 +30,7 @@ export function PermissionSelector({
   value,
   onChange,
   disabled = false,
-}: PermissionSelectorProps) {
+}: PermissionSelectorProps): React.ReactNode {
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className="w-auto min-w-[100px]">

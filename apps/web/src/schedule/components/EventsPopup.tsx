@@ -23,7 +23,7 @@ export function EventsPopup({
   position,
   onClose,
   onEventSelect,
-}: EventsPopupProps) {
+}: EventsPopupProps): React.ReactNode {
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to close popup

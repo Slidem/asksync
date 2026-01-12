@@ -36,7 +36,10 @@ const DEFAULT_PRESETS: PomodoroSettings["presets"] = {
   review: { work: 45, shortBreak: 10, longBreak: 20 },
 };
 
-export function PresetEditor({ settings, onUpdate }: PresetEditorProps) {
+export function PresetEditor({
+  settings,
+  onUpdate,
+}: PresetEditorProps): React.ReactNode {
   const handlePresetChange = (
     presetName: keyof PomodoroSettings["presets"],
     field: "work" | "shortBreak" | "longBreak",

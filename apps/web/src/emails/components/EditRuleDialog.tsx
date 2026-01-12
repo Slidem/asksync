@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,14 +9,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Id } from "@convex/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUpdateRule } from "@/emails/hooks/mutations";
+import { X } from "lucide-react";
+import { useState } from "react";
 import { useTags } from "@/tags/hooks/queries";
+import { useUpdateRule } from "@/emails/hooks/mutations";
 
 interface EditRuleDialogProps {
   open: boolean;
@@ -37,7 +37,7 @@ export function EditRuleDialog({
   open,
   onOpenChange,
   rule,
-}: EditRuleDialogProps) {
+}: EditRuleDialogProps): React.ReactNode {
   const [name, setName] = useState(rule.name);
   const [senderPattern, setSenderPattern] = useState(rule.senderPattern || "");
   const [subjectPattern, setSubjectPattern] = useState(

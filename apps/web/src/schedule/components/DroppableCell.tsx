@@ -2,10 +2,11 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 "use client";
 
+import React, { useCallback } from "react";
+
 import { cn } from "@/lib/utils";
 import { useCalendarDnd } from "@/schedule/components/CalendarDndContext";
 import { useDroppable } from "@dnd-kit/core";
-import React, { useCallback } from "react";
 
 interface DroppableCellProps {
   id: string;
@@ -27,7 +28,7 @@ export function DroppableCell({
   onClick,
   onMouseDown,
   dayColumnIndex,
-}: DroppableCellProps) {
+}: DroppableCellProps): React.ReactNode {
   const { activeEvent } = useCalendarDnd();
 
   const { setNodeRef, isOver } = useDroppable({

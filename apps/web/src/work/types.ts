@@ -1,3 +1,4 @@
+import { EmailTag } from "@/work/components/focusPanel/EmailsPanel";
 import { Id } from "@/../../backend/convex/_generated/dataModel";
 
 export type SessionType = "work" | "shortBreak" | "longBreak";
@@ -55,3 +56,17 @@ export interface SessionStats {
 export const DEFAULT_WORK_DURATION_MINUTES = 25;
 export const DEFAULT_SHORT_BREAK_MINUTES = 5;
 export const DEFAULT_LONG_BREAK_MINUTES = 15;
+export interface EmailItem {
+  _id: Id<"emailAttentionItems">;
+  senderEmail: string;
+  senderName?: string;
+  subject: string;
+  snippet: string;
+  htmlBody?: string;
+  receivedAt: number;
+  expectedAnswerTime: number;
+  isOverdue: boolean;
+  status: "pending" | "resolved";
+  sourceEmail: string;
+  tags: EmailTag[];
+}

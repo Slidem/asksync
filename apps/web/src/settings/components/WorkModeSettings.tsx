@@ -12,7 +12,7 @@ import { useMutation } from "convex/react";
 import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
 import { useToast } from "@/hooks/use-toast";
 
-export function WorkModeSettings() {
+export function WorkModeSettings(): React.ReactNode {
   const { toast } = useToast();
   const settings = usePomodoroSettings();
   const updateSettings = useMutation(

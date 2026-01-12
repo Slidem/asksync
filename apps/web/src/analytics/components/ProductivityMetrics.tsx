@@ -21,9 +21,9 @@ interface ProductivityMetricsProps {
   } | null;
 }
 
-export function ProductivityMetrics({
+export const ProductivityMetrics: React.FC<ProductivityMetricsProps> = ({
   productivityMetrics,
-}: ProductivityMetricsProps) {
+}) => {
   const formatHour = (hour: number) => {
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
@@ -102,4 +102,4 @@ export function ProductivityMetrics({
       </CardContent>
     </Card>
   );
-}
+};

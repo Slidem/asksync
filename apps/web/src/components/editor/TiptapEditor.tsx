@@ -23,14 +23,14 @@ interface TiptapEditorProps {
   className?: string;
 }
 
-export function TiptapEditor({
+export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   value = "",
   onChange,
   placeholder = "Start typing...",
   minHeight = 120,
   onSubmit,
   className = "",
-}: TiptapEditorProps) {
+}: TiptapEditorProps) => {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -98,4 +98,4 @@ export function TiptapEditor({
       </div>
     </div>
   );
-}
+};

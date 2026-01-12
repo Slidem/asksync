@@ -1,6 +1,6 @@
-import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "@asksync/shared";
+import { X } from "lucide-react";
 
 interface ActiveTagFiltersProps {
   selectedTagIds: string[];
@@ -14,7 +14,7 @@ export function ActiveTagFilters({
   tags,
   onRemoveTag,
   onClearAll,
-}: ActiveTagFiltersProps) {
+}: ActiveTagFiltersProps): React.ReactNode {
   if (!tags || !selectedTagIds || selectedTagIds.length === 0) {
     return null;
   }

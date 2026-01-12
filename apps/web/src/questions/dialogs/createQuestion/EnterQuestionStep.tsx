@@ -1,9 +1,10 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SortOrder, TagSortBy } from "@asksync/shared";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SortOrder, TagSortBy } from "@asksync/shared";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { useCreateQuestionDialogStore } from "./createQuestionDialogStore";
 import { useMemberships } from "@/members/queries/queries";
@@ -17,7 +18,7 @@ interface EnterQuestionStepProps {
 export function EnterQuestionStep({
   onSubmit,
   isSubmitting,
-}: EnterQuestionStepProps) {
+}: EnterQuestionStepProps): React.ReactNode {
   const {
     selectedUserIds,
     selectedTagIds,

@@ -25,7 +25,7 @@ export function PermissionGrantItem({
   isCreator = false,
   onUpdate,
   onRemove,
-}: PermissionGrantItemProps) {
+}: PermissionGrantItemProps): React.ReactNode {
   const { user } = useUser();
   const users = useMemberships();
   const groups = useGroups();

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Underline from "@tiptap/extension-underline";
-import Typography from "@tiptap/extension-typography";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { EditorContent, useEditor } from "@tiptap/react";
 import { common, createLowlight } from "lowlight";
+
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import Link from "@tiptap/extension-link";
+import StarterKit from "@tiptap/starter-kit";
+import Typography from "@tiptap/extension-typography";
+import Underline from "@tiptap/extension-underline";
 
 const lowlight = createLowlight(common);
 
@@ -15,7 +16,10 @@ interface TiptapViewerProps {
   className?: string;
 }
 
-export function TiptapViewer({ content, className = "" }: TiptapViewerProps) {
+export function TiptapViewer({
+  content,
+  className = "",
+}: TiptapViewerProps): React.ReactNode {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [

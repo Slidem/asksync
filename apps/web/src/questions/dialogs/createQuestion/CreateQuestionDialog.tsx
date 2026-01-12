@@ -15,7 +15,7 @@ import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function CreateQuestionDialog() {
+export function CreateQuestionDialog(): React.ReactNode {
   const router = useRouter();
   const {
     isOpen,

@@ -9,10 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
+import { JSX } from "react";
 import { sidebarItems } from "@/components/sidebar/config";
 import { usePathname } from "next/navigation";
 
-export function BreadcrumbsNav() {
+export function BreadcrumbsNav(): JSX.Element | null {
   const pathname = usePathname();
   const pathnameWithoutTrailingSlash = pathname?.replace(/\/$/, "") || "/";
 

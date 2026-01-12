@@ -1,7 +1,7 @@
-import { v } from "convex/values";
-import { query } from "../../_generated/server";
-import { getUser } from "../../auth/user";
 import { calculateStreak } from "../helpers/calculations";
+import { getUser } from "../../auth/user";
+import { query } from "../../_generated/server";
+import { v } from "convex/values";
 
 // Get active session for current user
 export const getActiveSession = query({
@@ -51,6 +51,7 @@ export const getActiveSession = query({
 
 // Get user's pomodoro settings
 export const getPomodoroSettings = query({
+  args: {},
   handler: async (ctx) => {
     const user = await getUser(ctx);
     if (!user) return null;
@@ -87,6 +88,7 @@ export const getPomodoroSettings = query({
 
 // Get today's sessions for stats
 export const getTodaysSessions = query({
+  args: {},
   handler: async (ctx) => {
     const user = await getUser(ctx);
 

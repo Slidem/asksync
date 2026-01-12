@@ -42,7 +42,7 @@ export function CreateRuleDialog({
   open,
   onOpenChange,
   connections,
-}: CreateRuleDialogProps) {
+}: CreateRuleDialogProps): React.ReactNode {
   const [name, setName] = useState("");
   const [connectionId, setConnectionId] = useState<string>("");
   const [senderPattern, setSenderPattern] = useState("");

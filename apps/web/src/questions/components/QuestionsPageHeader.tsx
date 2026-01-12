@@ -8,7 +8,7 @@ interface QuestionsPageHeaderProps {
 
 export function QuestionsPageHeader({
   onAskQuestion,
-}: QuestionsPageHeaderProps) {
+}: QuestionsPageHeaderProps): React.ReactNode {
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">

@@ -15,7 +15,7 @@ export function QuestionsList({
   questions,
   isLoading,
   emptyMessage,
-}: QuestionsListProps) {
+}: QuestionsListProps): React.ReactNode {
   const { user } = useUser();
 
   if (isLoading) {

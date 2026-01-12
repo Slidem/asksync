@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { MemberListItem } from "./MemberListItem";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrganizationMembershipResource } from "@/members/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserPlus } from "lucide-react";
 
 interface AvailableMembersListProps {
@@ -12,7 +12,7 @@ interface AvailableMembersListProps {
 export function AvailableMembersList({
   members,
   onAdd,
-}: AvailableMembersListProps) {
+}: AvailableMembersListProps): React.ReactNode {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center justify-between mb-3">

@@ -32,7 +32,7 @@ interface TimerNotificationSettingsProps {
 export function TimerNotificationSettings({
   settings,
   onUpdate,
-}: TimerNotificationSettingsProps) {
+}: TimerNotificationSettingsProps): React.ReactNode {
   const [notificationPermission, setNotificationPermission] =
     useState<string>("default");
 

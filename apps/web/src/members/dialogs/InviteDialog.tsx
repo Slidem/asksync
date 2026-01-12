@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useOrganization } from "@clerk/nextjs";
+import { CheckCircle, Loader2, UserPlus, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,9 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { UserPlus, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useOrganization } from "@clerk/nextjs";
+import { useState } from "react";
 
 interface InviteDialogProps {
   open: boolean;
@@ -42,7 +43,10 @@ function parseEmails(input: string): string[] {
     .filter((e) => e.length > 0 && e.includes("@"));
 }
 
-export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
+export function InviteDialog({
+  open,
+  onOpenChange,
+}: InviteDialogProps): React.ReactNode {
   const { organization } = useOrganization();
   const [emailsInput, setEmailsInput] = useState("");
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");

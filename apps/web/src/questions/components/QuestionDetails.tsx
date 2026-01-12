@@ -55,7 +55,7 @@ export function QuestionDetails({
   onResolve,
   onDelete,
   mode = "full",
-}: QuestionDetailsProps) {
+}: QuestionDetailsProps): React.ReactNode {
   const timeInfo = getTimeUntilAnswer(expectedAnswerTime);
 
   return (

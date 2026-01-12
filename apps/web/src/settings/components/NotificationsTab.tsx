@@ -1,9 +1,5 @@
 "use client";
 
-import { Loader2, Save } from "lucide-react";
-import { useEffect, useState } from "react";
-
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,6 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loader2, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PomodoroSettings } from "@/work/types";
 import { TimerNotificationSettings } from "@/settings/components/NotificationSettings";
@@ -19,7 +19,7 @@ import { useMutation } from "convex/react";
 import { usePomodoroSettings } from "@/work/hooks/usePomodoroSettings";
 import { useToast } from "@/hooks/use-toast";
 
-export function NotificationsTab() {
+export function NotificationsTab(): React.ReactNode {
   const { toast } = useToast();
   const settings = usePomodoroSettings();
   const updateSettings = useMutation(

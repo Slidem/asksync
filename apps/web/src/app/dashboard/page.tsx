@@ -1,12 +1,13 @@
 "use client";
 
+import { JSX } from "react";
 import { useQuery } from "convex/react";
 
 import { AttentionItemsSection } from "@/dashboard/components/AttentionItemsSection";
 import { PendingTasksWidget } from "@/dashboard/components/PendingTasksWidget";
 import { api } from "@convex/api";
 
-export default function Page() {
+export default function Page(): JSX.Element {
   const urgentQuestions = useQuery(api.questions.queries.getUrgentQuestions, {
     limit: 10,
   });

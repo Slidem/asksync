@@ -19,19 +19,22 @@ import { Button } from "@/components/ui/button";
 import { GroupMembersDialog } from "../dialogs/groupMembersDialog/GroupMembersDialog";
 import { GroupWithMemberCount } from "../types";
 import { api } from "@convex/api";
+import { confirmDialog } from "@/components/shared/ConfirmDialog";
 import { toGroupId } from "@/lib/convexTypes";
+import { toast } from "sonner";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 import { useMutation } from "convex/react";
 import { useState } from "react";
-import { confirmDialog } from "@/components/shared/ConfirmDialog";
-import { toast } from "sonner";
 
 interface GroupCardProps {
   group: GroupWithMemberCount;
   canManage: boolean;
 }
 
-export function GroupCard({ group, canManage }: GroupCardProps) {
+export function GroupCard({
+  group,
+  canManage,
+}: GroupCardProps): React.ReactNode {
   const [showMembers, setShowMembers] = useState(false);
   const openEdit = useGroupDialogStore((state) => state.openEdit);
   const deleteGroup = useMutation(api.groups.mutations.deleteGroup);

@@ -1,10 +1,11 @@
 "use client";
 
+import { JSX } from "react";
 import { FocusPanel } from "@/work/components/focusPanel/FocusPanel";
 import { PomodoroTimer } from "@/work/components/pomodoro/PomodoroTimer";
 import { WorkStatusBar } from "@/work/components/WorkStatusBar";
 
-export default function WorkModePage() {
+export default function WorkModePage(): JSX.Element {
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 h-full">
       {/* Main layout - flexbox row on desktop */}

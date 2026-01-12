@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
@@ -15,7 +16,7 @@ interface SelectedMemberCardProps {
 export function SelectedMemberCard({
   user,
   onChangeSelection,
-}: SelectedMemberCardProps) {
+}: SelectedMemberCardProps): React.ReactNode {
   const initials = user.name
     .split(" ")
     .map((n) => n.charAt(0))

@@ -25,7 +25,9 @@ interface FloatingToolbarProps {
   editor: Editor;
 }
 
-export function FloatingToolbar({ editor }: FloatingToolbarProps) {
+export function FloatingToolbar({
+  editor,
+}: FloatingToolbarProps): React.ReactNode {
   const [show, setShow] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [mounted, setMounted] = useState(false);

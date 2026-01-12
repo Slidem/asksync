@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   AlertCircle,
   Check,
@@ -10,19 +9,20 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { useOrganization, useUser } from "@clerk/nextjs";
-import { formatDistanceToNow } from "date-fns";
-
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { initiateGmailOAuth, isGmailOAuthConfigured } from "@/lib/gmailOAuth";
-import { useGmailConnections } from "@/emails/hooks/queries";
 import {
   useDisconnectGmail,
   useTriggerGmailSync,
 } from "@/emails/hooks/mutations";
+import { useOrganization, useUser } from "@clerk/nextjs";
 
-export function EmailAccountsTab() {
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
+import { useGmailConnections } from "@/emails/hooks/queries";
+import { useState } from "react";
+
+export function EmailAccountsTab(): React.ReactNode {
   const { user } = useUser();
   const { organization } = useOrganization();
   const [isConnecting, setIsConnecting] = useState(false);

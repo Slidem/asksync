@@ -19,7 +19,7 @@ export function PositionedEventRenderer({
   positionedEvent,
   view,
   onClick,
-}: PositionedEventRendererProps) {
+}: PositionedEventRendererProps): React.ReactNode {
   return (
     <div
       key={positionedEvent.event.id}

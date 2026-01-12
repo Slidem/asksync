@@ -19,7 +19,7 @@ import { useDisconnectGmail } from "@/emails/hooks/mutations";
 import { useGmailConnections } from "@/emails/hooks/queries";
 import { useState } from "react";
 
-export function GmailConnectionsSection() {
+export function GmailConnectionsSection(): React.ReactNode {
   const { user } = useUser();
   const { organization } = useOrganization();
   const [isConnecting, setIsConnecting] = useState(false);

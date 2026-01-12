@@ -1,16 +1,17 @@
 "use client";
 
+import { Bell, Timer } from "lucide-react";
 import {
   UnderlineTabs,
   UnderlineTabsContent,
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
-import { Bell, Timer } from "lucide-react";
+
 import { NotificationsTab } from "./components/NotificationsTab";
 import { WorkModeSettings } from "./components/WorkModeSettings";
 
-export function SettingsPage() {
+export function SettingsPage(): React.ReactNode {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>

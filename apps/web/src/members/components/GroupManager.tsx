@@ -9,7 +9,9 @@ interface GroupManagerProps {
   canManage: boolean;
 }
 
-export function GroupManager({ canManage }: GroupManagerProps) {
+export function GroupManager({
+  canManage,
+}: GroupManagerProps): React.ReactNode {
   const groups = useGroups();
   const openCreate = useGroupDialogStore((state) => state.openCreate);
 

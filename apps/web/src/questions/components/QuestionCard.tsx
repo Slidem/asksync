@@ -29,7 +29,10 @@ interface QuestionCardProps {
   currentUserId?: string;
 }
 
-export function QuestionCard({ question, currentUserId }: QuestionCardProps) {
+export function QuestionCard({
+  question,
+  currentUserId,
+}: QuestionCardProps): React.ReactNode {
   const { deleteQuestion } = useDeleteQuestion();
   const router = useRouter();
   const isCreator = currentUserId === question.createdBy;

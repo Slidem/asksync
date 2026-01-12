@@ -1,6 +1,6 @@
 import { OrganizationList } from "@clerk/nextjs";
 
-export default function AcceptInvitationPage() {
+const AcceptInvitationPage: React.FC = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <OrganizationList
@@ -9,4 +9,6 @@ export default function AcceptInvitationPage() {
       />
     </div>
   );
-}
+};
+
+export default AcceptInvitationPage;

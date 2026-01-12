@@ -2,7 +2,7 @@
 
 import { Target } from "lucide-react";
 
-export function LoadingState() {
+export function LoadingState(): React.ReactNode {
   return (
     <div className="h-full flex flex-col">
       <div className="p-6 border-b">

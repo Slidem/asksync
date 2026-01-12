@@ -1,8 +1,8 @@
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 
-export function GroupDescriptionInput() {
+export function GroupDescriptionInput(): React.ReactNode {
   const description = useGroupDialogStore((state) => state.description);
   const setDescription = useGroupDialogStore((state) => state.setDescription);
 

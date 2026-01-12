@@ -2,10 +2,10 @@
 
 import { CreateOrganization, useOrganization } from "@clerk/nextjs";
 
-import { useEffect } from "react";
+import { JSX, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreateOrganizationPage() {
+export default function CreateOrganizationPage(): JSX.Element {
   const router = useRouter();
   const { organization } = useOrganization();
 

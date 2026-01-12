@@ -1,12 +1,13 @@
 "use client";
 
+import { JSX } from "react";
 import { Calendar1 } from "lucide-react";
 import { EventCalendar } from "@/schedule/components/EventCalendar";
 import { EventDialog } from "@/schedule";
 import { IntegrationsDialog } from "@/schedule/dialogs/integrationsDialog/IntegrationsDialog";
 import { RecurringDialog } from "@/schedule/dialogs/recurringDialog/components/RecurringDialog";
 
-export default function SchedulePage() {
+export default function SchedulePage(): JSX.Element {
   return (
     <>
       <div className="p-6 space-y-6">

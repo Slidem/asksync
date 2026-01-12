@@ -1,11 +1,13 @@
-import { v } from "convex/values";
-import { query } from "../../_generated/server";
+/* eslint-disable import/order */
 import { getUser } from "../../auth/user";
+import { query } from "../../_generated/server";
+import { v } from "convex/values";
 
 export const getActiveSessionId = query({
+  args: {},
   handler: async (ctx) => {
     const user = await getUser(ctx);
-    if (!user) return { isWorking: false };
+    if (!user) return { activeSessionId: null };
 
     let session = await ctx.db
       .query("workSessions")
@@ -51,6 +53,7 @@ export const getSessionHistory = query({
       .collect();
 
     // Group by day and calculate daily stats
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dailyStats = new Map<string, any>();
 
     sessions.forEach((session) => {
@@ -203,6 +206,7 @@ export const getProductivityMetrics = query({
 
 // Get weekly stats for comparison
 export const getWeeklyStats = query({
+  args: {},
   handler: async (ctx) => {
     const user = await getUser(ctx);
     if (!user) return null;

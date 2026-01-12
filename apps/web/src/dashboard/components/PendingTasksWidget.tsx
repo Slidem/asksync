@@ -118,7 +118,7 @@ function QuestionItem({
 
 export function PendingTasksWidget({
   urgentQuestions,
-}: PendingTasksWidgetProps) {
+}: PendingTasksWidgetProps): React.ReactNode {
   const router = useRouter();
 
   if (!urgentQuestions || urgentQuestions.length === 0) {

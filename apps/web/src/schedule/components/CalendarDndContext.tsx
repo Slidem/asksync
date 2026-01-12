@@ -65,7 +65,9 @@ interface CalendarDndProviderProps {
   children: ReactNode;
 }
 
-export function CalendarDndProvider({ children }: CalendarDndProviderProps) {
+export function CalendarDndProvider({
+  children,
+}: CalendarDndProviderProps): React.ReactNode {
   const updateEventDates = useUpdateEventDates();
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);

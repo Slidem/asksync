@@ -29,7 +29,9 @@ interface OverviewStatsProps {
   } | null;
 }
 
-export function OverviewStats({ weeklyStats }: OverviewStatsProps) {
+export const OverviewStats: React.FC<OverviewStatsProps> = ({
+  weeklyStats,
+}) => {
   const formatMinutes = (ms: number) => {
     const minutes = Math.floor(ms / (1000 * 60));
     const hours = Math.floor(minutes / 60);
@@ -116,4 +118,4 @@ export function OverviewStats({ weeklyStats }: OverviewStatsProps) {
       })}
     </div>
   );
-}
+};

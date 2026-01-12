@@ -2,11 +2,12 @@
 
 import { AttentionItemsSection } from "@/dashboard/components/AttentionItemsSection";
 import { Clock } from "lucide-react";
+import { JSX } from "react";
 import { PendingTasksWidget } from "@/dashboard/components/PendingTasksWidget";
 import { api } from "@convex/api";
 import { useQuery } from "convex/react";
 
-export default function Home() {
+export default function Home(): JSX.Element {
   const urgentQuestions = useQuery(api.questions.queries.getUrgentQuestions, {
     limit: 10,
   });

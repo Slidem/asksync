@@ -38,7 +38,7 @@ export function DiscussionThread({
   isAssignee,
   isParticipant,
   isResolved,
-}: DiscussionThreadProps) {
+}: DiscussionThreadProps): React.ReactNode {
   const [newMessage, setNewMessage] = useState("");
   const [newMessagePlaintext, setNewMessagePlaintext] = useState("");
   const [isSending, setIsSending] = useState(false);

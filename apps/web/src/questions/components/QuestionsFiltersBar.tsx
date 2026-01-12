@@ -18,7 +18,7 @@ export function QuestionsFiltersBar({
   filters,
   tags,
   onFilterChange,
-}: QuestionsFiltersBarProps) {
+}: QuestionsFiltersBarProps): React.ReactNode {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       <QuestionsSearch

@@ -1,18 +1,18 @@
 "use client";
 
-import { format, formatDistanceToNow } from "date-fns";
-import DOMPurify from "dompurify";
 import { Calendar, Check, Mail, RotateCcw, Trash2, User } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { format, formatDistanceToNow } from "date-fns";
 import { useDeleteItem, useResolveItem } from "@/emails/hooks/mutations";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import DOMPurify from "dompurify";
 import { Id } from "@convex/dataModel";
 
 interface EmailTag {
@@ -42,7 +42,7 @@ export function EmailViewerDialog({
   open,
   onOpenChange,
   item,
-}: EmailViewerDialogProps) {
+}: EmailViewerDialogProps): React.ReactNode {
   const { resolveItem, unresolveItem } = useResolveItem();
   const { deleteItem } = useDeleteItem();
 

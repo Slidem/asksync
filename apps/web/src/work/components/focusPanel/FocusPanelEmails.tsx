@@ -2,21 +2,20 @@
 
 import { useMemo, useState } from "react";
 
+import { EmailItem } from "@/work/types";
 import { EmailViewerDialog } from "@/emails/components/EmailViewerDialog";
-import { useTimeblockAttentionItems } from "@/emails/hooks/useTimeblockAttentionItems";
-import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
 import { EmailsPanel } from "@/work/components/focusPanel/EmailsPanel";
+import { useCurrentTimeblock } from "@/work/hooks/useCurrentTimeblock";
+import { useTimeblockAttentionItems } from "@/emails/hooks/useTimeblockAttentionItems";
 
-export function FocusPanelEmails() {
+export function FocusPanelEmails(): React.ReactNode {
   const { timeblockData } = useCurrentTimeblock();
   const timeblockIds = useMemo(
     () => timeblockData?.timeblocks.map((tb) => tb._id) ?? [],
     [timeblockData?.timeblocks],
   );
   const { items, isLoading } = useTimeblockAttentionItems(timeblockIds);
-  const [selectedItem, setSelectedItem] = useState<(typeof items)[0] | null>(
-    null,
-  );
+  const [selectedItem, setSelectedItem] = useState<EmailItem | null>(null);
 
   if (isLoading) {
     return (

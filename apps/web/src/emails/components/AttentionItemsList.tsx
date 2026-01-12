@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Inbox } from "lucide-react";
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { AttentionItemCard } from "@/emails/components/AttentionItemCard";
-import { EmailViewerDialog } from "@/emails/components/EmailViewerDialog";
 import { useAttentionItems, useGmailConnections } from "@/emails/hooks/queries";
+
+import { AttentionItemCard } from "@/emails/components/AttentionItemCard";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EmailViewerDialog } from "@/emails/components/EmailViewerDialog";
 import { Id } from "@convex/dataModel";
+import { Inbox } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 interface EmailTag {
   _id: string;
@@ -29,7 +29,7 @@ interface AttentionItem {
   tags: EmailTag[];
 }
 
-export function AttentionItemsList() {
+export function AttentionItemsList(): React.ReactNode {
   const [showResolved, setShowResolved] = useState(false);
   const [selectedItem, setSelectedItem] = useState<AttentionItem | null>(null);
   const { connections } = useGmailConnections();

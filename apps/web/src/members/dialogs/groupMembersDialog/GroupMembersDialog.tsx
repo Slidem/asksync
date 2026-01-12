@@ -17,8 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
 import { api } from "@convex/api";
 import { toGroupId } from "@/lib/convexTypes";
-import { useOrganization } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { useOrganization } from "@clerk/nextjs";
 
 interface GroupMembersDialogProps {
   groupId: string;
@@ -34,7 +34,7 @@ export function GroupMembersDialog({
   isOpen,
   onClose,
   canManage,
-}: GroupMembersDialogProps) {
+}: GroupMembersDialogProps): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState("");
   const { memberships } = useOrganization({ memberships: { infinite: true } });
   const groupMembers = useQuery(api.groups.queries.getGroupMembers, {

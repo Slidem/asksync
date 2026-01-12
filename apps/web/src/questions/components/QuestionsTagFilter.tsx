@@ -4,6 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
 import { Button } from "@/components/ui/button";
 import { Tag } from "@asksync/shared";
 
@@ -17,7 +18,7 @@ export function QuestionsTagFilter({
   selectedTagIds,
   tags,
   onChange,
-}: QuestionsTagFilterProps) {
+}: QuestionsTagFilterProps): React.ReactNode {
   const toggleTag = (tagId: string) => {
     const isSelected = selectedTagIds.includes(tagId);
     const newTagIds = isSelected

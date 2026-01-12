@@ -16,7 +16,7 @@ export function TimeblockInfo({
   timeblock,
   tasks,
   progress,
-}: TimeblockInfoProps) {
+}: TimeblockInfoProps): React.ReactNode {
   return (
     <div className="p-3 bg-muted rounded-lg">
       <div className="flex items-start justify-between mb-2">

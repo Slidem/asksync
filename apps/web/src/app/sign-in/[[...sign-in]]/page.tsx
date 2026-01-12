@@ -1,4 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
+import { JSX } from "react";
 
 export async function generateStaticParams() {
   return [
@@ -10,7 +11,7 @@ export async function generateStaticParams() {
   ];
 }
 
-export default function SignInPage() {
+export default function SignInPage(): JSX.Element {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <SignIn />

@@ -21,7 +21,7 @@ export function ResourcePermissionsManager({
   canEdit,
   isCreating = false,
   onChange,
-}: ResourcePermissionsManagerProps) {
+}: ResourcePermissionsManagerProps): React.ReactNode {
   const users = useMemberships();
   const groups = useGroups();
 

@@ -31,7 +31,7 @@ export function QuarterHourGrid({
   onMouseDown,
   onCellClick,
   idPrefix,
-}: QuarterHourGridProps) {
+}: QuarterHourGridProps): React.ReactNode {
   const hourValue = getHours(hour);
 
   return (

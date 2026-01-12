@@ -126,7 +126,7 @@ export function EventItem({
   dndAttributes,
   onMouseDown,
   onTouchStart,
-}: EventItemProps) {
+}: EventItemProps): React.ReactNode {
   const eventColor = event.color;
 
   const taskCount = useMemo(() => {

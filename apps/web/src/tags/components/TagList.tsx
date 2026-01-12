@@ -1,5 +1,6 @@
 "use client";
 
+import { List, Search, User, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,22 +15,21 @@ import {
   UnderlineTabsList,
   UnderlineTabsTrigger,
 } from "@/components/ui/UnderlineTabs";
+import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { List, Search, User, Users } from "lucide-react";
 import { NewTagButton } from "@/tags/components/cards/NewTagButton";
 import { NewTagCard } from "@/tags/components/cards/NewTagCard";
 import { TagCard } from "./cards/TagCard";
 import { TagOwnerFilter } from "./TagOwnerFilter";
 import { useMemberships } from "@/members/queries/queries";
-import { useMemo, useState } from "react";
 import { useTags } from "@/tags/hooks/queries";
 import { useUser } from "@clerk/nextjs";
 
 type TabFilter = "my-tags" | "others-tags" | "all";
 
-export function TagList() {
+export function TagList(): React.ReactNode {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabFilter>("my-tags");
   const [searchTerm, setSearchTerm] = useState("");

@@ -33,7 +33,6 @@ import {
   useOpenCreateEventDialog,
   useSelectEventInDialog,
 } from "@/schedule/dialogs/eventDialog/eventDialogService";
-import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
 import { CalendarEvent } from "@/schedule/types";
 import { DraggableEvent } from "@/schedule/components/DraggableEvent";
@@ -44,8 +43,9 @@ import { noOp } from "@/lib/utils";
 import { useCalendarViewStore } from "@/schedule/stores/calendarViewStore";
 import { useEventVisibility } from "@/schedule/hooks/eventVisibility";
 import { useEventsForCurrentScheduleView } from "@/schedule/hooks/eventsForCurrentScheduleView";
+import { useOpenAskQuestionDialog } from "@/schedule/dialogs/askQuestion/askQuestionDialogService";
 
-export function MonthView() {
+export function MonthView(): React.ReactNode {
   const openSelectEventInDialog = useSelectEventInDialog();
   const openAskQuestionDialog = useOpenAskQuestionDialog();
   const openCreateEventDialog = useOpenCreateEventDialog();

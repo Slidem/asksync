@@ -8,15 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
-import { GroupNameInput } from "./GroupNameInput";
-import { GroupDescriptionInput } from "./GroupDescriptionInput";
+
 import { GroupColorPicker } from "./GroupColorPicker";
+import { GroupDescriptionInput } from "./GroupDescriptionInput";
 import { GroupDialogActions } from "./GroupDialogActions";
+import { GroupNameInput } from "./GroupNameInput";
 import { Separator } from "@/components/ui/separator";
 import { UsersRound } from "lucide-react";
+import { useGroupDialogStore } from "@/members/stores/groupDialogStore";
 
-export function GroupDialog() {
+export function GroupDialog(): React.ReactNode {
   const isOpen = useGroupDialogStore((state) => state.isOpen);
   const close = useGroupDialogStore((state) => state.close);
   const groupId = useGroupDialogStore((state) => state.groupId);

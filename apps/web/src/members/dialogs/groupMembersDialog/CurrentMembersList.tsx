@@ -14,7 +14,7 @@ export function CurrentMembersList({
   members,
   canManage,
   onRemove,
-}: CurrentMembersListProps) {
+}: CurrentMembersListProps): React.ReactNode {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center justify-between mb-3">

@@ -41,7 +41,7 @@ export function MessageItem({
   onEdit,
   onDelete,
   onMarkAsAnswer,
-}: MessageItemProps) {
+}: MessageItemProps): React.ReactNode {
   const { user } = useUser();
   const memberships = useMemberships();
   const [isEditing, setIsEditing] = useState(false);

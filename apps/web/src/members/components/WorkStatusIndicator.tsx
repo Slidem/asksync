@@ -1,5 +1,6 @@
+import { Circle, Coffee, Laptop, Pause } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { Laptop, Coffee, Pause, Circle } from "lucide-react";
 
 export type WorkStatus = "working" | "break" | "paused" | "offline";
 
@@ -46,7 +47,7 @@ const statusConfig = {
 export function WorkStatusIndicator({
   status,
   className,
-}: WorkStatusIndicatorProps) {
+}: WorkStatusIndicatorProps): React.ReactNode {
   const config = statusConfig[status];
   const Icon = config.icon;
 

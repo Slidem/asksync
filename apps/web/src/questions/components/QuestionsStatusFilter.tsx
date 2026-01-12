@@ -17,7 +17,7 @@ interface QuestionsStatusFilterProps {
 export function QuestionsStatusFilter({
   value,
   onChange,
-}: QuestionsStatusFilterProps) {
+}: QuestionsStatusFilterProps): React.ReactNode {
   return (
     <Select
       value={value || "all"}

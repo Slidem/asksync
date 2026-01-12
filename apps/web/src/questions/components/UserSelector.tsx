@@ -27,7 +27,7 @@ export function UserSelector({
   availableUsers,
   placeholder = "Search and select users...",
   maxSelections,
-}: UserSelectorProps) {
+}: UserSelectorProps): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredUsers = availableUsers.filter(

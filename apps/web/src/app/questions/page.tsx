@@ -1,5 +1,6 @@
 "use client";
 
+import { JSX } from "react";
 import { ActiveTagFilters } from "@/questions/components/ActiveTagFilters";
 import { CreateQuestionDialog } from "@/questions/dialogs/createQuestion/CreateQuestionDialog";
 import { QuestionsFiltersBar } from "@/questions/components/QuestionsFiltersBar";
@@ -10,7 +11,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { useCreateQuestionDialogStore } from "@/questions/dialogs/createQuestion/createQuestionDialogStore";
 import { useQuestionsPage } from "@/questions/hooks/useQuestionsPage";
 
-export default function QuestionsPage() {
+export default function QuestionsPage(): JSX.Element {
   const { openDialog } = useCreateQuestionDialogStore();
   const {
     activeTab,

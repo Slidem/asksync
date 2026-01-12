@@ -37,7 +37,9 @@ type GhostEventOverlayProps = DayViewProps | WeekViewProps | MonthViewProps;
  * Self-contained ghost event overlay component
  * Calculates its own position and visibility based on view type
  */
-export function GhostEventOverlay(props: GhostEventOverlayProps) {
+export function GhostEventOverlay(
+  props: GhostEventOverlayProps,
+): React.ReactNode {
   const { ghostEvent, view, isDragging, className } = props;
 
   // Extract dayIndex for week view

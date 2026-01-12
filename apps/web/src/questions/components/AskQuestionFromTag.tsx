@@ -22,7 +22,9 @@ interface AskQuestionFromTagProps {
   tag: Tag;
 }
 
-export function AskQuestionFromTag({ tag }: AskQuestionFromTagProps) {
+export function AskQuestionFromTag({
+  tag,
+}: AskQuestionFromTagProps): React.ReactNode {
   const router = useRouter();
   const { user } = useUser();
   const memberships = useMemberships();

@@ -44,7 +44,7 @@ export function QuestionForm({
   onCancel,
   expectedAnswerTime,
   currentUserId,
-}: QuestionFormProps) {
+}: QuestionFormProps): React.ReactNode {
   const handleTagToggle = useCallback(
     (tagId: string) => {
       onFormDataChange((prevData) => ({

@@ -16,7 +16,7 @@ export function TagSelector({
   selectedTagIds,
   onTagToggle,
   expectedAnswerTime,
-}: TagSelectorProps) {
+}: TagSelectorProps): React.ReactNode {
   if (!tags.length) {
     return (
       <div className="text-center py-4">

@@ -5,7 +5,10 @@ interface RoleBadgeProps {
   size?: "sm" | "md";
 }
 
-export function RoleBadge({ role, size = "sm" }: RoleBadgeProps) {
+export function RoleBadge({
+  role,
+  size = "sm",
+}: RoleBadgeProps): React.ReactNode {
   const isAdmin = role === "admin";
 
   return (

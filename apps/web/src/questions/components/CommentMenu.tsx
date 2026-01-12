@@ -34,7 +34,7 @@ export function CommentMenu({
   onMarkAsAnswer,
   onEdit,
   onDelete,
-}: CommentMenuProps) {
+}: CommentMenuProps): React.ReactNode {
   return (
     <div className="flex items-center gap-1">
       {/* Show edit/delete menu for authors (hover only) */}

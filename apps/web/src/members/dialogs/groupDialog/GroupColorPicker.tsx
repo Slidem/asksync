@@ -13,7 +13,7 @@ const DEFAULT_COLORS = [
   { value: "#84cc16", name: "Lime" },
 ];
 
-export function GroupColorPicker() {
+export function GroupColorPicker(): React.ReactNode {
   const color = useGroupDialogStore((state) => state.color);
   const setColor = useGroupDialogStore((state) => state.setColor);
 

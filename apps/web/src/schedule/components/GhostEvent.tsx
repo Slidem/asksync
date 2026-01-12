@@ -19,7 +19,7 @@ export function GhostEvent({
   view,
   className,
   isDragging = false,
-}: GhostEventProps) {
+}: GhostEventProps): React.ReactNode {
   const duration = differenceInMinutes(endTime, startTime);
   const hours = Math.floor(duration / 60);
   const minutes = duration % 60;

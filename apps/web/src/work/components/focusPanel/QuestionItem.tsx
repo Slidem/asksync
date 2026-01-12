@@ -32,7 +32,7 @@ export function QuestionItem({
   question,
   onViewThread,
   disabled,
-}: QuestionItemProps) {
+}: QuestionItemProps): React.ReactNode {
   const getUrgencyColor = () => {
     if (question.isOverdue) return "text-red-500";
 

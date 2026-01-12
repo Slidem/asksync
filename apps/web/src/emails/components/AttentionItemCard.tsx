@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import {
   Check,
   Mail,
@@ -9,9 +8,6 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteItem, useResolveItem } from "@/emails/hooks/mutations";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Id } from "@convex/dataModel";
+import { formatDistanceToNow } from "date-fns";
 
 interface EmailTag {
   _id: string;
@@ -43,7 +43,10 @@ interface AttentionItemCardProps {
   onClick?: () => void;
 }
 
-export function AttentionItemCard({ item, onClick }: AttentionItemCardProps) {
+export function AttentionItemCard({
+  item,
+  onClick,
+}: AttentionItemCardProps): React.ReactNode {
   const { resolveItem, unresolveItem } = useResolveItem();
   const { deleteItem } = useDeleteItem();
 

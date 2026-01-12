@@ -9,7 +9,7 @@ import { useCreateQuestionDialogStore } from "./createQuestionDialogStore";
 import { useMemberships } from "@/members/queries/queries";
 import { useTagsWithAvailableTimeblocksForUser } from "@/tags/hooks/queries";
 
-export function SelectAvailabilityStep() {
+export function SelectAvailabilityStep(): React.ReactNode {
   const {
     selectedUserIds,
     selectedTagIds,

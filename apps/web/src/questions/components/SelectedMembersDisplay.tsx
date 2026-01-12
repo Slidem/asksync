@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
@@ -17,7 +18,7 @@ interface SelectedMembersDisplayProps {
 export function SelectedMembersDisplay({
   users,
   onChangeSelection,
-}: SelectedMembersDisplayProps) {
+}: SelectedMembersDisplayProps): React.ReactNode {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

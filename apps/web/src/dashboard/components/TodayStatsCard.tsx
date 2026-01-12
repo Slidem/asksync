@@ -13,7 +13,9 @@ interface TodayStatsCardProps {
   } | null;
 }
 
-export function TodayStatsCard({ sessionStats }: TodayStatsCardProps) {
+export function TodayStatsCard({
+  sessionStats,
+}: TodayStatsCardProps): React.ReactNode {
   const formatMinutes = (ms: number) => {
     const minutes = Math.floor(ms / (1000 * 60));
     const hours = Math.floor(minutes / 60);
