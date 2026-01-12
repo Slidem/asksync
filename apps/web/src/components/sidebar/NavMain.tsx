@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
+import { useSidebarBadgeCounts } from "@/components/sidebar/useSidebarBadgeCounts";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,7 +19,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useSidebarBadgeCounts } from "@/components/sidebar/useSidebarBadgeCounts";
 
 export type NavItem = {
   title: string;

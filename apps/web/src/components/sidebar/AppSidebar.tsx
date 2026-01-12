@@ -3,19 +3,6 @@
 import * as React from "react";
 
 import {
-  BarChart3,
-  Calendar1,
-  Mail,
-  MessageCircleQuestionMark,
-  Settings,
-  SquareTerminal,
-  TagIcon,
-  Timer,
-  Users,
-  Zap,
-} from "lucide-react";
-import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -25,12 +12,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
+import {
+  BarChart3,
+  Calendar1,
+  Mail,
+  MessageCircleQuestionMark,
+  Settings,
+  SquareTerminal,
+  TagIcon,
+  Timer,
+  Users,
+} from "lucide-react";
 
 import { NavMain, type NavGroup } from "@/components/sidebar/NavMain";
 import { SidebarTimer } from "@/work/components/sidebar/SidebarTimer";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navGroups: NavGroup[] = [
   {
