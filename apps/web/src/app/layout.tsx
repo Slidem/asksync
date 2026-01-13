@@ -26,8 +26,8 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "AskSync - Monorepo Demo",
-  description: "Next.js SSG + Convex + Shared Package Demo",
+  title: "AskSync",
+  description: "Take control of your workday with AskSync.",
 };
 
 const sourceCodePro = Source_Code_Pro({
